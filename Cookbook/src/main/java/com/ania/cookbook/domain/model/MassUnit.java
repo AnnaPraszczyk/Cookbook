@@ -1,6 +1,6 @@
 package com.ania.cookbook.domain.model;
 
-public enum Unit {
+public enum MassUnit {
     G("g"), DAG("dag"), KG("kg"),
     OZ("oz"), LBS("lbs"), STONE("st"), CWT("cwt"),
 

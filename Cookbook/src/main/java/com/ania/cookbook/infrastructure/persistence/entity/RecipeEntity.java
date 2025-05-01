@@ -2,107 +2,67 @@ package com.ania.cookbook.infrastructure.persistence.entity;
 
 import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.domain.model.Ingredient;
-import com.ania.cookbook.infrastructure.converters.CategoriesJsonConverter;
 import com.ania.cookbook.infrastructure.converters.IngredientsJsonConverter;
 import jakarta.persistence.*;
+import lombok.Getter;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+@Getter
 @Entity
 @Table(name = "recipe")
-public class RecipeEntity {
+public class Recipe {
         @Id
         @GeneratedValue
         @Column(name="recipe_id", nullable = false)
         private final UUID recipeId;
-
         @Column(name = "name", nullable = false)
         private final String recipeName;
-
         @Enumerated(EnumType.STRING)
-        @Column(name = "categories", columnDefinition = "TEXT")
-        @Convert(converter = CategoriesJsonConverter.class)
-        private final List<Category> categories;
-
+        @Column(name = "category", nullable = false)
+        private final Category category;
         @Column(name = "ingredients", columnDefinition = "TEXT")
         @Convert(converter = IngredientsJsonConverter.class)
         private final List<Ingredient> ingredients;
-
         @Column(name = "instructions", nullable = false)
         private final String instructions;
-
-        @Column(name = "created")
+        @Column(name = "created", nullable = false, updatable = false)
         private final Instant created;
-
-        @Column(name = "number_of_servings")
+        @Column(name = "number_of_servings", nullable = false)
         private final int numberOfServings;
+        @Column(name = "tags", nullable = true, columnDefinition = "TEXT")
+        private List<String> tags;
 
-        public RecipeEntity() {
-            this.recipeId = UUID.randomUUID();
-            this.recipeName = null;
-            this.categories = new ArrayList<>();
-            this.ingredients = new ArrayList<>();
-            this.instructions = null;
-            this.created = Instant.now();
-            this.numberOfServings = 0;
-        }
-        private RecipeEntity(UUID recipeId, String recipeName, List<Category> categories, List<Ingredient> ingredients, String instructions, Instant created, int numberOfServings) {
+    public Recipe() {
+        this.recipeId = UUID.randomUUID();
+        this.recipeName = null;
+        this.category = null;
+        this.ingredients = new ArrayList<>();
+        this.instructions = null;
+        this.created = Instant.now();
+        this.numberOfServings = 0;
+        this.tags = new ArrayList<>();
+    }
+        private Recipe(UUID recipeId, String recipeName, Category category, List<Ingredient> ingredients, String instructions, int numberOfServings, List<String> tags) {
             if(recipeId==null){throw new IllegalArgumentException("Recipe id cannot be null");}
             this.recipeId = recipeId;
-            if(recipeName==null || recipeName.isBlank()){throw new IllegalArgumentException("Recipe name cannot be null or empty");}
+            if(recipeName.isBlank()){throw new IllegalArgumentException("Recipe name cannot be null or empty");}
             this.recipeName = recipeName;
-            this.categories = categories != null ? new ArrayList<>(categories) : new ArrayList<>();
+            this.category = category;
             this.ingredients = ingredients != null ? new ArrayList<>(ingredients) : new ArrayList<>();
-            if(instructions==null || instructions.isBlank()){throw new IllegalArgumentException("Recipe instructions cannot be null or empty");}
+            if(instructions.isBlank()){throw new IllegalArgumentException("Recipe instructions cannot be null or empty");}
             this.instructions = instructions;
             this.created = Instant.now();
             if(numberOfServings<0){throw new IllegalArgumentException("Recipe number of servings cannot be negative");}
             this.numberOfServings = numberOfServings;
+            this.tags = tags != null ? new ArrayList<>(tags) : new ArrayList<>();
         }
 
-        public static RecipeEntity newRecipeEntity(UUID recipeId, String name, List<Category> categories, List<Ingredient> ingredients, String instructions, int numberOfServings){
-            return new RecipeEntity(recipeId, name, categories, ingredients, instructions, Instant.now(),numberOfServings);
+        public static Recipe newRecipe(UUID recipeId, String name, Category category, List<Ingredient> ingredients, String instructions, int numberOfServings, List<String> tags){
+            return new Recipe(recipeId, name, category, ingredients, instructions,numberOfServings, tags);
         }
 
-    @Override
-    public String toString() {
-        return "RecipeEntity{" +
-                "recipeId=" + recipeId +
-                ", recipeName='" + recipeName + '\'' +
-                ", categories=" + categories +
-                ", ingredients=" + ingredients +
-                ", instructions='" + instructions + '\'' +
-                ", created=" + created +
-                ", numberOfServings=" + numberOfServings +
-                '}';
-    }
 
-    public UUID getRecipeId() {
-        return recipeId;
-    }
-
-    public String getRecipeName() {
-        return recipeName;
-    }
-
-    public List<Category> getCategories() {
-        return categories;
-    }
-
-    public List<Ingredient> getIngredients() {
-        return ingredients;
-    }
-
-    public Instant getCreated() {
-        return created;
-    }
-
-    public String getInstructions() {
-        return instructions;
-    }
-
-    public int getNumberOfServings() {
-        return numberOfServings;
-    }
 }
