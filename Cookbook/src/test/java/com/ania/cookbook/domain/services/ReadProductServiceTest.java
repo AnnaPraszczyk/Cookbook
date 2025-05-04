@@ -1,77 +1,109 @@
 package com.ania.cookbook.domain.services;
 
-import com.ania.cookbook.infrastructure.persistence.entity.ProductEntity;
-import com.ania.cookbook.infrastructure.repositories.InMemoryProductRepository;
+import com.ania.cookbook.domain.model.Product;
+import com.ania.cookbook.domain.repositories.product.ReadProduct;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import com.ania.cookbook.domain.exceptions.ProductNotFoundException;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class ReadProductServiceTest {
-
+    @Mock
+    private ReadProduct readProductRepository;
+    @InjectMocks
     private ReadProductService readProductService;
-    private InMemoryProductRepository productRepository;
+
+    private Product testProduct;
 
     @BeforeEach
     void setUp() {
-        productRepository = Mockito.mock(InMemoryProductRepository.class);
-        readProductService = new ReadProductService(productRepository);
+        testProduct = Product.newProduct(UUID.randomUUID(), "test product");
     }
 
     @Test
     void testFindProductById() {
-        UUID id = UUID.randomUUID();
-        ProductEntity productEntity = ProductEntity.newProductEntity(id, "Test Product");
+        UUID productId = testProduct.getProductId();
+        when(readProductRepository.findProductById(productId)).thenReturn(Optional.of(testProduct));
 
-        when(productRepository.findProductById(id)).thenReturn(Optional.of(productEntity));
+        Product foundProduct = readProductService.findProductById(productId);
 
-        Optional<ProductEntity> foundProduct = readProductService.findProductById(id);
-
-        assertTrue(foundProduct.isPresent());
-        assertEquals(productEntity, foundProduct.get());
-        verify(productRepository, times(1)).findProductById(id);
+        assertNotNull(foundProduct);
+        assertEquals(productId, foundProduct.getProductId());
+        verify(readProductRepository).findProductById(productId);
     }
 
     @Test
     void testFindProductByIdNotFound() {
-        UUID id = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+        when(readProductRepository.findProductById(productId)).thenReturn(Optional.empty());
 
-        when(productRepository.findProductById(id)).thenReturn(Optional.empty());
-
-        Optional<ProductEntity> foundProduct = readProductService.findProductById(id);
-
-        assertFalse(foundProduct.isPresent());
-        verify(productRepository, times(1)).findProductById(id);
+        ProductNotFoundException exception = assertThrows(ProductNotFoundException.class,
+                () -> readProductService.findProductById(productId));
+        assertEquals("Product not found.", exception.getMessage());
     }
 
     @Test
+    void shouldReturnTrueIfProductExistsById() {
+        UUID productId = testProduct.getProductId();
+        when(readProductRepository.existsProductById(productId)).thenReturn(true);
+
+        assertTrue(readProductService.existsProductById(productId));
+    }
+
+    @Test
+    void shouldReturnFalseIfProductDoesNotExistById() {
+        UUID productId = UUID.randomUUID();
+        when(readProductRepository.existsProductById(productId)).thenReturn(false);
+
+        assertFalse(readProductService.existsProductById(productId));
+    }
+
+
+    @Test
     void testFindProductByName() {
-        String name = "Test Product";
-        ProductEntity productEntity = ProductEntity.newProductEntity(UUID.randomUUID(), name);
+        String productName = testProduct.getProductName();
+        when(readProductRepository.findProductByName(productName)).thenReturn(Optional.of(testProduct));
 
-        when(productRepository.findProductByName(name)).thenReturn(productEntity);
+        Product foundProduct = readProductService.findProductByName(productName);
 
-        Optional<ProductEntity> foundProduct = readProductService.findProductByName(name);
-
-        assertTrue(foundProduct.isPresent());
-        assertEquals(productEntity, foundProduct.get());
-        verify(productRepository, times(1)).findProductByName(name);
+        assertNotNull(foundProduct);
+        assertEquals(productName, foundProduct.getProductName());
+        verify(readProductRepository).findProductByName(productName);
     }
 
     @Test
     void testFindProductByNameNotFound() {
-        String name = "Nonexistent Product";
+        String productName = "nonexistent product";
+        when(readProductRepository.findProductByName(productName)).thenReturn(Optional.empty());
 
-        when(productRepository.findProductByName(name)).thenReturn(null);
-
-        Optional<ProductEntity> foundProduct = readProductService.findProductByName(name);
-
-        assertFalse(foundProduct.isPresent());
-        verify(productRepository, times(1)).findProductByName(name);
+        ProductNotFoundException exception = assertThrows(ProductNotFoundException.class,
+                () -> readProductService.findProductByName(productName));
+        assertEquals("Product not found.", exception.getMessage());
     }
+
+    @Test
+    void shouldReturnTrueIfProductExistsByName() {
+        String productName = testProduct.getProductName();
+        when(readProductRepository.existsProductByName(productName)).thenReturn(true);
+
+        assertTrue(readProductService.existsProductByName(productName));
+    }
+
+    @Test
+    void shouldReturnFalseIfProductDoesNotExistByName() {
+        String productName = "Nonexistent Product";
+        when(readProductRepository.existsProductByName(productName)).thenReturn(false);
+
+        assertFalse(readProductService.existsProductByName(productName));
+    }
+
 }

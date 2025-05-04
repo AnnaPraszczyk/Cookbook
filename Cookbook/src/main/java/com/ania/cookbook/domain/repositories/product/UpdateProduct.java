@@ -1,8 +1,9 @@
 package com.ania.cookbook.domain.repositories.product;
 
-import com.ania.cookbook.infrastructure.persistence.entity.ProductEntity;
+import com.ania.cookbook.domain.model.Product;
 
-public interface UpdateProduct {
-    ProductEntity updateProduct(ProductEntity product);
+public interface UpdateProduct{
+
+    Product updateProduct(Product product);
 }
 

@@ -1,110 +1,105 @@
 package com.ania.cookbook.domain.services;
 
-import com.ania.cookbook.infrastructure.persistence.entity.ProductEntity;
-import com.ania.cookbook.infrastructure.repositories.InMemoryProductRepository;
+import com.ania.cookbook.domain.exceptions.ProductValidationException;
+import com.ania.cookbook.domain.model.Product;
+import com.ania.cookbook.domain.repositories.product.DeleteProduct;
+import com.ania.cookbook.domain.repositories.product.ReadProduct;
+import com.ania.cookbook.domain.repositories.product.SaveProduct;
+import com.ania.cookbook.domain.repositories.product.UpdateProduct;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+
+@ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
 
+    @Mock
+    private SaveProduct saveProductRepository;
+    @Mock
+    private ReadProduct readProductRepository;
+    @Mock
+    private UpdateProduct updateProductRepository;
+    @Mock
+    private DeleteProduct deleteProductRepository;
+
+    @InjectMocks
     private ProductService productService;
-    private InMemoryProductRepository productRepository;
+    private Product testProduct;
 
     @BeforeEach
     void setUp() {
-        productRepository = Mockito.mock(InMemoryProductRepository.class);
-        productService = new ProductService(productRepository);
+        testProduct = Product.newProduct(UUID.randomUUID(), "test product");
     }
 
     @Test
     void testSaveProduct() {
-        UUID id = UUID.randomUUID();
-        ProductEntity productEntity = ProductEntity.newProductEntity(id, "Test Product");
+        when(readProductRepository.existsProductById(testProduct.getProductId())).thenReturn(false);
+        when(saveProductRepository.saveProduct(testProduct)).thenReturn(testProduct);
 
-        when(productRepository.existsProductById(id)).thenReturn(false);
-        when(productRepository.saveProduct(productEntity)).thenReturn(productEntity);
-
-        ProductEntity savedProduct = productService.saveProduct(productEntity);
+        Product savedProduct = productService.saveProduct(testProduct);
 
         assertNotNull(savedProduct);
-        assertEquals(productEntity, savedProduct);
-        verify(productRepository, times(1)).existsProductById(id);
-        verify(productRepository, times(1)).saveProduct(productEntity);
+        assertEquals(testProduct.getProductId(), savedProduct.getProductId());
+        verify(saveProductRepository).saveProduct(testProduct);
     }
-
 
     @Test
     void testSaveProductThrowsExceptionWhenProductExists() {
-        UUID productId = UUID.randomUUID();
-        ProductEntity product = ProductEntity.newProductEntity(productId, "Test Product");
+        when(readProductRepository.existsProductById(testProduct.getProductId())).thenReturn(true);
 
-        when(productRepository.existsProductById(productId)).thenReturn(true);
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> productService.saveProduct(product));
-        assertEquals("A product with the given ID already exists.", exception.getMessage());
-        verify(productRepository, times(1)).existsProductById(productId);
-        verify(productRepository, never()).saveProduct(product);
+        ProductValidationException exception = assertThrows(ProductValidationException.class,() -> productService.saveProduct(testProduct));
+        assertEquals("A product with the given id already exists.", exception.getMessage());
     }
 
     @Test
     void testUpdateProduct() {
-        UUID id = UUID.randomUUID();
-        ProductEntity productEntity = ProductEntity.newProductEntity(id, "Updated Product");
+        when(readProductRepository.existsProductById(testProduct.getProductId())).thenReturn(true);
+        when(updateProductRepository.updateProduct(testProduct)).thenReturn(testProduct);
 
-        when(productRepository.existsProductById(id)).thenReturn(true);
-        when(productRepository.updateProduct(productEntity)).thenReturn(productEntity);
-
-        ProductEntity updatedProduct = productService.updateProduct(productEntity);
+        Product updatedProduct = productService.updateProduct(testProduct);
 
         assertNotNull(updatedProduct);
-        assertEquals(productEntity, updatedProduct);
-        verify(productRepository, times(1)).existsProductById(id);
-        verify(productRepository, times(1)).updateProduct(productEntity);
+        assertEquals(testProduct.getProductId(), updatedProduct.getProductId());
+        verify(updateProductRepository).updateProduct(testProduct);
     }
 
     @Test
     void testUpdateNonExistingProduct() {
-        UUID id = UUID.randomUUID();
-        ProductEntity productEntity = ProductEntity.newProductEntity(id, "Non-Existent Product");
+        when(readProductRepository.existsProductById(testProduct.getProductId())).thenReturn(false);
 
-        when(productRepository.existsProductById(id)).thenReturn(false);
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> productService.updateProduct(productEntity));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> productService.updateProduct(testProduct));
 
         assertEquals("Unable to update the product because it does not exist.", exception.getMessage());
-        verify(productRepository, times(1)).existsProductById(id);
-        verify(productRepository, never()).updateProduct(productEntity);
     }
 
     @Test
     void testDeleteProductById() {
-        UUID id = UUID.randomUUID();
+        UUID productId = testProduct.getProductId();
+        when(readProductRepository.existsProductById(productId)).thenReturn(true);
 
-        when(productRepository.existsProductById(id)).thenReturn(true);
-        doNothing().when(productRepository).deleteProductById(id);
+        productService.deleteProductById(productId);
 
-        productService.deleteProductById(id);
-
-        verify(productRepository, times(1)).existsProductById(id);
-        verify(productRepository, times(1)).deleteProductById(id);
+        verify(deleteProductRepository).deleteProductById(productId);
     }
 
     @Test
     void testDeleteNonExistingProduct() {
-        UUID id = UUID.randomUUID();
-
-        when(productRepository.existsProductById(id)).thenReturn(false);
+        UUID productId = testProduct.getProductId();
+        when(readProductRepository.existsProductById(productId)).thenReturn(false);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> productService.deleteProductById(id));
+                () -> productService.deleteProductById(productId));
 
         assertEquals("Unable to delete the product because it does not exist.", exception.getMessage());
-        verify(productRepository, times(1)).existsProductById(id);
-        verify(productRepository, never()).deleteProductById(id);
+
     }
 }

@@ -20,22 +20,12 @@ class CategoryTest {
         assertEquals("Cake", Category.CAKE.getDisplayName());
         assertEquals("Pie", Category.PIE.getDisplayName());
         assertEquals("Bakery", Category.BAKERY.getDisplayName());
-        assertEquals("Vegetarian", Category.VEGETARIAN.getDisplayName());
-        assertEquals("Vegan", Category.VEGAN.getDisplayName());
-        assertEquals("Gluten-free", Category.GLUTEN_FREE.getDisplayName());
-        assertEquals("Keto", Category.KETO.getDisplayName());
-        assertEquals("Polish", Category.POLISH.getDisplayName());
-        assertEquals("American", Category.AMERICAN.getDisplayName());
-        assertEquals("Asian", Category.ASIAN.getDisplayName());
-        assertEquals("French", Category.FRENCH.getDisplayName());
-        assertEquals("Italian", Category.ITALIAN.getDisplayName());
-        assertEquals("Mexican", Category.MEXICAN.getDisplayName());
        }
 
     @Test
     void testCategoryValuesExistence() {
         Category[] categories = Category.values();
-        assertEquals(22, categories.length);
+        assertEquals(12, categories.length);
     }
 }
 

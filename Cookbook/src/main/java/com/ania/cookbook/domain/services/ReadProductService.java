@@ -1,28 +1,35 @@
 package com.ania.cookbook.domain.services;
 
-import com.ania.cookbook.infrastructure.persistence.entity.ProductEntity;
-import com.ania.cookbook.infrastructure.repositories.InMemoryProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.ania.cookbook.domain.exceptions.ProductNotFoundException;
+import com.ania.cookbook.domain.repositories.product.ReadProduct;
+import com.ania.cookbook.domain.model.Product;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 import java.util.UUID;
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ReadProductService {
-    private final InMemoryProductRepository productRepository;
-    @Autowired
-    public ReadProductService(InMemoryProductRepository productRepository) {
-        this.productRepository = productRepository;
+    private final ReadProduct readProductRepository;
+
+    public Product findProductById(UUID id) {
+
+        return readProductRepository.findProductById(id)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found."));
     }
 
-    public Optional<ProductEntity> findProductById(UUID id) {
-        return productRepository.findProductById(id);
+    public boolean existsProductById(UUID id) {
+        return readProductRepository.existsProductById(id);
     }
 
-    public Optional<ProductEntity> findProductByName(String name) {
-        ProductEntity product = productRepository.findProductByName(name);
-        return Optional.ofNullable(product);
+    public Product findProductByName(String name) {
+
+        return readProductRepository.findProductByName(name)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found."));
+    }
+
+    public boolean existsProductByName(String name) {
+        return readProductRepository.existsProductByName(name);
     }
 }

@@ -1,12 +1,13 @@
 package com.ania.cookbook.infrastructure.repositories;
 
-import com.ania.cookbook.infrastructure.persistence.entity.ProductEntity;
+import com.ania.cookbook.domain.exceptions.ProductValidationException;
+import com.ania.cookbook.domain.model.Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import java.util.Optional;
 import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
-
 
 class InMemoryProductRepositoryTest {
 
@@ -20,24 +21,23 @@ class InMemoryProductRepositoryTest {
     @Test
     void testSaveProduct() {
         UUID productId = UUID.randomUUID();
-        ProductEntity product = ProductEntity.newProductEntity(productId, "Sugar");
+        Product product = Product.newProduct(productId, "sugar");
 
-        ProductEntity savedProduct = productRepository.saveProduct(product);
+        Product savedProduct = productRepository.saveProduct(product);
 
         assertNotNull(savedProduct);
-        assertEquals(productId, savedProduct.getProductId());
-        assertEquals("sugar", savedProduct.getProductName());
+        assertEquals(product, savedProduct);
         assertTrue(productRepository.existsProductById(productId));
     }
 
     @Test
-    void testSaveProduct_AlreadyExists() {
+    void testSaveProductAlreadyExists() {
         UUID productId = UUID.randomUUID();
-        ProductEntity product = ProductEntity.newProductEntity(productId, "Sugar");
+        Product product = Product.newProduct(productId, "sugar");
 
         productRepository.saveProduct(product);
 
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(ProductValidationException.class, () ->
                 productRepository.saveProduct(product)
         );
     }
@@ -45,31 +45,29 @@ class InMemoryProductRepositoryTest {
     @Test
     void testFindProductById() {
         UUID productId = UUID.randomUUID();
-        ProductEntity product = ProductEntity.newProductEntity(productId, "Sugar");
+        Product product = Product.newProduct(productId, "orange");
 
         productRepository.saveProduct(product);
 
-        Optional<ProductEntity> foundProduct = productRepository.findProductById(productId);
+        Optional<Product> foundProduct = productRepository.findProductById(product.getProductId());
 
         assertTrue(foundProduct.isPresent());
-        assertEquals(productId, foundProduct.get().getProductId());
-        assertEquals("sugar", foundProduct.get().getProductName());
+        assertEquals(product.getProductId(), foundProduct.get().getProductId());
+        assertEquals("orange", foundProduct.get().getProductName());
     }
 
     @Test
-    void testFindProductById_NotFound() {
+    void testFindProductByIdNotFound() {
         UUID nonExistentId = UUID.randomUUID();
-
-        Optional<ProductEntity> foundProduct = productRepository.findProductById(nonExistentId);
-
-        assertFalse(foundProduct.isPresent());
+        Optional<Product> foundProduct = productRepository.findProductById(nonExistentId);
+        assertTrue(foundProduct.isEmpty());
     }
 
     @Test
-    void testFindProductById_Empty() {
+    void testFindProductByIdEmpty() {
         UUID nonExistentId = UUID.randomUUID();
 
-        Optional<ProductEntity> foundProduct = productRepository.findProductById(nonExistentId);
+        Optional<Product> foundProduct = productRepository.findProductById(nonExistentId);
 
         assertTrue(foundProduct.isEmpty());
     }
@@ -77,68 +75,68 @@ class InMemoryProductRepositoryTest {
     @Test
     void testExistsProductById() {
         UUID productId = UUID.randomUUID();
-        ProductEntity product = ProductEntity.newProductEntity(productId, "Sugar");
+        Product product = Product.newProduct(productId, "grapes");
 
         productRepository.saveProduct(product);
 
-        assertTrue(productRepository.existsProductById(productId));
+        assertTrue(productRepository.existsProductById(product.getProductId()));
     }
 
     @Test
-    void testExistsProductById_ProductDoesNotExist() {
+    void testExistsProductByIdProductDoesNotExist() {
         UUID nonExistentId = UUID.randomUUID();
 
         assertFalse(productRepository.existsProductById(nonExistentId));
     }
 
     @Test
-    void testExistsProductById_False() {
+    void testExistsProductByIdFalse() {
         UUID nonExistentId = UUID.randomUUID();
 
         assertFalse(productRepository.existsProductById(nonExistentId));
     }
 
     @Test
-    void testFindProductByName_Success() {
+    void testFindProductByName() {
         String productName = "sugar";
-        ProductEntity product = ProductEntity.newProductEntity(UUID.randomUUID(), productName);
+        Product product = Product.newProduct(UUID.randomUUID(), productName);
 
         productRepository.saveProduct(product);
 
-        ProductEntity foundProduct = productRepository.findProductByName(productName);
+        Optional<Product> foundProduct = productRepository.findProductByName(productName);
 
-        assertNotNull(foundProduct);
-        assertEquals(productName, foundProduct.getProductName());
+        assertTrue(foundProduct.isPresent());
+        assertEquals(productName, foundProduct.get().getProductName());
     }
 
     @Test
-    void testFindProductByName_NotFound() {
-        String nonExistentName = "Salt";
+    void testFindProductByNameNotFound() {
+        String nonExistentName = "salt";
 
-        ProductEntity foundProduct = productRepository.findProductByName(nonExistentName);
+        Optional<Product> foundProduct = productRepository.findProductByName(nonExistentName);
 
-        assertNull(foundProduct);
+        assertTrue(foundProduct.isEmpty());
     }
 
     @Test
-    void testFindProductByName_NullName() {
-        ProductEntity foundProduct = productRepository.findProductByName(null);
+    void testFindProductByNameNullName() {
+        Optional<Product> foundProduct = productRepository.findProductByName(null);
 
-        assertNull(foundProduct);
+        assertTrue(foundProduct.isEmpty());
     }
 
     @Test
-    void testExistsProductByName_ProductExists() {
+    void testExistsProductByNameProductExists() {
         String productName = "sugar";
 
-        productRepository.saveProduct(ProductEntity.newProductEntity(UUID.randomUUID(), productName));
+        productRepository.saveProduct(Product.newProduct(UUID.randomUUID(), productName));
 
         assertTrue(productRepository.existsProductByName(productName));
     }
 
     @Test
-    void testExistsProductByName_ProductDoesNotExist() {
-        String nonExistentName = "Salt";
+    void testExistsProductByNameProductDoesNotExist() {
+        String nonExistentName = "salt";
 
         assertFalse(productRepository.existsProductByName(nonExistentName));
     }
@@ -146,13 +144,13 @@ class InMemoryProductRepositoryTest {
     @Test
     void testUpdateProduct() {
         UUID id = UUID.randomUUID();
-        ProductEntity product = ProductEntity.newProductEntity(id, "product");
+        Product product = Product.newProduct(id, "product");
         productRepository.saveProduct(product);
 
-        ProductEntity updatedProduct = ProductEntity.newProductEntity(id,"butter updated");
+        Product updatedProduct = Product.newProduct(id,"butter updated");
         productRepository.updateProduct(updatedProduct);
 
-        Optional<ProductEntity> foundProduct = productRepository.findProductById(updatedProduct.getProductId());
+        Optional<Product> foundProduct = productRepository.findProductById(updatedProduct.getProductId());
 
         assertTrue(foundProduct.isPresent());
         assertEquals("butter updated", foundProduct.get().getProductName());
@@ -161,7 +159,7 @@ class InMemoryProductRepositoryTest {
     @Test
     void testDeleteProductById() {
         UUID id = UUID.randomUUID();
-        ProductEntity product = ProductEntity.newProductEntity(id,"Salt");
+        Product product = Product.newProduct(id,"salt");
         productRepository.saveProduct(product);
 
         productRepository.deleteProductById(product.getProductId());

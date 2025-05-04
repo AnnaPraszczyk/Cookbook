@@ -1,216 +1,224 @@
 package com.ania.cookbook.infrastructure.repositories;
 
-import com.ania.cookbook.domain.model.Category;
-import com.ania.cookbook.domain.model.Ingredient;
-import com.ania.cookbook.domain.model.Unit;
-import com.ania.cookbook.infrastructure.persistence.entity.ProductEntity;
-import com.ania.cookbook.infrastructure.persistence.entity.RecipeEntity;
+import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
+import com.ania.cookbook.domain.exceptions.RecipeValidationException;
+import com.ania.cookbook.domain.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 @Transactional
 class InMemoryRecipeRepositoryTest {
 
     private InMemoryRecipeRepository recipeRepository;
+    private UUID recipeId;
+    private Recipe recipe;
 
     @BeforeEach
     void setUp() {
         recipeRepository = new InMemoryRecipeRepository();
+        recipeId = UUID.randomUUID();
+        Ingredient ingredient = Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),"flour"),200, MassUnit.G);
+        Ingredient ingredient2 = Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),"milk"), 100, VolumeUnit.ML, 100 , MassUnit.G);
+        List<Ingredient> ingredients = List.of(ingredient,ingredient2);
+        recipe = Recipe.newRecipe(recipeId,"Pancakes",Category.DESSERT,ingredients,"Mix all ingredients",5,List.of("Polish","Pancakes"));
     }
 
     @Test
     void testSaveRecipe() {
-        UUID id = UUID.randomUUID();
-        RecipeEntity recipe = RecipeEntity.newRecipeEntity(id,"Pasta Carbonara", null, null, "Cook pasta and mix with sauce", 6);
+        Recipe savedRecipe = recipeRepository.saveRecipe(recipe);
 
-        RecipeEntity savedRecipe = recipeRepository.saveRecipe(recipe);
+        assertThat(savedRecipe).isEqualTo(recipe);
+        assertThat(recipeRepository.existsRecipeById(recipeId)).isTrue();
+    }
 
-        assertNotNull(savedRecipe);
-        assertEquals("Pasta Carbonara", savedRecipe.getRecipeName());
-        assertTrue(recipeRepository.findRecipeById(recipe.getRecipeId()).isPresent());
+    @Test
+    void testSaveRecipeThrowsValidationExceptionIfRecipeIsNull() {
+        assertThatThrownBy(() -> recipeRepository.saveRecipe(null))
+                .isInstanceOf(RecipeValidationException.class)
+                .hasMessage("Recipe cannot be null");
+    }
+
+    @Test
+    void testSaveRecipeThrowsValidationExceptionIfRecipeExists() {
+        recipeRepository.saveRecipe(recipe);
+        assertThatThrownBy(() -> recipeRepository.saveRecipe(recipe))
+                .isInstanceOf(RecipeValidationException.class)
+                .hasMessage("A recipe with the given Id already exists.");
     }
 
     @Test
     void testFindRecipeById() {
-        UUID id = UUID.randomUUID();
-        RecipeEntity recipe = RecipeEntity.newRecipeEntity(id, "Chocolate Cake", null, null, "Mix ingredients and bake", 6);
         recipeRepository.saveRecipe(recipe);
+        Optional<Recipe> foundRecipe = recipeRepository.findRecipeById(recipeId);
 
-        Optional<RecipeEntity> foundRecipe = recipeRepository.findRecipeById(recipe.getRecipeId());
-
-        assertTrue(foundRecipe.isPresent());
-        assertEquals(recipe, foundRecipe.get());
+        assertThat(foundRecipe).isPresent().contains(recipe);
     }
 
     @Test
-    void testFindRecipeById_WhenNotExists() {
-        UUID nonExistentId = UUID.randomUUID();
+    void testFindRecipeByIdWhenNotExists() {
+        Optional<Recipe> foundRecipe = recipeRepository.findRecipeById(UUID.randomUUID());
 
-        Optional<RecipeEntity> foundRecipe = recipeRepository.findRecipeById(nonExistentId);
+        assertThat(foundRecipe).isEmpty();
+    }
 
-        assertTrue(foundRecipe.isEmpty());
+    @Test
+    void testExistsRecipeById() {
+        recipeRepository.saveRecipe(recipe);
+        assertThat(recipeRepository.existsRecipeById(recipeId)).isTrue();
+    }
+
+    @Test
+    void testExistsRecipeByIdNotFound() {
+        assertThat(recipeRepository.existsRecipeById(UUID.randomUUID())).isFalse();
     }
 
     @Test
     void testFindRecipeByName() {
-        UUID id = UUID.randomUUID();
-        RecipeEntity recipe = RecipeEntity.newRecipeEntity(id, "Pizza Margherita", null, null, "Bake in oven at high temperature", 4);
         recipeRepository.saveRecipe(recipe);
+        Optional<Recipe> foundRecipe = recipeRepository.findRecipeByName("Pancakes");
 
-
-        Optional<RecipeEntity> foundRecipe = recipeRepository.findRecipeByName("Pizza Margherita");
-
-        assertTrue(foundRecipe.isPresent());
-        assertEquals(recipe.getRecipeId(), foundRecipe.get().getRecipeId());
-        assertEquals("Pizza Margherita", foundRecipe.get().getRecipeName());
+        assertThat(foundRecipe).isPresent().contains(recipe);
     }
 
     @Test
-    void testFindRecipeByName_WhenNotExists() {
-        Optional<RecipeEntity> foundRecipe = recipeRepository.findRecipeByName("NonExistentRecipe");
+    void testFindRecipeByNameWhenNotExists() {
+        Optional<Recipe> foundRecipe = recipeRepository.findRecipeByName("NonExistent Recipe");
 
-        assertTrue(foundRecipe.isEmpty());
+        assertThat(foundRecipe).isEmpty();
     }
+
+    @Test
+    void testExistsRecipeByName() {
+        recipeRepository.saveRecipe(recipe);
+        assertThat(recipeRepository.existsRecipeByName(recipe.getRecipeName())).isTrue();
+    }
+
+    @Test
+    void testExistsRecipeByNameNotFound() {
+        assertThat(recipeRepository.existsRecipeByName("None")).isFalse();
+    }
+
     @Test
     void testFindRecipeByCategoryContains() {
-        UUID id = UUID.randomUUID();
-        Category category = Category.DESSERT;
-        List<Category> categoryList = List.of(category);
-        RecipeEntity recipe = RecipeEntity.newRecipeEntity(id,"Chocolate Cake", categoryList,null,"Bake in oven at high temperature", 10);
-
         recipeRepository.saveRecipe(recipe);
-
-        Optional<RecipeEntity> foundRecipe = recipeRepository.findRecipeByCategoryContains(categoryList.getFirst().toString());
+        Optional<Recipe> foundRecipe = recipeRepository.findRecipeByCategory(Category.DESSERT);
 
         assertTrue(foundRecipe.isPresent());
-        assertEquals("Chocolate Cake", foundRecipe.get().getRecipeName());
-        assertEquals(category, foundRecipe.get().getCategories().getFirst());
+        assertEquals(Category.DESSERT, foundRecipe.get().getCategory());
     }
 
     @Test
-    void testFindRecipeByCategoryContains_NotFound() {
-        String nonExistentCategory = "Soups";
-
-        Optional<RecipeEntity> foundRecipe = recipeRepository.findRecipeByCategoryContains(nonExistentCategory);
-
-        assertFalse(foundRecipe.isPresent());
-    }
-
-    @Test
-    void testFindRecipeByCategoryContains_NullCategory() {
-
-        Optional<RecipeEntity> foundRecipe = recipeRepository.findRecipeByCategoryContains(null);
-
+    void testFindRecipeByCategoryContainsNotFound() {
+        Category category =  Category.MAIN_DISH;
+        Optional<Recipe> foundRecipe = recipeRepository.findRecipeByCategory(category);
         assertFalse(foundRecipe.isPresent());
     }
 
     @Test
     void testFindRecipeByIngredientContains() {
-        UUID id = UUID.randomUUID();
-        ProductEntity productEntity = ProductEntity.newProductEntity(id, "chocolate");
-        Ingredient ingredient = Ingredient.newIngredient(null, productEntity, 100, Unit.G,null );
-        List<Ingredient> ingredients = List.of(ingredient);
-        Category category = Category.DESSERT;
-        List<Category> categoryList = List.of(category);
-
-        RecipeEntity recipe = RecipeEntity.newRecipeEntity(id,"Chocolate Cake", categoryList, ingredients,"Opis",6);
-
         recipeRepository.saveRecipe(recipe);
-
-        Optional<RecipeEntity> foundRecipe = recipeRepository.findRecipeByIngredientContains("chocolate");
+        Optional<Recipe> foundRecipe = recipeRepository.findRecipeByIngredientContains("milk");
 
         assertTrue(foundRecipe.isPresent());
-        assertEquals("Chocolate Cake", foundRecipe.get().getRecipeName());
-        assertTrue(foundRecipe.get().getIngredients().contains(ingredient));
+        assertTrue(foundRecipe.get().getIngredients().stream().anyMatch(ing -> ing.getProduct().getProductName().equalsIgnoreCase("milk")));
     }
 
     @Test
-    void testFindRecipeByIngredientContains_NotFound() {
-        String nonExistentIngredient = "Vanilla";
-
-        Optional<RecipeEntity> foundRecipe = recipeRepository.findRecipeByIngredientContains(nonExistentIngredient);
+    void testFindRecipeByIngredientContainsNotFound() {
+        String nonExistentIngredient = "vanilla";
+        Optional<Recipe> foundRecipe = recipeRepository.findRecipeByIngredientContains(nonExistentIngredient);
 
         assertFalse(foundRecipe.isPresent());
     }
 
     @Test
-    void testFindRecipeByIngredientContains_NullIngredient() {
-
-        Optional<RecipeEntity> foundRecipe = recipeRepository.findRecipeByIngredientContains(null);
+    void testFindRecipeByIngredientContainsNullIngredient() {
+        Optional<Recipe> foundRecipe = recipeRepository.findRecipeByIngredientContains(null);
 
         assertFalse(foundRecipe.isPresent());
     }
 
     @Test
-    void testFindRecipeByProduct() {
-        UUID productId = UUID.randomUUID();
-        ProductEntity product = ProductEntity.newProductEntity(productId, "chocolate");
-        Ingredient ingredient = Ingredient.newIngredient(null, product, 100, Unit.G, null);
-        List<Ingredient> ingredients = List.of(ingredient);
-        Category category = Category.DESSERT;
-        List<Category> categoryList = List.of(category);
-        RecipeEntity recipe = RecipeEntity.newRecipeEntity(productId, "Chocolate Cake", categoryList, ingredients, "Opis", 6);
-
+    void testFindRecipeByProductId() {
         recipeRepository.saveRecipe(recipe);
-
-        Optional<RecipeEntity> foundRecipe = recipeRepository.findRecipeByProduct(product);
+        Optional<Recipe> foundRecipe = recipeRepository.findRecipeByProductId(recipe.getIngredients().getFirst().getProduct().getProductId());
 
         assertTrue(foundRecipe.isPresent());
-        assertEquals("Chocolate Cake", foundRecipe.get().getRecipeName());
-        assertTrue(foundRecipe.get().getIngredients().contains(ingredient));
+        assertTrue(foundRecipe.get().getIngredients().stream().anyMatch(ing -> ing.getProduct().getProductId().equals(recipe.getIngredients().getFirst().getProduct().getProductId())));
     }
 
     @Test
-    void testFindRecipeByProduct_NotFound() {
-        ProductEntity nonExistentProduct = ProductEntity.newProductEntity(UUID.randomUUID(), "Vanilla");
+    void testFindRecipeByProductIdNotFound() {
+        Product nonExistentProduct = Product.newProduct(UUID.randomUUID(), "vanilla");
 
-        Optional<RecipeEntity> foundRecipe = recipeRepository.findRecipeByProduct(nonExistentProduct);
+        Optional<Recipe> foundRecipe = recipeRepository.findRecipeByProductName(nonExistentProduct.getProductName());
+        assertFalse(foundRecipe.isPresent());
+    }
+    @Test
+    void testFindRecipeByProductName() {
+        recipeRepository.saveRecipe(recipe);
+        Optional<Recipe> foundRecipe = recipeRepository.findRecipeByProductName("flour");
 
+        assertTrue(foundRecipe.isPresent());
+        assertTrue(foundRecipe.get().getIngredients().stream().anyMatch(ing -> ing.getProduct().getProductName().equalsIgnoreCase("flour")));
+    }
+
+    @Test
+    void testFindRecipeByProductNameNotFound() {
+        Product nonExistentProduct = Product.newProduct(UUID.randomUUID(), "vanilla");
+
+        Optional<Recipe> foundRecipe = recipeRepository.findRecipeByProductName(nonExistentProduct.getProductName());
         assertFalse(foundRecipe.isPresent());
     }
 
     @Test
-    void testFindRecipeByCreatedAfter_WhenExists() {
-        UUID id = UUID.randomUUID();
-        Instant now = Instant.now();
-        RecipeEntity recipe = RecipeEntity.newRecipeEntity(id,"Tomato Soup", null, null, "Boil tomatoes and blend",  3);
+    void testFindRecipeByCreatedAfter() {
         recipeRepository.saveRecipe(recipe);
-
-        Optional<RecipeEntity> foundRecipe = recipeRepository.findRecipeByCreatedAfter(now.minusSeconds(10));
+        Optional<Recipe> foundRecipe = recipeRepository.findRecipeByCreatedAfter(Instant.now().minusSeconds(10));
 
         assertTrue(foundRecipe.isPresent());
     }
 
     @Test
     void testUpdateRecipe() {
-        UUID id = UUID.randomUUID();
-        RecipeEntity recipe = RecipeEntity.newRecipeEntity(id, "Lasagna", null, null, "Layer and bake", 5);
         recipeRepository.saveRecipe(recipe);
+        Recipe updatedRecipe = Recipe.newRecipe(recipe.getRecipeId(), "Pancakes - Updated",
+                Category.DESSERT, recipe.getIngredients(),"New instructions", 10, List.of("Polish","Pancakes"));
+        Recipe foundRecipe = recipeRepository.updateRecipe(updatedRecipe);
 
-        RecipeEntity updatedRecipe = RecipeEntity.newRecipeEntity(id, "Lasagna - Updated", null, null, "Layer, bake, and add cheese", 6);
-        recipeRepository.updateRecipe(updatedRecipe);
+        assertThat(foundRecipe).isEqualTo(updatedRecipe);
+        assertThat(recipeRepository.findRecipeById(recipeId)).contains(updatedRecipe);
+    }
 
-        Optional<RecipeEntity> foundRecipe = recipeRepository.findRecipeById(updatedRecipe.getRecipeId());
-
-        assertTrue(foundRecipe.isPresent());
-        assertEquals("Lasagna - Updated", foundRecipe.get().getRecipeName());
+    @Test
+    void testUpdateRecipeThrowsNotFoundException() {
+        List<Ingredient> ingredients = List.of(Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),"flour"),200, MassUnit.G));
+        Recipe newRecipe = Recipe.newRecipe(UUID.randomUUID(), "New Recipe",
+                Category.DESSERT,ingredients,"New instructions", 10, List.of("Polish"));
+        assertThatThrownBy(() -> recipeRepository.updateRecipe(newRecipe))
+                .isInstanceOf(RecipeNotFoundException.class)
+                .hasMessage("Recipe with Id does not exist.");
     }
 
     @Test
     void testDeleteRecipeById() {
-        UUID id = UUID.randomUUID();
-        RecipeEntity recipe = RecipeEntity.newRecipeEntity(id, "French Fries", null, null, "Fry potatoes", 7);
         recipeRepository.saveRecipe(recipe);
+        recipeRepository.deleteRecipeById(recipeId);
 
-        recipeRepository.deleteRecipeById(recipe.getRecipeId());
+        assertThat(recipeRepository.findRecipeById(recipeId)).isEmpty();
+    }
 
-        assertFalse(recipeRepository.findRecipeById(recipe.getRecipeId()).isPresent());
+    @Test
+    void testDeleteRecipeByIdThrowsNotFoundException() {
+        assertThatThrownBy(() -> recipeRepository.deleteRecipeById(UUID.randomUUID()))
+                .isInstanceOf(RecipeNotFoundException.class)
+                .hasMessage("Recipe with Id does not exist.");
     }
 }

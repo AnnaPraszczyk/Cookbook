@@ -1,5 +1,6 @@
 package com.ania.cookbook.infrastructure.persistence.entity;
 
+import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.domain.model.Ingredient;
 import com.ania.cookbook.infrastructure.converters.IngredientsJsonConverter;
@@ -13,7 +14,7 @@ import java.util.UUID;
 @Getter
 @Entity
 @Table(name = "recipe")
-public class Recipe {
+public class RecipeEntity {
         @Id
         @GeneratedValue
         @Column(name="recipe_id", nullable = false)
@@ -35,7 +36,7 @@ public class Recipe {
         @Column(name = "tags", nullable = true, columnDefinition = "TEXT")
         private List<String> tags;
 
-    public Recipe() {
+    public RecipeEntity() {
         this.recipeId = UUID.randomUUID();
         this.recipeName = null;
         this.category = null;
@@ -45,23 +46,23 @@ public class Recipe {
         this.numberOfServings = 0;
         this.tags = new ArrayList<>();
     }
-        private Recipe(UUID recipeId, String recipeName, Category category, List<Ingredient> ingredients, String instructions, int numberOfServings, List<String> tags) {
-            if(recipeId==null){throw new IllegalArgumentException("Recipe id cannot be null");}
+        private RecipeEntity(UUID recipeId, String recipeName, Category category, List<Ingredient> ingredients, String instructions, int numberOfServings, List<String> tags) {
+            if(recipeId==null){throw new RecipeValidationException("Recipe id cannot be null");}
             this.recipeId = recipeId;
-            if(recipeName.isBlank()){throw new IllegalArgumentException("Recipe name cannot be null or empty");}
+            if(recipeName==null || recipeName.isBlank()){throw new RecipeValidationException("Recipe name cannot be null or empty");}
             this.recipeName = recipeName;
             this.category = category;
             this.ingredients = ingredients != null ? new ArrayList<>(ingredients) : new ArrayList<>();
-            if(instructions.isBlank()){throw new IllegalArgumentException("Recipe instructions cannot be null or empty");}
+            if(instructions==null ||  instructions.isBlank()){throw new RecipeValidationException("Recipe instructions cannot be null or empty");}
             this.instructions = instructions;
             this.created = Instant.now();
-            if(numberOfServings<0){throw new IllegalArgumentException("Recipe number of servings cannot be negative");}
+            if(numberOfServings<0){throw new RecipeValidationException("Recipe number of servings cannot be negative");}
             this.numberOfServings = numberOfServings;
             this.tags = tags != null ? new ArrayList<>(tags) : new ArrayList<>();
         }
 
-        public static Recipe newRecipe(UUID recipeId, String name, Category category, List<Ingredient> ingredients, String instructions, int numberOfServings, List<String> tags){
-            return new Recipe(recipeId, name, category, ingredients, instructions,numberOfServings, tags);
+        public static RecipeEntity newRecipeEntity(UUID recipeId, String name, Category category, List<Ingredient> ingredients, String instructions, int numberOfServings, List<String> tags){
+            return new RecipeEntity(recipeId, name, category, ingredients, instructions,numberOfServings, tags);
         }
 
 

@@ -1,16 +1,16 @@
 package com.ania.cookbook.domain.repositories.product;
 
-import com.ania.cookbook.infrastructure.persistence.entity.ProductEntity;
-
+import com.ania.cookbook.domain.model.Product;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface ReadProduct {
-    Optional<ProductEntity> findProductById(UUID id);
+public interface ReadProduct{
+
+    Optional<Product> findProductById(UUID id);
 
     boolean existsProductById(UUID id);
 
-    ProductEntity findProductByName(String name);
+    Optional<Product> findProductByName(String name);
 
     boolean existsProductByName(String name);
 }

@@ -1,5 +1,6 @@
 package com.ania.cookbook.infrastructure.persistence.entity;
 
+import com.ania.cookbook.domain.exceptions.ProductValidationException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import java.util.UUID;
@@ -7,7 +8,7 @@ import java.util.UUID;
     @Getter
     @Entity
     @Table(name = "product")
-    public class Product {
+    public class ProductEntity {
 
         @Id
         @GeneratedValue
@@ -16,24 +17,24 @@ import java.util.UUID;
         @Column(name = "product_name", nullable = false, unique = true)
         private final String productName;
 
-        private Product(UUID productId, String productName) {
+        private ProductEntity(UUID productId, String productName) {
             if (productId == null) {
-                throw new IllegalArgumentException("Product id cannot be null");
+                throw new ProductValidationException("Product id cannot be null");
             }
             this.productId = productId;
             if (productName.isBlank()) {
-                throw new IllegalArgumentException("Product name cannot be null or empty");
+                throw new ProductValidationException("Product name cannot be null or empty");
             }
             this.productName = productName.trim().toLowerCase();
         }
 
-        public Product() {
+        public ProductEntity() {
             this.productId = UUID.randomUUID();
             this.productName = null;
         }
 
-        public static Product newProduct(UUID productId, String productName) {
-            return new Product(productId, productName);
+        public static ProductEntity newProductEntity(UUID productId, String productName) {
+            return new ProductEntity(productId, productName);
         }
 
         @Override
@@ -49,7 +50,7 @@ import java.util.UUID;
        public boolean equals(Object o) {
            if (this == o) return true;
            if (o == null || getClass() != o.getClass()) return false;
-           Product product = (Product) o;
+           ProductEntity product = (ProductEntity) o;
            return productId.equals(product.productId);
        }
 

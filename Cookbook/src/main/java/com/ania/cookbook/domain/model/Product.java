@@ -1,21 +1,25 @@
 package com.ania.cookbook.domain.model;
 
+import com.ania.cookbook.domain.exceptions.ProductValidationException;
+import lombok.Getter;
 import java.util.Objects;
 import java.util.UUID;
+
+@Getter
 
 public class Product {
     private final UUID productId;
     private final String productName;
 
     public Product() {
-        this.productId = UUID.randomUUID();
+        this.productId = null;
         this.productName = null;
     }
 
     private Product(UUID productId, String productName) {
-        if(productId==null){throw new IllegalArgumentException("Product id cannot be null");}
+        if(productId==null){throw new ProductValidationException("Product id cannot be null");}
         this.productId = productId;
-        if(productName==null || productName.isBlank()){throw new IllegalArgumentException("Product name cannot be null or empty");}
+        if(productName==null || productName.isBlank()){throw new ProductValidationException("Product name cannot be null or empty");}
         this.productName = productName.trim().toLowerCase();
     }
 
@@ -23,9 +27,13 @@ public class Product {
         return new Product(productId, productName);
     }
 
+
     @Override
     public String toString() {
-        return "Product{name='" + productName + "'}";
+        return "Product{" +
+                "productId=" + productId +
+                ", productName='" + productName + '\'' +
+                '}';
     }
 
     @Override
@@ -40,13 +48,4 @@ public class Product {
     public int hashCode() {
         return Objects.hash(productId);
     }
-
-    public UUID getProductId() {
-        return productId;
-    }
-
-    public String getProductName() {
-        return productName;
-    }
-
 }

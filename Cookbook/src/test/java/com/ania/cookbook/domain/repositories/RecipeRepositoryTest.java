@@ -1,13 +1,11 @@
 package com.ania.cookbook.domain.repositories;
 
-import com.ania.cookbook.domain.repositories.recipe.RecipeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 @DataJpaTest
 class RecipeRepositoryTest {
-    @Autowired
-    private RecipeRepository recipeRepository;
+
 
    /* @Test
     void shouldPersistRecipeAndIngredients() {

@@ -1,7 +1,7 @@
 package com.ania.cookbook.domain.repositories.recipe;
 
-import com.ania.cookbook.infrastructure.persistence.entity.RecipeEntity;
+import com.ania.cookbook.domain.model.Recipe;
 
-public interface UpdateRecipe {
-    RecipeEntity updateRecipe(RecipeEntity recipe);
+public interface UpdateRecipe{
+    Recipe updateRecipe(Recipe recipe);
 }

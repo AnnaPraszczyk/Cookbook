@@ -1,172 +1,226 @@
 package com.ania.cookbook.domain.services;
 
-import com.ania.cookbook.domain.model.Category;
-import com.ania.cookbook.domain.model.Ingredient;
-import com.ania.cookbook.domain.model.Unit;
-import com.ania.cookbook.infrastructure.persistence.entity.ProductEntity;
-import com.ania.cookbook.infrastructure.persistence.entity.RecipeEntity;
-import com.ania.cookbook.infrastructure.repositories.InMemoryRecipeRepository;
+import com.ania.cookbook.domain.model.*;
+import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import static com.ania.cookbook.infrastructure.persistence.entity.RecipeEntity.newRecipeEntity;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class ReadRecipeServiceTest {
+    @Mock
+    private ReadRecipe readRecipeRepository;
 
+    @InjectMocks
     private ReadRecipeService readRecipeService;
-    private InMemoryRecipeRepository recipeRepository;
+
+    private Recipe recipe;
+    private UUID recipeId;
+    private String recipeName;
+    private Category category;
+    private Instant created;
 
     @BeforeEach
     void setUp() {
-        recipeRepository = Mockito.mock(InMemoryRecipeRepository.class);
-        readRecipeService = new ReadRecipeService(recipeRepository);
+        recipeId = UUID.randomUUID();
+        recipeName = "Spaghetti Carbonara";
+        category = Category.MAIN_DISH;
+        created = Instant.now();
+        UUID productId = UUID.randomUUID();
+        UUID product2Id = UUID.randomUUID();
+        Ingredient ingredient = Ingredient.newIngredient(Product.newProduct(productId,"pasta"),500,MassUnit.G);
+        Ingredient ingredient2 = Ingredient.newIngredient(Product.newProduct(product2Id,"sauce"),50,MassUnit.DAG);
+        List<Ingredient> ingredients = new ArrayList<>();
+        ingredients.add(ingredient);
+        ingredients.add(ingredient2);
+        String instructions = "Cook pasta and mix with sauce";
+        recipe = Recipe.newRecipe(recipeId,recipeName,category,ingredients, instructions,5,List.of("Italian","Pasta"));
     }
 
     @Test
     void testFindRecipeById() {
-        UUID id = UUID.randomUUID();
-        List<Ingredient> ingredient = new ArrayList<>();
-        List<Category> category = List.of(Category.DESSERT);
-        RecipeEntity recipe = newRecipeEntity(id, "Pancakes", category, ingredient, "None", 5);
-
-        when(recipeRepository.findRecipeById(id)).thenReturn(Optional.of(recipe));
-
-        Optional<RecipeEntity> foundRecipe = readRecipeService.findRecipeById(id);
+        when(readRecipeRepository.findRecipeById(recipeId)).thenReturn(Optional.of(recipe));
+        Optional<Recipe> foundRecipe = readRecipeService.findRecipeById(recipeId);
 
         assertTrue(foundRecipe.isPresent());
         assertEquals(recipe, foundRecipe.get());
-        verify(recipeRepository, times(1)).findRecipeById(id);
     }
 
     @Test
     void testFindRecipeByIdNotFound() {
         UUID id = UUID.randomUUID();
-
-        when(recipeRepository.findRecipeById(id)).thenReturn(Optional.empty());
-
-        Optional<RecipeEntity> foundRecipe = readRecipeService.findRecipeById(id);
+        when(readRecipeRepository.findRecipeById(id)).thenReturn(Optional.empty());
+        Optional<Recipe> foundRecipe = readRecipeService.findRecipeById(id);
 
         assertFalse(foundRecipe.isPresent());
-        verify(recipeRepository, times(1)).findRecipeById(id);
+        verify(readRecipeRepository, times(1)).findRecipeById(id);
+    }
+
+    @Test
+    void testExistsRecipeById() {
+        when(readRecipeRepository.existsRecipeById(recipeId)).thenReturn(true);
+        assertTrue(readRecipeService.existsRecipeById(recipeId));
+    }
+
+    @Test
+    void testExistsRecipeByIdNotFound() {
+        UUID nonExistentId = UUID.randomUUID();
+        when(readRecipeRepository.existsRecipeById(nonExistentId)).thenReturn(false);
+
+        assertFalse(readRecipeService.existsRecipeById(nonExistentId));
+        verify(readRecipeRepository, times(1)).existsRecipeById(nonExistentId);
     }
 
     @Test
     void testFindRecipeByName() {
-        String name = "Pancakes";
-        List<Ingredient> ingredient = new ArrayList<>();
-        List<Category> category = List.of(Category.DESSERT);
-        RecipeEntity recipe = newRecipeEntity(UUID.randomUUID(),name, category, ingredient,"instructions" , 7);
-
-        when(recipeRepository.findRecipeByName(name)).thenReturn(Optional.of(recipe));
-
-        Optional<RecipeEntity> foundRecipe = readRecipeService.findRecipeByName(name);
+        when(readRecipeRepository.findRecipeByName(recipeName)).thenReturn(Optional.of(recipe));
+        Optional<Recipe> foundRecipe = readRecipeService.findRecipeByName(recipeName);
 
         assertTrue(foundRecipe.isPresent());
         assertEquals(recipe, foundRecipe.get());
-        verify(recipeRepository, times(1)).findRecipeByName(name);
+        verify(readRecipeRepository, times(1)).findRecipeByName(recipeName);
     }
 
     @Test
     void testFindRecipeByNameNotFound() {
         String name = "Nonexistent Recipe";
-
-        when(recipeRepository.findRecipeByName(name)).thenReturn(Optional.empty());
-
-        Optional<RecipeEntity> foundRecipe = readRecipeService.findRecipeByName(name);
+        when(readRecipeRepository.findRecipeByName(name)).thenReturn(Optional.empty());
+        Optional<Recipe> foundRecipe = readRecipeService.findRecipeByName(name);
 
         assertFalse(foundRecipe.isPresent());
-        verify(recipeRepository, times(1)).findRecipeByName(name);
+        verify(readRecipeRepository, times(1)).findRecipeByName(name);
+    }
+    @Test
+    void testExistsRecipeByName() {
+        when(readRecipeRepository.existsRecipeByName(recipeName)).thenReturn(true);
+        assertTrue(readRecipeService.existsRecipeByName(recipeName));
+    }
+
+    @Test
+    void testExistsRecipeByNameNotFound() {
+        String nonExistentRecipeName = "Nonexistent Recipe";
+        when(readRecipeRepository.existsRecipeByName(nonExistentRecipeName)).thenReturn(false);
+        boolean recipeExists = readRecipeService.existsRecipeByName(nonExistentRecipeName);
+
+        assertFalse(recipeExists);
+        verify(readRecipeRepository, times(1)).existsRecipeByName(nonExistentRecipeName);
     }
 
     @Test
     void testFindRecipeByCategory() {
-        List<Ingredient> ingredient = new ArrayList<>();
-        List<Category> category = List.of(Category.DESSERT);
-        RecipeEntity recipe = newRecipeEntity(UUID.randomUUID(), "Pancakes", category, ingredient,"instructions",  3);
-
-        when(recipeRepository.findRecipeByCategoryContains(category.toString())).thenReturn(Optional.of(recipe));
-
-        Optional<RecipeEntity> foundRecipe = readRecipeService.findRecipeByCategory(category.toString());
+        when(readRecipeRepository.findRecipeByCategory(category)).thenReturn(Optional.of(recipe));
+        Optional<Recipe> foundRecipe = readRecipeService.findRecipeByCategory(category);
 
         assertTrue(foundRecipe.isPresent());
         assertEquals(recipe, foundRecipe.get());
-        verify(recipeRepository, times(1)).findRecipeByCategoryContains(category.toString());
     }
     @Test
     void testFindRecipeByCategoryNotFound() {
-        String category = "Nonexistent Category";
+        Category nonExistingCategory = Category.DESSERT;
+        when(readRecipeRepository.findRecipeByCategory(nonExistingCategory)).thenReturn(Optional.empty());
 
-        when(recipeRepository.findRecipeByCategoryContains(category)).thenReturn(Optional.empty());
-
-        Optional<RecipeEntity> foundRecipe = readRecipeService.findRecipeByCategory(category);
+        Optional<Recipe> foundRecipe = readRecipeService.findRecipeByCategory(nonExistingCategory);
 
         assertFalse(foundRecipe.isPresent());
-        verify(recipeRepository, times(1)).findRecipeByCategoryContains(category);
+        verify(readRecipeRepository, times(1)).findRecipeByCategory(nonExistingCategory);
     }
 
     @Test
     void testFindRecipeByIngredient() {
-        ProductEntity productEntity = ProductEntity.newProductEntity(UUID.randomUUID(), "Test Product");
-        Ingredient ingredient = Ingredient.newIngredient(null, productEntity,5f, Unit.DAG,null);
-        List<Ingredient> ingredients = new ArrayList<>();
-        ingredients.add(ingredient);
-        List<Category> category = List.of(Category.DESSERT);
-        RecipeEntity recipe = newRecipeEntity(UUID.randomUUID(), "Pancakes", category, ingredients,"instruction", 9);
+      String ingredient = "flour";
+        when(readRecipeRepository.findRecipeByIngredientContains(ingredient)).thenReturn(Optional.of(recipe));
 
-        when(recipeRepository.findRecipeByIngredientContains(ingredient.toString())).thenReturn(Optional.of(recipe));
-
-        Optional<RecipeEntity> foundRecipe = readRecipeService.findRecipeByIngredient(ingredient.toString());
+        Optional<Recipe> foundRecipe = readRecipeService.findRecipeByIngredient(ingredient);
 
         assertTrue(foundRecipe.isPresent());
         assertEquals(recipe, foundRecipe.get());
-        verify(recipeRepository, times(1)).findRecipeByIngredientContains(ingredient.toString());
+        verify(readRecipeRepository, times(1)).findRecipeByIngredientContains(ingredient);
     }
 
     @Test
     void testFindRecipeByIngredientNotFound() {
-        String ingredient = "Nonexistent Ingredient";
+        String nonExistentIngredient = "Nonexistent Ingredient";
 
-        when(recipeRepository.findRecipeByIngredientContains(ingredient)).thenReturn(Optional.empty());
+        when(readRecipeRepository.findRecipeByIngredientContains(nonExistentIngredient)).thenReturn(Optional.empty());
 
-        Optional<RecipeEntity> foundRecipe = readRecipeService.findRecipeByIngredient(ingredient);
+        Optional<Recipe> foundRecipe = readRecipeService.findRecipeByIngredient(nonExistentIngredient);
 
         assertFalse(foundRecipe.isPresent());
-        verify(recipeRepository, times(1)).findRecipeByIngredientContains(ingredient);
+        verify(readRecipeRepository, times(1)).findRecipeByIngredientContains(nonExistentIngredient);
     }
 
     @Test
+    void testFindRecipeByProductIdFound() {
+        UUID productId = recipe.getIngredients().getFirst().getProduct().getProductId();
+        when(readRecipeRepository.findRecipeByProductId(productId)).thenReturn(Optional.of(recipe));
+        Optional<Recipe> foundRecipe = readRecipeService.findRecipeByProductId(productId);
+        assertTrue(foundRecipe.isPresent());
+        assertEquals(recipe, foundRecipe.get());
+
+        verify(readRecipeRepository, times(1)).findRecipeByProductId(recipe.getIngredients().getFirst().getProduct().getProductId());
+    }
+
+    @Test
+    void testFindRecipeByProductIdNotFound() {
+        UUID nonExistentProductId = UUID.randomUUID();
+        when(readRecipeRepository.findRecipeByProductId(nonExistentProductId)).thenReturn(Optional.empty());
+        Optional<Recipe> foundRecipe = readRecipeService.findRecipeByProductId(nonExistentProductId);
+
+        assertFalse(foundRecipe.isPresent());
+        verify(readRecipeRepository, times(1)).findRecipeByProductId(nonExistentProductId);
+    }
+
+    @Test
+    void testFindRecipeByProductNameFound() {
+        String productName = recipe.getIngredients().getFirst().getProduct().getProductName();
+        when(readRecipeRepository.findRecipeByProductName(productName)).thenReturn(Optional.of(recipe));
+        Optional<Recipe> foundRecipe = readRecipeService.findRecipeByProductName(productName);
+        assertTrue(foundRecipe.isPresent());
+        assertEquals(recipe, foundRecipe.get());
+
+        verify(readRecipeRepository, times(1)).findRecipeByProductName(recipe.getIngredients().getFirst().getProduct().getProductName());
+    }
+
+    @Test
+    void testFindRecipeByProductNameNotFound() {
+        String nonExistentProductName = "Nonexistent Product";
+        when(readRecipeRepository.findRecipeByProductName(nonExistentProductName)).thenReturn(Optional.empty());
+
+        Optional<Recipe> foundRecipe = readRecipeService.findRecipeByProductName(nonExistentProductName);
+        assertFalse(foundRecipe.isPresent());
+
+        verify(readRecipeRepository, times(1)).findRecipeByProductName(nonExistentProductName);
+    }
+
+
+    @Test
     void testFindRecipeByCreatedAfter() {
-        Instant date = Instant.now().minusSeconds(3600);
-        List<Ingredient> ingredients = new ArrayList<>();
-        List<Category> category = List.of(Category.DESSERT);
-        RecipeEntity recipe = newRecipeEntity(UUID.randomUUID(), "Pancakes", category, ingredients,"instruction", 9);
-
-        when(recipeRepository.findRecipeByCreatedAfter(date)).thenReturn(Optional.of(recipe));
-
-        Optional<RecipeEntity> foundRecipe = readRecipeService.findRecipeByCreatedAfter(date);
+        when(readRecipeRepository.findRecipeByCreatedAfter(created)).thenReturn(Optional.of(recipe));
+        Optional<Recipe> foundRecipe = readRecipeService.findRecipeByCreatedAfter(created);
 
         assertTrue(foundRecipe.isPresent());
         assertEquals(recipe, foundRecipe.get());
-        verify(recipeRepository, times(1)).findRecipeByCreatedAfter(date);
+        verify(readRecipeRepository, times(1)).findRecipeByCreatedAfter(created);
     }
     @Test
     void testFindRecipeByCreatedAfterNotFound() {
         Instant date = Instant.now();
 
-        when(recipeRepository.findRecipeByCreatedAfter(date)).thenReturn(Optional.empty());
+        when(readRecipeRepository.findRecipeByCreatedAfter(date)).thenReturn(Optional.empty());
 
-        Optional<RecipeEntity> foundRecipe = readRecipeService.findRecipeByCreatedAfter(date);
+        Optional<Recipe> foundRecipe = readRecipeService.findRecipeByCreatedAfter(date);
 
         assertFalse(foundRecipe.isPresent());
-        verify(recipeRepository, times(1)).findRecipeByCreatedAfter(date);
+        verify(readRecipeRepository, times(1)).findRecipeByCreatedAfter(date);
     }
 }

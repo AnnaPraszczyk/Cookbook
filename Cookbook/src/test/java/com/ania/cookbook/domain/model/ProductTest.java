@@ -1,5 +1,6 @@
 package com.ania.cookbook.domain.model;
 
+import com.ania.cookbook.domain.exceptions.ProductValidationException;
 import org.junit.jupiter.api.Test;
 import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,39 +22,34 @@ class ProductTest {
     void testNewProductNullId() {
         String name = "test product";
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+        Exception exception = assertThrows(ProductValidationException.class, () ->
                 Product.newProduct(null, name));
         assertEquals("Product id cannot be null", exception.getMessage());
-
     }
 
     @Test
     void testNewProductNullName() {
         UUID id = UUID.randomUUID();
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+        ProductValidationException exception = assertThrows(ProductValidationException.class, () ->
                 Product.newProduct(id, null));
         assertEquals("Product name cannot be null or empty", exception.getMessage());
     }
 
     @Test
-    void testGetProductIdAndName() {
+    void testNewProductBlankName() {
         UUID id = UUID.randomUUID();
-        String name = "test product";
-
-        Product product = Product.newProduct(id, name);
-
-        assertEquals(id, product.getProductId());
-        assertEquals(name, product.getProductName());
+        ProductValidationException exception = assertThrows(ProductValidationException.class, () ->
+                Product.newProduct(id, ""));
+        assertEquals("Product name cannot be null or empty", exception.getMessage());
     }
 
     @Test
     void testToString() {
-        UUID id = UUID.randomUUID();
-        String name = "test product";
-        Product product = Product.newProduct(id, name);
+        UUID productId = UUID.randomUUID();
+        String productName = "test product";
+        Product product = Product.newProduct(productId, productName);
 
-        String expected = "Product{name='" + name + "'}";
-
+        String expected = "Product{productId=" + productId + ", productName='" + productName + "'}";
         assertEquals(expected, product.toString());
     }
     @Test

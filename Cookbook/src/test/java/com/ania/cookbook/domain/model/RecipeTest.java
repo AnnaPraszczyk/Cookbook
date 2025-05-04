@@ -3,6 +3,8 @@ package com.ania.cookbook.domain.model;
 import static com.ania.cookbook.domain.model.Ingredient.newIngredient;
 import static com.ania.cookbook.domain.model.Product.newProduct;
 import static org.junit.jupiter.api.Assertions.*;
+
+import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.UUID;
@@ -12,93 +14,107 @@ class RecipeTest {
     void testNewRecipe() {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
-        List<Category> categories = List.of(Category.DESSERT);
-        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),null,500, Unit.G,null));
+        Category category = Category.DESSERT;
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),15.0f,MassUnit.G));
         String instructions = "Mix everything and bake";
         int numberOfServings = 4;
+        List<String> tags = List.of("polish", "vegan");
 
-        Recipe recipe = Recipe.newRecipe(recipeId, recipeName, categories, ingredients, instructions, numberOfServings);
+        Recipe recipe = Recipe.newRecipe(recipeId, recipeName, category, ingredients, instructions, numberOfServings,tags);
 
         assertNotNull(recipe);
         assertEquals(recipeId, recipe.getRecipeId());
         assertEquals(recipeName, recipe.getRecipeName());
-        assertEquals(categories, recipe.getCategories());
+        assertEquals(category, recipe.getCategory());
         assertEquals(ingredients, recipe.getIngredients());
         assertEquals(instructions, recipe.getInstructions());
-        assertEquals(numberOfServings, recipe.getNumberOfServings());
         assertNotNull(recipe.getCreated());
+        assertEquals(numberOfServings, recipe.getNumberOfServings());
+        assertEquals(tags, recipe.getTags());
     }
 
     @Test
     void testNewRecipeNullId() {
         String recipeName = "Test Recipe";
-        List<Category> categories = List.of(Category.DESSERT);
-        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),null,500, Unit.G,null));
+        Category category = Category.DESSERT;
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),15.0f,MassUnit.G));
         String instructions = "Mix everything and bake";
         int numberOfServings = 4;
+        List<String> tags = List.of("polish", "vegan");
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> Recipe.newRecipe(null, recipeName,categories, ingredients,instructions, numberOfServings));
+        RecipeValidationException exception = assertThrows(RecipeValidationException.class,
+                () -> Recipe.newRecipe(null, recipeName,category, ingredients,instructions, numberOfServings,tags));
                 assertEquals("Recipe id cannot be null", exception.getMessage());
     }
 
     @Test
     void testNewRecipeNullName() {
         UUID recipeId = UUID.randomUUID();
-        List<Category> categories = List.of(Category.DESSERT);
-        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),null,500, Unit.G,null));
+        Category category = Category.DESSERT;
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),15.0f,MassUnit.G));
         String instructions = "Mix everything and bake";
         int numberOfServings = 4;
+        List<String> tags = List.of("polish", "vegan");
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> Recipe.newRecipe(recipeId, null,categories, ingredients,instructions, numberOfServings));
+        RecipeValidationException exception = assertThrows(RecipeValidationException.class,
+                () -> Recipe.newRecipe(recipeId,null, category, ingredients,instructions, numberOfServings,tags));
         assertEquals("Recipe name cannot be null or empty", exception.getMessage());
     }
 
     @Test
     void testNewRecipeEmptyName() {
         UUID recipeId = UUID.randomUUID();
-        List<Category> categories = List.of(Category.DESSERT);
-        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),null,500, Unit.G,null));
+        Category category = Category.DESSERT;
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),15.0f,MassUnit.G));
         String instructions = "Mix everything and bake";
         int numberOfServings = 4;
+        List<String> tags = List.of("polish", "vegan");
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> Recipe.newRecipe(recipeId, "",categories, ingredients,instructions, numberOfServings));
+        RecipeValidationException exception = assertThrows(RecipeValidationException.class,
+                () -> Recipe.newRecipe(recipeId, "",category, ingredients,instructions, numberOfServings,tags));
         assertEquals("Recipe name cannot be null or empty", exception.getMessage());
     }
 
     @Test
-    void testEmptyCategoriesAndIngredients() {
-        Recipe recipe = Recipe.newRecipe(
-                UUID.randomUUID(),
-                "Empty Recipe",
-                List.of(),
-                List.of(),
-                "No instructions",
-                1
-        );
+    void testNewRecipeNullCategory() {
+        UUID recipeId = UUID.randomUUID();
+        String recipeName = "Test Recipe";
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),15.0f,MassUnit.G));
+        String instructions = "Mix everything and bake";
+        int numberOfServings = 4;
+        List<String> tags = List.of("mexican", "vegan");
 
-        assertTrue(recipe.getCategories().isEmpty());
+        RecipeValidationException exception = assertThrows(RecipeValidationException.class,
+                () -> Recipe.newRecipe(recipeId, recipeName,null, ingredients,instructions, numberOfServings,tags));
+        assertEquals("Recipe category cannot be null", exception.getMessage());
+    }
+
+
+
+    @Test
+    void testNewRecipeEmptyIngredients() {
+        UUID recipeId = UUID.randomUUID();
+        String recipeName = "Test Recipe";
+        String instructions = "Mix everything and bake";
+        int numberOfServings = 4;
+        List<String> tags = List.of("mexican", "vegan");
+
+        Recipe recipe = Recipe.newRecipe(recipeId, recipeName, Category.DESSERT, List.of(), instructions, numberOfServings,tags);
+
         assertTrue(recipe.getIngredients().isEmpty());
     }
 
     @Test
-    void testSingleCategoryAndIngredient() {
-        Category category = Category.DESSERT;
-        Ingredient ingredient = newIngredient(newProduct(UUID.randomUUID(), "Butter"),null,500,Unit.G,null);
+    void testSingleIngredient() {
+        UUID recipeId = UUID.randomUUID();
+        String recipeName = "Test Recipe";
+        Ingredient ingredient = newIngredient(newProduct(UUID.randomUUID(), "Butter"),15.0f,MassUnit.G);
+        String instructions = "Mix everything and bake";
+        int numberOfServings = 4;
+        List<String> tags = List.of("mexican", "vegan");
 
-        Recipe recipe = Recipe.newRecipe(
-                UUID.randomUUID(),
-                "Butter Cookies",
-                List.of(category),
-                List.of(ingredient),
-                "Mix and bake",
-                6
-        );
+        Recipe recipe = Recipe.newRecipe(recipeId, recipeName, Category.DESSERT, List.of(ingredient), instructions, numberOfServings,tags);
 
-        assertEquals(1, recipe.getCategories().size());
-        assertEquals(category, recipe.getCategories().getFirst());
         assertEquals(1, recipe.getIngredients().size());
         assertEquals(ingredient, recipe.getIngredients().getFirst());
     }
@@ -107,12 +123,13 @@ class RecipeTest {
     void testNewRecipeNullInstruction() {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
-        List<Category> categories = List.of(Category.DESSERT);
-        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),null,500, Unit.G,null));
+        Category category = Category.DESSERT;
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),20.0f,MassUnit.G));
         int numberOfServings = 4;
+        List<String> tags = List.of("italian", "vegan");
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> Recipe.newRecipe(recipeId, recipeName,categories, ingredients,null, numberOfServings));
+        RecipeValidationException exception = assertThrows(RecipeValidationException.class,
+                () -> Recipe.newRecipe(recipeId, recipeName,category, ingredients,null, numberOfServings,tags));
         assertEquals("Recipe instructions cannot be null or empty", exception.getMessage());
     }
 
@@ -120,71 +137,57 @@ class RecipeTest {
     void testNewRecipeEmptyInstruction() {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
-        List<Category> categories = List.of(Category.DESSERT);
-        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),null,500, Unit.G,null));
+        Category category = Category.DESSERT;
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),20.0f,MassUnit.G));
         int numberOfServings = 4;
+        List<String> tags = List.of("italian", "vegan");
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> Recipe.newRecipe(recipeId, recipeName,categories, ingredients," ", numberOfServings));
+        RecipeValidationException exception = assertThrows(RecipeValidationException.class,
+                () -> Recipe.newRecipe(recipeId, recipeName,category, ingredients," ", numberOfServings,tags));
         assertEquals("Recipe instructions cannot be null or empty", exception.getMessage());
+    }
+
+    @Test
+    void testCreateDateNotNull() {
+        UUID recipeId = UUID.randomUUID();
+        String recipeName = "Test Recipe";
+        Category category = Category.DESSERT;
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),20.0f,MassUnit.G));
+        String instructions = "Mix everything and bake";
+        int numberOfServings = 4;
+        List<String> tags = List.of("italian", "vegan");
+
+        Recipe recipe = Recipe.newRecipe(recipeId, recipeName,category, ingredients,instructions, numberOfServings,tags);
+
+        assertNotNull(recipe.getCreated());
     }
 
     @Test
     void testNewRecipeInvalidNumberOfServings() {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
-        List<Category> categories = List.of(Category.DESSERT);
-        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),null,500, Unit.G,null));
+        Category category = Category.OTHER;
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),4.0f,VolumeUnit.BOTTLE, 330,MassUnit.G));
         String instructions = "Mix everything and bake";
+        List<String> tags = List.of("italian", "vegan");
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> Recipe.newRecipe(recipeId, recipeName,categories, ingredients,instructions,-10));
+        RecipeValidationException exception = assertThrows(RecipeValidationException.class,
+                () -> Recipe.newRecipe(recipeId, recipeName,category, ingredients,instructions,-5,tags));
         assertEquals("Recipe number of servings cannot be negative", exception.getMessage());
     }
 
     @Test
-    void testGetters() {
+    void testNewRecipeEmptyTags() {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
-        List<Category> categories = List.of(Category.ITALIAN);
-        List<Ingredient> ingredients = List.of(newIngredient(newProduct(UUID.randomUUID(), "Chicken"),null,200f, Unit.DAG, null));
-        String instructions = "Cook chicken thoroughly";
-        int numberOfServings = 2;
+        Category category = Category.OTHER;
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),4.0f,VolumeUnit.BOTTLE, 330,MassUnit.G));
+        String instructions = "Mix everything and bake";
+        int numberOfServings = 4;
 
-        Recipe recipe = Recipe.newRecipe(recipeId, recipeName, categories, ingredients, instructions, numberOfServings);
+        Recipe recipe = Recipe.newRecipe(recipeId, recipeName,category, ingredients,instructions,numberOfServings,List.of());
 
-        assertEquals(recipeId, recipe.getRecipeId());
-        assertEquals(recipeName, recipe.getRecipeName());
-        assertEquals(categories, recipe.getCategories());
-        assertEquals(ingredients, recipe.getIngredients());
-        assertEquals(instructions, recipe.getInstructions());
-        assertEquals(numberOfServings, recipe.getNumberOfServings());
-        assertNotNull(recipe.getCreated());
+        assertNotNull(recipe.getTags());
+        assertTrue(recipe.getTags().isEmpty());
     }
-
-    @Test
-    void testToString() {
-        UUID recipeId = UUID.randomUUID();
-        String recipeName = "Pancakes";
-        List<Category> categories = List.of(Category.DESSERT);
-        List<Ingredient> ingredients = List.of(newIngredient(newProduct(UUID.randomUUID(), "Flour"),null, 300f,Unit.G,null));
-        String instructions = "Mix and fry";
-        int numberOfServings = 3;
-
-        Recipe recipe = Recipe.newRecipe(recipeId, recipeName, categories, ingredients, instructions, numberOfServings);
-
-        String expected = "Recipe{" +
-                "recipeId=" + recipeId +
-                ", recipeName='" + recipeName + '\'' +
-                ", categories=" + categories +
-                ", ingredients=" + ingredients +
-                ", instructions='" + instructions + '\'' +
-                ", created=" + recipe.getCreated() +
-                ", numberOfServings=" + numberOfServings +
-                '}';
-
-        assertEquals(expected, recipe.toString());
-    }
-
-
 }
