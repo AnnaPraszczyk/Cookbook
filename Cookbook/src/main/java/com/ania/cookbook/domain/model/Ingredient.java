@@ -4,7 +4,6 @@ import com.ania.cookbook.domain.exceptions.IngredientValidationException;
 import lombok.Getter;
 
 @Getter
-
 public class Ingredient {
     private final Product product;
     private final float amount;

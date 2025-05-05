@@ -1,5 +1,6 @@
-package com.ania.cookbook.domain.services;
+package com.ania.cookbook.application.services;
 
+import com.ania.cookbook.application.services.ReadRecipeService;
 import com.ania.cookbook.domain.model.*;
 import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
 import org.junit.jupiter.api.BeforeEach;

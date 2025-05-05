@@ -1,5 +1,6 @@
-package com.ania.cookbook.domain.services;
+package com.ania.cookbook.application.services;
 
+import com.ania.cookbook.application.services.ProductService;
 import com.ania.cookbook.domain.exceptions.ProductValidationException;
 import com.ania.cookbook.domain.model.Product;
 import com.ania.cookbook.domain.repositories.product.DeleteProduct;

@@ -1,6 +1,7 @@
-package com.ania.cookbook.domain.services;
+package com.ania.cookbook.application.services;
 
 
+import com.ania.cookbook.TestInMemoryRecipeRepository;
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.*;
@@ -9,71 +10,72 @@ import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
 import com.ania.cookbook.domain.repositories.recipe.SaveRecipe;
 import com.ania.cookbook.domain.repositories.recipe.UpdateRecipe;
 import com.ania.cookbook.infrastructure.persistence.entity.RecipeEntity;
-
-import org.junit.jupiter.api.BeforeEach;
+import lombok.val;
 import org.junit.jupiter.api.Test;
+
 import java.util.List;
 import java.util.UUID;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class RecipeServiceTest {
-    private RecipeService recipeService;
-    private SaveRecipe saveRecipeRepository;
-    private ReadRecipe readRecipeRepository;
-    private UpdateRecipe updateRecipeRepository;
-    private DeleteRecipe deleteRecipeRepository;
+    private final TestInMemoryRecipeRepository testInMemoryRecipeRepository = new TestInMemoryRecipeRepository();
+    private final ReadRecipe readRecipeRepository = testInMemoryRecipeRepository;
+    private final UpdateRecipe updateRecipeRepository = testInMemoryRecipeRepository;
+    private final DeleteRecipe deleteRecipeRepository = testInMemoryRecipeRepository;
+    private final SaveRecipe saveRecipeRepository = testInMemoryRecipeRepository;
+    private final RecipeService recipeService = new RecipeService(saveRecipeRepository, readRecipeRepository, updateRecipeRepository, deleteRecipeRepository);
 
-    @BeforeEach
-    void setUp() {
-        saveRecipeRepository = mock(SaveRecipe.class);
-        readRecipeRepository = mock(ReadRecipe.class);
-        updateRecipeRepository = mock(UpdateRecipe.class);
-        deleteRecipeRepository = mock(DeleteRecipe.class);
-        recipeService = new RecipeService(saveRecipeRepository, readRecipeRepository, updateRecipeRepository, deleteRecipeRepository);
+    @Test
+    void testCreateRecipe() {
+        Product product = Product.newProduct(UUID.randomUUID(), "Chiken breast");
+        Ingredient ingredient1 = Ingredient.newIngredient(product, 2, MassUnit.DAG);
+        List<Ingredient> ingredients = List.of(ingredient1);
+        val recipeId = UUID.randomUUID();
+        Recipe recipe = Recipe.newRecipe(recipeId, "NAME", Category.APPETIZER, ingredients, "RANDOM INSTRUCTion", 2, List.of("TAG1", "TAG2"));
+
+
+        recipeService.createRecipe(recipe);
+
+        recipeService.createRecipe(null);
+        val recipeById = readRecipeRepository.findRecipeById(recipeId);
+        val recipe1 = recipeById.get();
+        assertEquals(recipe1, recipe);
+        assertEquals(recipe1.getRecipeName(), "NAME");
     }
 
     @Test
-    void testSaveRecipe() {
-        Recipe recipe = mock(Recipe.class);
-        UUID recipeId = UUID.randomUUID();
-
-        when(recipe.getRecipeId()).thenReturn(recipeId);
-        when(recipe.getRecipeName()).thenReturn("pancakes");
-        when(readRecipeRepository.existsRecipeById(recipeId)).thenReturn(false);
-        when(readRecipeRepository.existsRecipeByName("pancakes")).thenReturn(false);
-        when(saveRecipeRepository.saveRecipe(recipe)).thenReturn(recipe);
-
-        Recipe savedRecipe = recipeService.saveRecipe(recipe);
-
-        assertNotNull(savedRecipe);
-        verify(saveRecipeRepository, times(1)).saveRecipe(recipe);
+    void testCreateRecipeIsNull() {
+        assertThrows(RecipeValidationException.class, () -> recipeService.createRecipe(null));
     }
 
     @Test
-    void testSaveRecipeWhenRecipeIsNull() {
-        assertThrows(RecipeValidationException.class, () -> recipeService.saveRecipe(null));
+    void testCreateRecipeIdExists() {
+        Product product = Product.newProduct(UUID.randomUUID(), "Chiken breast");
+        Ingredient ingredient1 = Ingredient.newIngredient(product, 2, MassUnit.DAG);
+        List<Ingredient> ingredients = List.of(ingredient1);
+        val recipeId = UUID.randomUUID();
+        Recipe recipe = Recipe.newRecipe(recipeId, "NAME", Category.APPETIZER, ingredients, "RANDOM INSTRUCTion", 2, List.of("TAG1", "TAG2"));
+
+        recipeService.createRecipe(recipe);
+
+        assertThrows(RecipeValidationException.class, () -> recipeService.createRecipe(recipe));
     }
 
     @Test
-    void testSaveRecipeWhenRecipeIdExists() {
-        Recipe recipe = mock(Recipe.class);
-        UUID recipeId = UUID.randomUUID();
-
-        when(recipe.getRecipeId()).thenReturn(recipeId);
-        when(readRecipeRepository.existsRecipeById(recipeId)).thenReturn(true);
-
-        assertThrows(RecipeValidationException.class, () -> recipeService.saveRecipe(recipe));
-    }
-
-    @Test
-    void testSaveRecipeWhenRecipeNameExists() {
+    void testCreateRecipeNameExists() {
         Recipe recipe = mock(Recipe.class);
 
         when(recipe.getRecipeName()).thenReturn("pancakes");
         when(readRecipeRepository.existsRecipeByName("pancakes")).thenReturn(true);
 
-        assertThrows(RecipeValidationException.class, () -> recipeService.saveRecipe(recipe));
+        assertThrows(RecipeValidationException.class, () -> recipeService.createRecipe(recipe));
     }
 
     @Test
@@ -132,14 +134,14 @@ class RecipeServiceTest {
 
         RecipeEntity recipeEntity = RecipeService.toEntity(recipe);
 
-    assertNotNull(recipeEntity);
-    assertEquals(recipe.getRecipeId(), recipeEntity.getRecipeId());
-    assertEquals(recipe.getRecipeName(), recipeEntity.getRecipeName());
-    assertEquals(recipe.getCategory(), recipeEntity.getCategory());
-    assertEquals(recipe.getIngredients(), recipeEntity.getIngredients());
-    assertEquals(recipe.getInstructions(), recipeEntity.getInstructions());
-    assertEquals(recipe.getNumberOfServings(), recipeEntity.getNumberOfServings());
-    assertEquals(recipe.getTags(), recipeEntity.getTags());
+        assertNotNull(recipeEntity);
+        assertEquals(recipe.getRecipeId(), recipeEntity.getRecipeId());
+        assertEquals(recipe.getRecipeName(), recipeEntity.getRecipeName());
+        assertEquals(recipe.getCategory(), recipeEntity.getCategory());
+        assertEquals(recipe.getIngredients(), recipeEntity.getIngredients());
+        assertEquals(recipe.getInstructions(), recipeEntity.getInstructions());
+        assertEquals(recipe.getNumberOfServings(), recipeEntity.getNumberOfServings());
+        assertEquals(recipe.getTags(), recipeEntity.getTags());
     }
 
     @Test

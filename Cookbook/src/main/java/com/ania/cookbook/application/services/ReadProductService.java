@@ -1,4 +1,4 @@
-package com.ania.cookbook.domain.services;
+package com.ania.cookbook.application.services;
 
 import com.ania.cookbook.domain.exceptions.ProductNotFoundException;
 import com.ania.cookbook.domain.repositories.product.ReadProduct;

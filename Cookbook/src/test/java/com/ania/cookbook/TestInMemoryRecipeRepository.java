@@ -1,14 +1,12 @@
-package com.ania.cookbook.infrastructure.repositories;
+package com.ania.cookbook;
 
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
-import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.domain.model.Recipe;
 import com.ania.cookbook.domain.repositories.recipe.DeleteRecipe;
 import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
 import com.ania.cookbook.domain.repositories.recipe.SaveRecipe;
 import com.ania.cookbook.domain.repositories.recipe.UpdateRecipe;
-import com.ania.cookbook.infrastructure.persistence.entity.RecipeEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +17,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Component
-public class InMemoryRecipeRepository implements SaveRecipe, ReadRecipe, UpdateRecipe, DeleteRecipe {
+public class TestInMemoryRecipeRepository implements SaveRecipe, ReadRecipe, UpdateRecipe, DeleteRecipe {
     private final HashMap<UUID, Recipe> inMemoryRepository = new HashMap<>();
 
     @Override
@@ -101,22 +99,5 @@ public class InMemoryRecipeRepository implements SaveRecipe, ReadRecipe, UpdateR
             throw new RecipeNotFoundException("Recipe with Id does not exist.");
         }
         inMemoryRepository.remove(id);
-    }
-
-    private RecipeEntity toEntity(Recipe recipe) {
-        if (recipe == null) {
-            throw new RecipeValidationException("Recipe cannot be null");
-        }
-        return RecipeEntity.newRecipeEntity(recipe.getRecipeId(), recipe.getRecipeName(), recipe.getCategory(),
-                recipe.getIngredients(), recipe.getInstructions(), recipe.getNumberOfServings(), recipe.getTags());
-    }
-
-    public static Recipe toDomain(RecipeEntity recipeEntity) {
-        if (recipeEntity == null) {
-            throw new RecipeValidationException("RecipeEntity cannot be null");
-        }
-        return Recipe.newRecipe(recipeEntity.getRecipeId(), recipeEntity.getRecipeName(), recipeEntity.getCategory(),
-                recipeEntity.getIngredients(), recipeEntity.getInstructions(), recipeEntity.getNumberOfServings(),
-                recipeEntity.getTags());
     }
 }
