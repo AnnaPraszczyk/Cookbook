@@ -25,7 +25,7 @@ import java.util.UUID;
             if (productName.isBlank()) {
                 throw new ProductValidationException("Product name cannot be null or empty");
             }
-            this.productName = productName.trim().toLowerCase();
+            this.productName = productName.trim();
         }
 
         public ProductEntity() {

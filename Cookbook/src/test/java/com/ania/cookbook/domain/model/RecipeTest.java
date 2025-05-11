@@ -3,7 +3,6 @@ package com.ania.cookbook.domain.model;
 import static com.ania.cookbook.domain.model.Ingredient.newIngredient;
 import static com.ania.cookbook.domain.model.Product.newProduct;
 import static org.junit.jupiter.api.Assertions.*;
-
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import org.junit.jupiter.api.Test;
 import java.util.List;
@@ -15,7 +14,7 @@ class RecipeTest {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
         Category category = Category.DESSERT;
-        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),15.0f,MassUnit.G));
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),15.0f, Unit.G));
         String instructions = "Mix everything and bake";
         int numberOfServings = 4;
         List<String> tags = List.of("polish", "vegan");
@@ -37,21 +36,21 @@ class RecipeTest {
     void testNewRecipeNullId() {
         String recipeName = "Test Recipe";
         Category category = Category.DESSERT;
-        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),15.0f,MassUnit.G));
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),15.0f, Unit.G));
         String instructions = "Mix everything and bake";
         int numberOfServings = 4;
         List<String> tags = List.of("polish", "vegan");
 
         RecipeValidationException exception = assertThrows(RecipeValidationException.class,
                 () -> Recipe.newRecipe(null, recipeName,category, ingredients,instructions, numberOfServings,tags));
-                assertEquals("Recipe id cannot be null", exception.getMessage());
+        assertEquals("Recipe id cannot be null", exception.getMessage());
     }
 
     @Test
     void testNewRecipeNullName() {
         UUID recipeId = UUID.randomUUID();
         Category category = Category.DESSERT;
-        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),15.0f,MassUnit.G));
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),15.0f, Unit.G));
         String instructions = "Mix everything and bake";
         int numberOfServings = 4;
         List<String> tags = List.of("polish", "vegan");
@@ -65,7 +64,7 @@ class RecipeTest {
     void testNewRecipeEmptyName() {
         UUID recipeId = UUID.randomUUID();
         Category category = Category.DESSERT;
-        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),15.0f,MassUnit.G));
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),15.0f, Unit.G));
         String instructions = "Mix everything and bake";
         int numberOfServings = 4;
         List<String> tags = List.of("polish", "vegan");
@@ -79,7 +78,7 @@ class RecipeTest {
     void testNewRecipeNullCategory() {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
-        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),15.0f,MassUnit.G));
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),15.0f, Unit.G));
         String instructions = "Mix everything and bake";
         int numberOfServings = 4;
         List<String> tags = List.of("mexican", "vegan");
@@ -88,8 +87,6 @@ class RecipeTest {
                 () -> Recipe.newRecipe(recipeId, recipeName,null, ingredients,instructions, numberOfServings,tags));
         assertEquals("Recipe category cannot be null", exception.getMessage());
     }
-
-
 
     @Test
     void testNewRecipeEmptyIngredients() {
@@ -108,7 +105,7 @@ class RecipeTest {
     void testSingleIngredient() {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
-        Ingredient ingredient = newIngredient(newProduct(UUID.randomUUID(), "Butter"),15.0f,MassUnit.G);
+        Ingredient ingredient = newIngredient(newProduct(UUID.randomUUID(), "Butter"),15.0f, Unit.G);
         String instructions = "Mix everything and bake";
         int numberOfServings = 4;
         List<String> tags = List.of("mexican", "vegan");
@@ -124,7 +121,7 @@ class RecipeTest {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
         Category category = Category.DESSERT;
-        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),20.0f,MassUnit.G));
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),20.0f, Unit.G));
         int numberOfServings = 4;
         List<String> tags = List.of("italian", "vegan");
 
@@ -138,7 +135,7 @@ class RecipeTest {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
         Category category = Category.DESSERT;
-        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),20.0f,MassUnit.G));
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),20.0f, Unit.G));
         int numberOfServings = 4;
         List<String> tags = List.of("italian", "vegan");
 
@@ -152,7 +149,7 @@ class RecipeTest {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
         Category category = Category.DESSERT;
-        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),20.0f,MassUnit.G));
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),20.0f, Unit.G));
         String instructions = "Mix everything and bake";
         int numberOfServings = 4;
         List<String> tags = List.of("italian", "vegan");
@@ -166,8 +163,8 @@ class RecipeTest {
     void testNewRecipeInvalidNumberOfServings() {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
-        Category category = Category.OTHER;
-        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),4.0f,VolumeUnit.BOTTLE, 330,MassUnit.G));
+        Category category = Category.DESSERT;
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),4.0f, Unit.G));
         String instructions = "Mix everything and bake";
         List<String> tags = List.of("italian", "vegan");
 
@@ -180,8 +177,8 @@ class RecipeTest {
     void testNewRecipeEmptyTags() {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
-        Category category = Category.OTHER;
-        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),4.0f,VolumeUnit.BOTTLE, 330,MassUnit.G));
+        Category category = Category.DESSERT;
+        List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), "Sugar"),4.0f,Unit.G));
         String instructions = "Mix everything and bake";
         int numberOfServings = 4;
 

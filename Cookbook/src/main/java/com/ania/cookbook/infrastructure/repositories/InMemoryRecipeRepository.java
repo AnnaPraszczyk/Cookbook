@@ -1,122 +1,79 @@
 package com.ania.cookbook.infrastructure.repositories;
 
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
-import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.domain.model.Recipe;
 import com.ania.cookbook.domain.repositories.recipe.DeleteRecipe;
 import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
 import com.ania.cookbook.domain.repositories.recipe.SaveRecipe;
 import com.ania.cookbook.domain.repositories.recipe.UpdateRecipe;
-import com.ania.cookbook.infrastructure.persistence.entity.RecipeEntity;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
-import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 @RequiredArgsConstructor
-@Component
+@Repository
 public class InMemoryRecipeRepository implements SaveRecipe, ReadRecipe, UpdateRecipe, DeleteRecipe {
-    private final HashMap<UUID, Recipe> inMemoryRepository = new HashMap<>();
+    private final HashMap<UUID, Recipe> recipes = new HashMap<>();
 
     @Override
     public Recipe saveRecipe(Recipe recipe) {
-        inMemoryRepository.put(recipe.getRecipeId(), recipe);
+        recipes.put(recipe.getRecipeId(), recipe);
         return recipe;
     }
 
     @Override
-    public Optional<Recipe> findRecipeById(UUID id) {
-        return Optional.ofNullable(inMemoryRepository.get(id));
+    public Optional<Recipe> findRecipeById(UUID recipeId) {
+        return Optional.ofNullable(recipes.get(recipeId));
     }
 
     @Override
     public boolean existsRecipeById(UUID recipeId) {
-        return inMemoryRepository.containsKey(recipeId);
+        return recipes.containsKey(recipeId);
     }
 
     @Override
-    public Optional<Recipe> findRecipeByName(String name) {
-        return inMemoryRepository.values().stream()
+    public List<Recipe> findRecipeByName(String name) {
+        return recipes.values().stream()
                 .filter(recipe -> recipe.getRecipeName().equalsIgnoreCase(name))
-                .findFirst();
+                .toList();
     }
 
     @Override
-    public boolean existsRecipeByName(String recipeName) {
-        return inMemoryRepository.values().stream()
-                .anyMatch(recipe -> recipe.getRecipeName().equalsIgnoreCase(recipeName));
+    public boolean existsRecipeByName(String name) {
+        return recipes.values().stream()
+                .anyMatch(recipe -> recipe.getRecipeName().equalsIgnoreCase(name));
     }
 
     @Override
-    public Optional<Recipe> findRecipeByCategory(Category category) {
-        return inMemoryRepository.values().stream()
-                .filter(recipe -> recipe.getCategory() == category)
-                .findFirst();
+    public List<Recipe> findRecipeByCategory(Category category){
+        return recipes.values().stream()
+                .filter(recipe -> recipe.getCategory().equals(category))
+                .toList();
     }
 
     @Override
-    public Optional<Recipe> findRecipeByIngredientContains(String ingredient) {
-        return inMemoryRepository.values().stream().filter(recipe -> recipe.getIngredients()
-                .stream().anyMatch(ing -> ing.getProduct().getProductName()
-                        .equalsIgnoreCase(ingredient))).findFirst();
-    }
-
-    @Override
-    public Optional<Recipe> findRecipeByProductId(UUID productId) {
-        return inMemoryRepository.values().stream().filter(recipe -> recipe.getIngredients()
-                        .stream().anyMatch(ing -> ing.getProduct().getProductId().equals(productId)))
-                .findFirst();
-    }
-
-    @Override
-    public Optional<Recipe> findRecipeByProductName(String productName) {
-        return inMemoryRepository.values().stream().filter(recipe -> recipe.getIngredients()
-                        .stream().anyMatch(ing -> ing.getProduct().getProductName().equalsIgnoreCase(productName)))
-                .findFirst();
-    }
-
-    @Override
-    public Optional<Recipe> findRecipeByCreatedAfter(Instant created) {
-        return inMemoryRepository.values().stream()
-                .filter(recipe -> recipe.getCreated().isAfter(created))
-                .findFirst();
+    public List<Recipe> findRecipeByTag(String tag){
+        return recipes.values().stream()
+                .filter(recipe -> recipe.getTags().contains(tag))
+                .toList();
     }
 
     @Override
     public Recipe updateRecipe(Recipe recipe) {
-        if (!inMemoryRepository.containsKey(recipe.getRecipeId())) {
-            throw new RecipeNotFoundException("Recipe with Id does not exist.");
+        if (!recipes.containsKey(recipe.getRecipeId())) {
+            throw new RecipeNotFoundException("Recipe not found!");
         }
-        inMemoryRepository.put(recipe.getRecipeId(), recipe);
+        recipes.put(recipe.getRecipeId(), recipe);
         return recipe;
     }
 
     @Override
-    public void deleteRecipeById(UUID id) {
-        if (!inMemoryRepository.containsKey(id)) {
-            throw new RecipeNotFoundException("Recipe with Id does not exist.");
-        }
-        inMemoryRepository.remove(id);
-    }
-
-    private RecipeEntity toEntity(Recipe recipe) {
-        if (recipe == null) {
-            throw new RecipeValidationException("Recipe cannot be null");
-        }
-        return RecipeEntity.newRecipeEntity(recipe.getRecipeId(), recipe.getRecipeName(), recipe.getCategory(),
-                recipe.getIngredients(), recipe.getInstructions(), recipe.getNumberOfServings(), recipe.getTags());
-    }
-
-    public static Recipe toDomain(RecipeEntity recipeEntity) {
-        if (recipeEntity == null) {
-            throw new RecipeValidationException("RecipeEntity cannot be null");
-        }
-        return Recipe.newRecipe(recipeEntity.getRecipeId(), recipeEntity.getRecipeName(), recipeEntity.getCategory(),
-                recipeEntity.getIngredients(), recipeEntity.getInstructions(), recipeEntity.getNumberOfServings(),
-                recipeEntity.getTags());
+    public void deleteRecipeById(UUID recipeId) {
+        recipes.remove(recipeId);
     }
 }
+

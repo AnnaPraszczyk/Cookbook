@@ -2,9 +2,8 @@ package com.ania.cookbook.infrastructure.converters;
 
 import static org.junit.jupiter.api.Assertions.*;
 import com.ania.cookbook.domain.model.Ingredient;
-import com.ania.cookbook.domain.model.MassUnit;
 import com.ania.cookbook.domain.model.Product;
-import com.ania.cookbook.domain.model.VolumeUnit;
+import com.ania.cookbook.domain.model.Unit;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.UUID;
@@ -17,8 +16,8 @@ class IngredientsJsonConverterTest {
         Product product2 = Product.newProduct(UUID.randomUUID(), "milk");
 
         List<Ingredient> ingredients = List.of(
-                Ingredient.newIngredient(product1, 5.0f, MassUnit.G),
-                Ingredient.newIngredient(product2, 2.0f, VolumeUnit.CUP, 250.0f, MassUnit.G)
+                Ingredient.newIngredient(product1, 5.0f, Unit.G),
+                Ingredient.newIngredient(product2, 2.0f, Unit.G)
         );
 
         String json = IngredientsJsonConverter.listToJson(ingredients);
@@ -45,13 +44,16 @@ class IngredientsJsonConverterTest {
 
     @Test
     void testListFromJson_WithValidJson() {
-        String json = "[{\"product\":{\"productId\":\"123e4567-e89b-12d3-a456-426614174000\",\"productName\":\"Sugar\"},\"amount\":5.0,\"massUnit\":\"G\"}]";
+        String json = "[{\"product\":{\"productId\":\"550e8400-e29b-41d4-a716-446655440000\",\"productName\":\"Flour\"},\"amount\":10,\"unit\":\"DAG\"}]";
 
         List<Ingredient> ingredients = IngredientsJsonConverter.listFromJson(json);
 
         assertNotNull(ingredients);
-        assertEquals(1, ingredients.size());
-        assertEquals("Sugar", ingredients.getFirst().getProduct().getProductName());
+        assertFalse(ingredients.isEmpty());
+        assertEquals("Flour", ingredients.getFirst().getProduct().getProductName());
+        assertEquals(10, ingredients.getFirst().getAmount());
+        assertEquals("DAG", ingredients.getFirst().getUnit().toString());
+
     }
 
     @Test

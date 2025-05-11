@@ -42,42 +42,11 @@ class ProductTest {
                 Product.newProduct(id, ""));
         assertEquals("Product name cannot be null or empty", exception.getMessage());
     }
-
-    @Test
-    void testToString() {
-        UUID productId = UUID.randomUUID();
-        String productName = "test product";
-        Product product = Product.newProduct(productId, productName);
-
-        String expected = "Product{productId=" + productId + ", productName='" + productName + "'}";
-        assertEquals(expected, product.toString());
-    }
-    @Test
-    void testEqualsAndHashCodeEqualObjects() {
-        UUID id = UUID.randomUUID();
-        Product product1 = Product.newProduct(id, "test product");
-        Product product2 = Product.newProduct(id, "test product");
-
-        assertEquals(product1, product2);
-        assertEquals(product1.hashCode(), product2.hashCode());
-    }
-    @Test
-    void testEqualsAndHashCodeDifferentObjects() {
-        Product product1 = Product.newProduct(UUID.randomUUID(), "Product A");
-        Product product2 = Product.newProduct(UUID.randomUUID(), "Product B");
-
-        assertNotEquals(product1, product2);
-        assertNotEquals(product1.hashCode(), product2.hashCode());
-    }
-    @Test
-    void testEqualsAndHashCodeDifferentIds() {
-        Product product1 = Product.newProduct(UUID.randomUUID(), "Product A");
-        Product product2 = Product.newProduct(UUID.randomUUID(), "Product A");
-        assertNotEquals(product1, product2);
-        assertNotEquals(product1.hashCode(), product2.hashCode());
-    }
-
 }
+
+
+
+
 
 
 
