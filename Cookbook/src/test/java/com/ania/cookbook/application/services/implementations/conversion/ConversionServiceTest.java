@@ -1,6 +1,5 @@
-package com.ania.cookbook.application.services.implementations;
+package com.ania.cookbook.application.services.implementations.conversion;
 
-import com.ania.cookbook.application.services.implementations.conversion.*;
 import com.ania.cookbook.application.services.interfaces.conversion.Converter;
 import com.ania.cookbook.domain.model.*;
 import com.ania.cookbook.infrastructure.persistence.entity.ProductEntity;

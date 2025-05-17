@@ -5,8 +5,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import java.util.UUID;
-
-import static org.apache.logging.log4j.util.Strings.isBlank;
+import static io.micrometer.common.util.StringUtils.isBlank;
 
 @Getter
 public class Product {

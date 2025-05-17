@@ -187,4 +187,38 @@ class RecipeTest {
         assertNotNull(recipe.getTags());
         assertTrue(recipe.getTags().isEmpty());
     }
+
+    @Test
+    void CalculateServingsBasedOnIngredientMass() {
+        List<Ingredient> ingredients = List.of(
+                Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),"Flour"),500, Unit.G),  // 500g
+                Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),"Milk"), 20, Unit.DAG),   // 20g
+                Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),"Eggs"), 100, Unit.G)    // 100g
+        );
+        Recipe recipe = Recipe.newRecipe(UUID.randomUUID(), "Pancakes", Category.DESSERT, ingredients, "Mix and fried", 0,List.of("Easy", "Breakfast" ));
+        assertEquals(2, recipe.getNumberOfServings());
+    }
+
+    @Test
+    void RoundDownServingsIfBelowThreshold() {
+        List<Ingredient> ingredients = List.of(
+                Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),"Butter"), 100, Unit.G),  // 100g
+                Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),"Sugar"), 150, Unit.G)    // 150g
+        );
+
+        Recipe recipe = Recipe.newRecipe(UUID.randomUUID(), "Cake", Category.DESSERT, ingredients,"Mix and bake",0,null);
+        assertEquals(0, recipe.getNumberOfServings());
+    }
+
+    @Test
+    void ConvertVariousUnitsBeforeCalculatingServings() {
+        List<Ingredient> ingredients = List.of(
+                Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),"Rice"), 0.5f, Unit.KG),
+                Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),"Chicken"), 1, Unit.LB),  // 453.592g
+                Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),"Spices"), 50, Unit.G)    // 50g
+        );
+
+        Recipe recipe = Recipe.newRecipe(UUID.randomUUID(), "Rice Bowl", Category.MAIN_COURSE, ingredients, "Cook" ,0, List.of("Asian","Dinner"));
+        assertEquals(2, recipe.getNumberOfServings()); // (500+453.592+50) / 350 = 2.86 → 2
+    }
 }

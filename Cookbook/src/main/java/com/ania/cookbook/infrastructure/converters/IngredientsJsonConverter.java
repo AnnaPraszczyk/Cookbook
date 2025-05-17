@@ -32,7 +32,8 @@ public class IngredientsJsonConverter{
             return List.of();
         }
         try {
-            return objectMapper.readValue(json, new TypeReference<List<Ingredient>>() {});
+            return objectMapper.readValue(json, new TypeReference<>() {
+            });
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error during conversion of JSON to an ingredient list", e);
         }

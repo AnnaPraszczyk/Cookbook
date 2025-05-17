@@ -17,7 +17,4 @@ public class InMemoryConverter<S, T> implements Converter<S, T>{
         }
         return conversionLogic.apply(source);
     }
-
-
-
 }

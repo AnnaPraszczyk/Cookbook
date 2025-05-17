@@ -2,7 +2,6 @@ package com.ania.cookbook.application.services.implementations.conversion;
 
 import com.ania.cookbook.application.services.interfaces.conversion.Converter;
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
-import com.ania.cookbook.domain.model.Ingredient;
 import com.ania.cookbook.domain.model.Recipe;
 import com.ania.cookbook.infrastructure.converters.IngredientsJsonConverter;
 import com.ania.cookbook.infrastructure.persistence.entity.RecipeEntity;

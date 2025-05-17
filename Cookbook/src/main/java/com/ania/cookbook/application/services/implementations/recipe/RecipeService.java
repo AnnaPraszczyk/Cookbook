@@ -11,11 +11,10 @@ import com.ania.cookbook.domain.repositories.recipe.DeleteRecipe;
 import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
 import com.ania.cookbook.domain.repositories.recipe.SaveRecipe;
 import com.ania.cookbook.domain.repositories.recipe.UpdateRecipe;
-import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.*;
-import static org.apache.logging.log4j.util.Strings.isBlank;
+import static io.micrometer.common.util.StringUtils.isBlank;
 
 @Service
 @RequiredArgsConstructor
@@ -77,7 +76,7 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
             throw new RecipeValidationException("Recipe cannot be null");
         }
 
-        if (StringUtils.isBlank(request.recipeName())) {
+        if (isBlank(request.recipeName())) {
             throw new RecipeValidationException("Recipe name cannot be null or empty.");
         }
 
@@ -89,7 +88,7 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
             throw new RecipeValidationException("Recipe ingredients cannot be null or empty.");
         }
 
-        if (StringUtils.isBlank(request.instructions())) {
+        if (isBlank(request.instructions())) {
             throw new RecipeValidationException("Recipe instructions cannot be null or empty.");
         }
 

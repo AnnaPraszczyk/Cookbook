@@ -9,24 +9,17 @@ import java.util.UUID;
 
 public interface FindRecipeUseCase {
 
-    Optional<Recipe> findRecipeById(FindRecipeById id);
+    Optional<Recipe> findRecipeById(UUID id);
 
-    boolean existsRecipeById(FindRecipeById id);
+    boolean existsRecipeById(UUID id);
 
-    List<Recipe> findRecipeByName(FindRecipeByName name);
+    List<Recipe> findRecipeByName(String name);
 
-    boolean existsRecipeByName(FindRecipeByName name);
+    boolean existsRecipeByName(String name);
 
-    List<Recipe> findRecipeByCategory(FindRecipeByCategory category);
+    List<Recipe> findRecipeByCategory(Category category);
 
-    List<Recipe> findRecipeByTag(FindRecipeByTag tag);
+    List<Recipe> findRecipeByTag(String tag);
 
-    record FindRecipeById(UUID id){}
-
-    record FindRecipeByName(String name){}
-
-    record FindRecipeByCategory(Category category){}
-
-    record FindRecipeByTag(String tag){}
 
 }
