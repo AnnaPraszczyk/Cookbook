@@ -1,11 +1,9 @@
 package com.ania.cookbook.domain.model;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class UnitTest {
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     void DisplayName() {
@@ -45,21 +43,5 @@ class UnitTest {
     void ConvertDecagramsToGrams() {
         float result = Unit.DAG.toGrams(4); // 4 DAG → G
         assertEquals(40, result, 0.01);
-    }
-
-    @Test
-    void shouldSerializeUnitToJson() throws Exception {
-        Unit unit = Unit.KG;
-        String json = objectMapper.writeValueAsString(unit);
-
-        assertEquals("\"kg\"", json);
-    }
-
-    @Test
-    void shouldDeserializeJsonToUnit() throws Exception {
-        String json = "\"kg\"";
-        Unit unit = objectMapper.readValue(json, Unit.class);
-
-        assertEquals(Unit.KG, unit);
     }
 }

@@ -1,60 +1,122 @@
 package com.ania.cookbook.application.services.implementations.recipe;
 
 import com.ania.cookbook.application.services.interfaces.recipe.ListManagementUseCase;
+import com.ania.cookbook.domain.exceptions.ListNotFoundExeption;
+import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
+import com.ania.cookbook.domain.exceptions.RecipeValidationException;
+import com.ania.cookbook.domain.model.Ingredient;
 import com.ania.cookbook.domain.model.Recipe;
-import com.ania.cookbook.infrastructure.repositories.InMemoryRecipeRepository;
+import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
+import com.ania.cookbook.domain.repositories.recipe.SaveRecipe;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import java.util.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
+@Getter
 @RequiredArgsConstructor
 @Service
 public class RecipeManagementService implements ListManagementUseCase {
-    private final InMemoryRecipeRepository recipeRepository;
+    private final SaveRecipe saveRecipeRepository;
+    private final ReadRecipe readRecipeRepository;
     private final List<Recipe> recipeList = new ArrayList<>();
+    private final Map<String, List<Recipe>> recipeLists = new HashMap<>();
 
     @Override
-    public List<Recipe> findRecipesByName(String name) {
-        return recipeRepository.findRecipeByName(name);
+    public void createRecipeList(ListName list) {
+        recipeLists.put(list.name(), new ArrayList<>());
     }
 
     @Override
-    public boolean addRecipeByChoice(int choice, List<Recipe> matchingRecipes) {
-        if (choice > 0 && choice <= matchingRecipes.size()) {
-            recipeList.add(matchingRecipes.get(choice - 1));
-            return true;
+    public void addRecipeToList(UUID recipeId, ListName list) {
+        Recipe matchingRecipe = readRecipeRepository.findRecipeById(recipeId).orElseThrow(
+                () -> new RecipeNotFoundException("Unable to find the recipe because it does not exist."));
+        List<Recipe> recipes = recipeLists.computeIfAbsent(list.name(), k -> new ArrayList<>());
+        if (!recipes.contains(matchingRecipe)) {
+            recipes.add(matchingRecipe);
         }
-        return false;
     }
 
     @Override
-    public List<Recipe> getRecipeList() {
-        return new ArrayList<>(recipeList);
-    }
-
-    @Override
-    public void saveRecipeList() {
-        recipeList.forEach(recipeRepository::saveRecipe);
-    }
-
-    @Override
-    public boolean removeRecipeFromList(String recipeName, int choice) {
-        List<Recipe> matchingRecipes = recipeRepository.findRecipeByName(recipeName);
-        if (!matchingRecipes.isEmpty() && choice > 0 && choice <= matchingRecipes.size()) {
-            recipeList.remove(matchingRecipes.get(choice - 1));
-            return true;
+    public void saveRecipesList(ListName list) {
+        List<Recipe> recipes = recipeLists.get(list.name());
+        if (recipes.isEmpty()) {
+            throw new RecipeNotFoundException("No recipes found in the list.");
         }
-        return false;
+        recipeList.forEach(saveRecipeRepository::saveRecipe);
     }
 
     @Override
-    public boolean clearRecipeList(boolean confirm) {
-        if (!recipeList.isEmpty() && confirm) {
-            recipeList.clear();
-            return true;
+    public List<Recipe> getRecipesList(ListName list) {
+        return recipeLists.getOrDefault(list.name(), List.of());
+    }
+
+    @Override
+    public void removeRecipeFromList(UUID recipeId, ListName list) {
+        if (!recipeLists.containsKey(list.name())) {
+            throw new ListNotFoundExeption("Recipe list with the given name does not exist.");
+        } else if (recipeId == null) {
+            throw new RecipeValidationException("Recipe ID cannot be null.");
         }
-        return false;
+        List<Recipe> recipes = recipeLists.get(list.name());
+        if(recipes == null || recipes.isEmpty()){
+            throw new RecipeNotFoundException("No recipes found in the list.");
+        }
+        boolean removed = recipes.removeIf(recipe -> recipe.getRecipeId().equals(recipeId));
+        if(!removed){
+            throw new RecipeNotFoundException("Recipe with given ID does not exist in the list.");
+        }
+    }
+
+    @Override
+    public boolean clearRecipeList(ListName list, boolean confirm) {
+        if (!confirm) {
+            return false;
+        }
+        if (!recipeLists.containsKey(list.name())) {
+            throw new ListNotFoundExeption("Recipe list with the given name does not exist.");
+        }
+        List<Recipe> recipes = recipeLists.get(list.name());
+        if(recipes == null){
+            throw new ListNotFoundExeption("Recipe list with the given name does not exist.");
+        }
+            recipes.clear();
+            return true;
+    }
+
+    @Override
+    public void deleteRecipeList(ListName list) {
+        if (!recipeLists.containsKey(list.name())) {
+            throw new ListNotFoundExeption("Recipe list with the given name does not exist.");
+        }
+        List<Recipe> removedList = recipeLists.remove(list.name());
+        if (removedList == null) {
+            throw new ListNotFoundExeption("Recipe list with the given name does not exist.");
+        }
+    }
+
+    @Override
+    public Map<String, Float> generateShoppingList(ListName list) {
+        if (!recipeLists.containsKey(list.name())) {
+            throw new ListNotFoundExeption("Recipe list with the given name does not exist.");
+        }
+        Map<String, Float> shoppingList = new HashMap<>();
+        List<Recipe> recipes = recipeLists.get(list.name());
+
+        for (Recipe recipe : recipes) {
+            Map<String, Float> singleRecipeIngredients = new HashMap<>();
+
+            for (Ingredient ingredient : recipe.getIngredients()) {
+                String productName = ingredient.getProduct().getProductName().name();
+                float amountInGrams = ingredient.getUnit().toGrams(ingredient.getAmount());
+
+                singleRecipeIngredients.merge(productName, amountInGrams, Float::sum);
+            }
+
+            for (Map.Entry<String, Float> entry : singleRecipeIngredients.entrySet()) {
+                shoppingList.merge(entry.getKey(), entry.getValue(), Float::sum);
+            }
+        }
+        return shoppingList;
     }
 }

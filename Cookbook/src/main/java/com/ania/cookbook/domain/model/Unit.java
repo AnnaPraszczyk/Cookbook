@@ -1,10 +1,7 @@
 package com.ania.cookbook.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import java.util.Arrays;
 
 @RequiredArgsConstructor
 @Getter
@@ -17,19 +14,6 @@ public enum Unit {
 
     public float toGrams(float amount) {
         return amount * grams;
-    }
-
-    @JsonValue
-    public String toJson() {
-        return displayName;
-    }
-
-    @JsonCreator
-    public static Unit fromJson(String displayName) {
-        return Arrays.stream(Unit.values())
-                .filter(unit -> unit.getDisplayName().equalsIgnoreCase(displayName))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Invalid unit: " + displayName));
     }
 }
 

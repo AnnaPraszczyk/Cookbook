@@ -37,7 +37,7 @@ class IngredientServiceTest {
         Product product = productService.addProduct(productName);
 
         assertTrue(productRepository.existsProductByName(productName.name()));
-        assertEquals(productName.name(), product.getProductName());
+        assertEquals(productName.name(), product.getProductName().name());
     }
 
     @Test
@@ -49,7 +49,7 @@ class IngredientServiceTest {
         Ingredient ingredient = ingredientService.createIngredient(product, amount, unit);
 
         assertNotNull(ingredient);
-        assertEquals(product.name(), ingredient.getProduct().getProductName());
+        assertEquals(product.name(), ingredient.getProduct().getProductName().name());
         assertEquals(amount, ingredient.getAmount());
         assertEquals(unit, ingredient.getUnit());
     }
@@ -57,7 +57,7 @@ class IngredientServiceTest {
     void testCreateIngredient() {
         Ingredient ingredient = ingredientService.createIngredient(new ProductName("Sugar"), 500, Unit.G);
         assertNotNull(ingredient);
-        assertEquals("Sugar", ingredient.getProduct().getProductName());
+        assertEquals("Sugar", ingredient.getProduct().getProductName().name());
         assertEquals(500, ingredient.getAmount());
     }
 }

@@ -28,25 +28,21 @@ class ProductServiceTest {
         Product savedProduct = productService.addProduct(newProduct);
 
         assertNotNull(savedProduct);
-        assertEquals("Test Product", savedProduct.getProductName());
+        assertEquals("Test Product", savedProduct.getProductName().name());
         assertTrue(inMemoryRepository.existsProductByName("Test Product"));
     }
     @Test
     void addProductNullName() {
-        ProductName product = new ProductName(null);
-
         ProductValidationException exception = assertThrows(ProductValidationException.class,
-                () -> productService.addProduct(product));
-        assertEquals("Product cannot be null or empty.", exception.getMessage());
+                () -> productService.addProduct(new ProductName(null)));
+        assertEquals("Product name cannot be null or empty.", exception.getMessage());
     }
 
     @Test
     void addProductEmptyName() {
-        ProductName product = new ProductName("");
-
         ProductValidationException exception = assertThrows(ProductValidationException.class,
-                () -> productService.addProduct(product));
-        assertEquals("Product cannot be null or empty.", exception.getMessage());
+                () -> productService.addProduct(new ProductName("")));
+        assertEquals("Product name cannot be null or empty.", exception.getMessage());
     }
 
     @Test
@@ -61,31 +57,27 @@ class ProductServiceTest {
 
     @Test
     void findProductByNameSuccessfully() {
-        Product product = Product.newProduct(UUID.randomUUID(), "Test Product");
+        Product product = Product.newProduct(UUID.randomUUID(), new ProductName("Test Product"));
         inMemoryRepository.saveProduct(product);
 
         Optional<Product> result = productService.findProductByName(new ProductName("Test Product"));
 
         assertTrue(result.isPresent());
-        assertEquals("Test Product", result.get().getProductName());
+        assertEquals("Test Product", result.get().getProductName().name());
     }
 
     @Test
     void findProductByNameWhenIsNull() {
-        ProductName productName = new ProductName(null);
-
         ProductValidationException exception = assertThrows(ProductValidationException.class,
-                () -> productService.findProductByName(productName));
-        assertEquals("Product cannot be null or empty.", exception.getMessage());
+                () -> productService.findProductByName( new ProductName(null)));
+        assertEquals("Product name cannot be null or empty.", exception.getMessage());
     }
 
     @Test
     void findProductByNameWhenIsEmpty() {
-        ProductName productName = new ProductName("");
-
         ProductValidationException exception = assertThrows(ProductValidationException.class,
-                () -> productService.findProductByName(productName));
-        assertEquals("Product cannot be null or empty.", exception.getMessage());
+                () -> productService.findProductByName(new ProductName("")));
+        assertEquals("Product name cannot be null or empty.", exception.getMessage());
     }
 
     @Test
@@ -99,7 +91,7 @@ class ProductServiceTest {
 
     @Test
     void returnTrueWhenProductExists() {
-        Product product = Product.newProduct(UUID.randomUUID(), "ExistingProduct");
+        Product product = Product.newProduct(UUID.randomUUID(), new ProductName("ExistingProduct"));
         inMemoryRepository.saveProduct(product);
 
         boolean exists = productService.existsProductByName(new ProductName("ExistingProduct"));
@@ -108,23 +100,18 @@ class ProductServiceTest {
 
     @Test
     void returnFalseWhenProductIsNull() {
-        ProductName productName = new ProductName(null);
-
         ProductValidationException exception = assertThrows(ProductValidationException.class,
-                () -> productService.existsProductByName(productName));
+                () -> productService.existsProductByName(new ProductName(null)));
 
-
-        assertEquals("Product cannot be null or empty.", exception.getMessage());
+        assertEquals("Product name cannot be null or empty.", exception.getMessage());
     }
     @Test
 
     void returnFalseWhenProductIsEmpty() {
 
-        ProductName productName = new ProductName("");
-
         ProductValidationException exception = assertThrows(ProductValidationException.class,
-                () -> productService.existsProductByName(productName));
-        assertEquals("Product cannot be null or empty.", exception.getMessage());
+                () -> productService.existsProductByName(new ProductName("")));
+        assertEquals("Product name cannot be null or empty.", exception.getMessage());
     }
     @Test
     void returnFalseWhenProductDoesNotExist() {
@@ -141,37 +128,30 @@ class ProductServiceTest {
         Product updatedProduct = productService.updateProductName(product, newName);
 
         assertNotNull(updatedProduct);
-        assertEquals("NewName", updatedProduct.getProductName());
+        assertEquals("NewName", updatedProduct.getProductName().name());
     }
 
     @Test
     void updateProductWhenNameIsNull() {
-        ProductName name = new ProductName("Name");
-        ProductName newName = new ProductName(null);
-
         ProductValidationException exception = assertThrows(ProductValidationException.class,
-                () -> productService.updateProductName(name, newName));
-        assertEquals("New product name cannot be null or empty.", exception.getMessage());
+                () -> productService.updateProductName( new ProductName(null), new ProductName("NewName")));
+        assertEquals("Product name cannot be null or empty.", exception.getMessage());
     }
 
     @Test
     void updateProductWhenNameIsEmpty() {
-        ProductName name = new ProductName("");
-        ProductName newName = new ProductName("Name");
-
         ProductValidationException exception = assertThrows(ProductValidationException.class,
-                () -> productService.updateProductName(name,newName));
-        assertEquals("Product cannot be null or empty.", exception.getMessage());
+                () -> productService.updateProductName(new ProductName(""),new ProductName("Name")));
+        assertEquals("Product name cannot be null or empty.", exception.getMessage());
     }
 
     @Test
     void updateProductWhenNewNameIsEmpty() {
         ProductName name = new ProductName("OldName");
-        ProductName newName = new ProductName("");
-
+        productService.addProduct(name);
         ProductValidationException exception = assertThrows(ProductValidationException.class,
-                () -> productService.updateProductName(name, newName));
-        assertEquals("New product name cannot be null or empty.", exception.getMessage());
+                () -> productService.updateProductName(name,new ProductName("")));
+        assertEquals("Product name cannot be null or empty.", exception.getMessage());
     }
     @Test
     void updateProductWhenNotExists() {
@@ -181,6 +161,18 @@ class ProductServiceTest {
         ProductNotFoundException exception = assertThrows(ProductNotFoundException.class,
                 () -> productService.updateProductName(name, newName));
         assertEquals("Product not found. Unable to update.", exception.getMessage());
+    }
+
+    @Test
+    void updateProductWhenNewNameExists() {
+        ProductName name = new ProductName("OldName");
+        ProductName newName = new ProductName("NewName");
+        productService.addProduct(name);
+        productService.addProduct(newName);
+
+        ProductValidationException exception = assertThrows(ProductValidationException.class,
+                () -> productService.updateProductName(name, newName));
+        assertEquals("This product already exists.", exception.getMessage());
     }
 
     @Test
@@ -195,21 +187,17 @@ class ProductServiceTest {
 
     @Test
     void removeProductWhenIsNull() {
-        ProductName deleteProduct = new ProductName(null);
-
         ProductValidationException exception = assertThrows(ProductValidationException.class,
-                () -> productService.removeProduct(deleteProduct));
-        assertEquals("Product cannot be null or empty.", exception.getMessage());
+                () -> productService.removeProduct(new ProductName(null)));
+        assertEquals("Product name cannot be null or empty.", exception.getMessage());
 
     }
 
     @Test
     void removeProductWhenIsEmpty() {
-        ProductName deleteProduct = new ProductName("");
-
         ProductValidationException exception = assertThrows(ProductValidationException.class,
-                () -> productService.removeProduct(deleteProduct));
-        assertEquals("Product cannot be null or empty.", exception.getMessage());
+                () -> productService.removeProduct(new ProductName("")));
+        assertEquals("Product name cannot be null or empty.", exception.getMessage());
     }
 
     @Test

@@ -34,13 +34,13 @@ public class InMemoryProductRepository implements SaveProduct, ReadProduct, Upda
 
     @Override
     public Optional<Product> findProductByName(String name){
-        return inMemoryRepository.values().stream().filter(product -> product.getProductName().equals(name))
+        return inMemoryRepository.values().stream().filter(product -> product.getProductName().name().equals(name))
                 .findFirst();
     }
 
     @Override
     public boolean existsProductByName(String name){
-        return inMemoryRepository.values().stream().anyMatch(product -> name.equals(product.getProductName()));
+        return inMemoryRepository.values().stream().anyMatch(product -> name.equals(product.getProductName().name()));
     }
 
     @Override

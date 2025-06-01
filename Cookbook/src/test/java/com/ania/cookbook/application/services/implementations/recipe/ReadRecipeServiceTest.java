@@ -3,7 +3,7 @@ package com.ania.cookbook.application.services.implementations.recipe;
 import com.ania.cookbook.application.services.implementations.ingredient.IngredientService;
 import com.ania.cookbook.application.services.implementations.product.ProductService;
 import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
-import com.ania.cookbook.application.services.interfaces.recipe.CreateRecipeUseCase.CreateRecipeRequest;
+import com.ania.cookbook.application.services.interfaces.recipe.CreateRecipeUseCase.CreateRecipe;
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
 import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.domain.model.Recipe;
@@ -40,7 +40,7 @@ class ReadRecipeServiceTest {
 
     @Test
     void findRecipeById() {
-        CreateRecipeRequest request = new CreateRecipeRequest(
+        CreateRecipe request = new CreateRecipe(
                 "Pancakes", Category.DESSERT,
                 List.of(ingredientService.createIngredient(new ProductName("Flour"), 200, Unit.G)),
                 "Mix ingredients and fry.", 4, List.of("Easy"));
@@ -62,7 +62,7 @@ class ReadRecipeServiceTest {
 
     @Test
     void existsRecipeById() {
-        CreateRecipeRequest request = new CreateRecipeRequest(
+        CreateRecipe request = new CreateRecipe(
                 "Pancakes", Category.DESSERT,
                 List.of(ingredientService.createIngredient(new ProductName("Flour"), 200, Unit.G)),
                 "Mix ingredients and fry.", 4, List.of("Easy"));
@@ -80,7 +80,7 @@ class ReadRecipeServiceTest {
 
     @Test
     void findRecipeByName() {
-        CreateRecipeRequest request = new CreateRecipeRequest(
+        CreateRecipe request = new CreateRecipe(
                 "Pancakes", Category.DESSERT,
                 List.of(ingredientService.createIngredient(new ProductName("Flour"), 200, Unit.G)),
                 "Mix ingredients and fry.", 4, List.of("Easy"));
@@ -100,7 +100,7 @@ class ReadRecipeServiceTest {
 
     @Test
     void existsRecipeByName() {
-        CreateRecipeRequest request = new CreateRecipeRequest(
+        CreateRecipe request = new CreateRecipe(
                 "Pancakes", Category.DESSERT,
                 List.of(ingredientService.createIngredient(new ProductName("Flour"), 200, Unit.G)),
                 "Mix ingredients and fry.", 4, List.of("Easy"));
@@ -118,7 +118,7 @@ class ReadRecipeServiceTest {
 
     @Test
     void findRecipeByCategory() {
-        CreateRecipeRequest request = new CreateRecipeRequest(
+        CreateRecipe request = new CreateRecipe(
                 "Pancakes", Category.DESSERT,
                 List.of(ingredientService.createIngredient(new ProductName("Flour"), 200, Unit.G)),
                 "Mix ingredients and fry.", 4, List.of("Easy"));
@@ -134,7 +134,7 @@ class ReadRecipeServiceTest {
 
     @Test
     void findRecipeByTag() {
-        CreateRecipeRequest request = new CreateRecipeRequest(
+        CreateRecipe request = new CreateRecipe(
                 "Pancakes", Category.DESSERT,
                 List.of(ingredientService.createIngredient(new ProductName("Flour"), 200, Unit.G)),
                 "Mix ingredients and fry.", 4, List.of("Easy"));

@@ -24,7 +24,7 @@ public interface ProductMapping {
                 throw new ProductValidationException("Product name cannot be null or empty");
             }
             Optional<Product> maybeProduct = productService.findProductByName(new ProductName(request.productName()));
-            return maybeProduct.map(product -> new ProductResponse(product.getProductId(), product.getProductName()))
+            return maybeProduct.map(product -> new ProductResponse(product.getProductId(), product.getProductName().name()))
                     .orElseThrow(() -> new ProductNotFoundException("Unable to find the product because it does not exist."));
         }
     }
@@ -34,10 +34,10 @@ public interface ProductMapping {
     class ModelMapping {
 
         public ProductResponse map(Product product) {
-            if (isBlank(product.getProductName())) {
+            if (isBlank(product.getProductName().name())) {
                 throw new ProductValidationException("Product cannot be null or empty");
             }
-            return new ProductResponse(product.getProductId(), product.getProductName());
+            return new ProductResponse(product.getProductId(), product.getProductName().name());
         }
     }
 }

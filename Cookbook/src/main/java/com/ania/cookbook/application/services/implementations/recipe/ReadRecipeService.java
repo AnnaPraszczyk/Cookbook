@@ -43,10 +43,7 @@ public class ReadRecipeService implements FindRecipeUseCase{
             throw new RecipeNotFoundException("Recipe with given name does not exist.");
         }
 
-        return matchingRecipes.size()>1 ? List.copyOf(matchingRecipes) : List.of(selectRecipeFromList(matchingRecipes));
-    }
-    private Recipe selectRecipeFromList(List<Recipe> recipes) {
-        return recipes.getFirst();
+        return List.copyOf(matchingRecipes);
     }
 
     @Override
@@ -66,7 +63,7 @@ public class ReadRecipeService implements FindRecipeUseCase{
         if (recipes.isEmpty()) {
             throw new RecipeNotFoundException("No recipes found for the given category.");
         }
-        return recipes.size()>1 ? List.copyOf(recipes) : List.of(selectRecipeFromList(recipes));
+        return List.copyOf(recipes);
     }
 
     @Override
@@ -78,6 +75,6 @@ public class ReadRecipeService implements FindRecipeUseCase{
         if (recipes.isEmpty()) {
             throw new RecipeNotFoundException("No recipes found for the given tag.");
         }
-        return recipes.size()>1 ? List.copyOf(recipes) : List.of(selectRecipeFromList(recipes));
+        return List.copyOf(recipes);
     }
 }

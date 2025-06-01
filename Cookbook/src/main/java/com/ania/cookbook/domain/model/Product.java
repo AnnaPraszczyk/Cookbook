@@ -1,26 +1,25 @@
 package com.ania.cookbook.domain.model;
 
+import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
 import com.ania.cookbook.domain.exceptions.ProductValidationException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import java.util.UUID;
-import static io.micrometer.common.util.StringUtils.isBlank;
 
 @Getter
 public class Product {
     private final UUID productId;
-    private final String productName;
+    private final ProductName productName;
     @JsonCreator
     private Product(@JsonProperty("productId")UUID productId,
-                    @JsonProperty("productName") String productName) {
+                    @JsonProperty("productName") ProductName productName) {
         if(productId==null){throw new ProductValidationException("Product id cannot be null");}
         this.productId = productId;
-        if(isBlank(productName)){throw new ProductValidationException("Product name cannot be null or empty");}
-        this.productName = productName.trim();
+        this.productName = productName;
     }
 
-    public static Product newProduct(UUID productId, String productName) {
+    public static Product newProduct(UUID productId, ProductName productName) {
         return new Product(productId, productName);
     }
 }

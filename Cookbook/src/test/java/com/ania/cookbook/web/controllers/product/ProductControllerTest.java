@@ -1,6 +1,7 @@
 package com.ania.cookbook.web.controllers.product;
 
 import com.ania.cookbook.application.services.implementations.product.ProductService;
+import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
 import com.ania.cookbook.domain.model.Product;
 import com.ania.cookbook.web.product.ProductMapping.ModelMapping;
 import com.ania.cookbook.web.product.ProductMapping.ApiMapping;
@@ -38,8 +39,8 @@ class ProductControllerTest {
     @Test
     void addProduct() throws Exception {
         ProductRequest request = new ProductRequest("New Product");
-        Product product = Product.newProduct(UUID.randomUUID(), "New Product");
-        ProductResponse response = new ProductResponse(product.getProductId(), product.getProductName());
+        Product product = Product.newProduct(UUID.randomUUID(), new ProductName("New Product"));
+        ProductResponse response = new ProductResponse(product.getProductId(), product.getProductName().name());
 
         Mockito.when(productService.addProduct(Mockito.any())).thenReturn(product);
         Mockito.when(modelMapping.map(product)).thenReturn(response);
@@ -55,8 +56,8 @@ class ProductControllerTest {
     @Test
     void getProductByName() throws Exception {
         String productName = "Existing Product";
-        Product product = Product.newProduct(UUID.randomUUID(), productName);
-        ProductResponse response = new ProductResponse(product.getProductId(), product.getProductName());
+                        Product product = Product.newProduct(UUID.randomUUID(), new ProductName(productName));
+        ProductResponse response = new ProductResponse(product.getProductId(), product.getProductName().name());
 
         Mockito.when(productService.findProductByName(Mockito.any())).thenReturn(java.util.Optional.of(product));
         Mockito.when(modelMapping.map(product)).thenReturn(response);
@@ -72,8 +73,8 @@ class ProductControllerTest {
             String oldName = "Old Product";
             String newName = "Updated Product";
             ProductRequest request = new ProductRequest(newName);
-            Product updatedProduct = Product.newProduct(UUID.randomUUID(), newName);
-            ProductResponse response = new ProductResponse(updatedProduct.getProductId(), updatedProduct.getProductName());
+            Product updatedProduct = Product.newProduct(UUID.randomUUID(), new ProductName(newName));
+            ProductResponse response = new ProductResponse(updatedProduct.getProductId(), updatedProduct.getProductName().name());
 
             Mockito.when(productService.updateProductName(Mockito.any(), Mockito.any())).thenReturn(updatedProduct);
             Mockito.when(modelMapping.map(updatedProduct)).thenReturn(response);

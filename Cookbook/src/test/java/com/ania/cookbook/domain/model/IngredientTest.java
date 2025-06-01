@@ -1,5 +1,6 @@
 package com.ania.cookbook.domain.model;
 
+import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
 import com.ania.cookbook.domain.exceptions.IngredientValidationException;
 import org.junit.jupiter.api.Test;
 import java.util.UUID;
@@ -11,7 +12,7 @@ class IngredientTest {
     void testNewIngredient() {
         UUID productId = UUID.randomUUID();
         String productName = "test product";
-        Product product =Product.newProduct(productId, productName);
+        Product product =Product.newProduct(productId, new ProductName(productName));
         float amount = 10.0f;
         Unit unit = Unit.KG;
 
@@ -19,7 +20,7 @@ class IngredientTest {
 
         assertNotNull(ingredient);
         assertEquals(productId, ingredient.getProduct().getProductId());
-        assertEquals(productName, ingredient.getProduct().getProductName());
+        assertEquals(productName, ingredient.getProduct().getProductName().name());
         assertEquals(amount, ingredient.getAmount());
         assertEquals(unit, ingredient.getUnit());
     }
@@ -37,7 +38,7 @@ class IngredientTest {
     @Test
     void testNewIngredientNegativeAmount() {
         UUID productId = UUID.randomUUID();
-        Product product = Product.newProduct(productId ,"test product");
+        Product product = Product.newProduct(productId ,new ProductName("test product"));
         float amount = -2.0f;
         Unit unit = Unit.KG;
 
@@ -49,7 +50,7 @@ class IngredientTest {
     @Test
     void testNewIngredientNullUnit() {
         UUID productId = UUID.randomUUID();
-        Product product = Product.newProduct(productId ,"test product");
+        Product product = Product.newProduct(productId, new ProductName("test product"));
         float amount = 2.0f;
 
         IngredientValidationException exception = assertThrows(IngredientValidationException.class, () ->
