@@ -3,10 +3,7 @@ package com.ania.cookbook.web.controllers.product;
 import com.ania.cookbook.application.services.implementations.product.ProductService;
 import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
 import com.ania.cookbook.domain.model.Product;
-import com.ania.cookbook.web.product.ProductMapping.ModelMapping;
-import com.ania.cookbook.web.product.ProductMapping.ApiMapping;
 import com.ania.cookbook.web.product.ProductRequest;
-import com.ania.cookbook.web.product.ProductResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +14,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Optional;
 import java.util.UUID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -29,68 +28,65 @@ class ProductControllerTest {
     private MockMvc mockMvc;
     @MockitoBean
     private ProductService productService;
-    @MockitoBean
-    private ApiMapping apiMapping;
-    @MockitoBean
-    private ModelMapping modelMapping;
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     void addProduct() throws Exception {
-        ProductRequest request = new ProductRequest("New Product");
-        Product product = Product.newProduct(UUID.randomUUID(), new ProductName("New Product"));
-        ProductResponse response = new ProductResponse(product.getProductId(), product.getProductName().name());
+        ProductName productName = new ProductName("New Product");
+        ProductRequest request = new ProductRequest(productName);
+        Product product = Product.newProduct(UUID.randomUUID(),productName);
 
-        Mockito.when(productService.addProduct(Mockito.any())).thenReturn(product);
-        Mockito.when(modelMapping.map(product)).thenReturn(response);
+        Mockito.when(productService.addProduct(Mockito.any(ProductName.class))).thenReturn(product);
 
         mockMvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.productId").exists())
-                .andExpect(jsonPath("$.productName").value("New Product"));
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.productName.name").value("New Product"));
     }
 
     @Test
     void getProductByName() throws Exception {
-        String productName = "Existing Product";
-                        Product product = Product.newProduct(UUID.randomUUID(), new ProductName(productName));
-        ProductResponse response = new ProductResponse(product.getProductId(), product.getProductName().name());
+        ProductName productName = new ProductName("Existing Product");
+                        Product product = Product.newProduct(UUID.randomUUID(), productName);
 
-        Mockito.when(productService.findProductByName(Mockito.any())).thenReturn(java.util.Optional.of(product));
-        Mockito.when(modelMapping.map(product)).thenReturn(response);
+        Mockito.when(productService.findProductByName(Mockito.any(ProductName.class))).thenReturn(Optional.of(product));
 
         mockMvc.perform(get("/products/{productName}", productName))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.productId").exists())
-                .andExpect(jsonPath("$.productName").value(productName));
+                .andExpect(jsonPath("$.productName.name").value(productName.name()));
+    }
+
+    @Test
+    void shouldReturnNotFoundForNonExistingProduct() throws Exception {
+        Mockito.when(productService.findProductByName(Mockito.any(ProductName.class)))
+                .thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/products/UnknownProduct"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
     void updateProduct() throws Exception {
-            String oldName = "Old Product";
-            String newName = "Updated Product";
+            ProductName oldName = new ProductName("Old Product");
+            ProductName newName = new ProductName("Updated Product");
             ProductRequest request = new ProductRequest(newName);
-            Product updatedProduct = Product.newProduct(UUID.randomUUID(), new ProductName(newName));
-            ProductResponse response = new ProductResponse(updatedProduct.getProductId(), updatedProduct.getProductName().name());
+            Product updatedProduct = Product.newProduct(UUID.randomUUID(), newName);
 
-            Mockito.when(productService.updateProductName(Mockito.any(), Mockito.any())).thenReturn(updatedProduct);
-            Mockito.when(modelMapping.map(updatedProduct)).thenReturn(response);
+            Mockito.when(productService.updateProductName(Mockito.any(ProductName.class), Mockito.any(ProductName.class))).thenReturn(updatedProduct);
 
             mockMvc.perform(put("/products/{productName}", oldName)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.productName").value(newName));
+                    .andExpect(jsonPath("$.productName.name").value(newName.name()));
         }
 
     @Test
     void deleteProduct() throws Exception{
-        String productName = "To Be Deleted";
+        ProductName productName = new ProductName("To Be Deleted");
 
-        Mockito.doNothing().when(productService).removeProduct(Mockito.any());
+        Mockito.doNothing().when(productService).removeProduct(Mockito.any(ProductName.class));
 
         mockMvc.perform(delete("/products/{productName}", productName))
                 .andExpect(status().isNoContent());

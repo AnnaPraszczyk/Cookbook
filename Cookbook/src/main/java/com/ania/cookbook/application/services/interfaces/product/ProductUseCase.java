@@ -2,6 +2,8 @@ package com.ania.cookbook.application.services.interfaces.product;
 
 import com.ania.cookbook.domain.exceptions.ProductValidationException;
 import com.ania.cookbook.domain.model.Product;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Optional;
 
@@ -14,7 +16,9 @@ public interface ProductUseCase {
     Product updateProductName(ProductName productName, ProductName newName);
     void removeProduct(ProductName productName);
 
-    record ProductName(String name){
+
+    record ProductName(@JsonProperty("name") String name){
+        @JsonCreator
         public ProductName {
             if(isBlank(name)){
                 throw new ProductValidationException("Product name cannot be null or empty.");}

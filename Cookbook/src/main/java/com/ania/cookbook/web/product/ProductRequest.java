@@ -1,3 +1,5 @@
 package com.ania.cookbook.web.product;
 
-public record ProductRequest(String productName) {}
+import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
+
+public record ProductRequest(ProductName productName) {}

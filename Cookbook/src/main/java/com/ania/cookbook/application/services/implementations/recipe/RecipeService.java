@@ -50,10 +50,13 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
     }
 
     public Recipe selectRecipeFromList(List<Recipe> recipes,UUID recipeId) {
+        if(recipes ==null || recipes.isEmpty()) {
+            throw new RecipeNotFoundException("No recipes found in the list.");
+        }
         return recipes.stream()
                 .filter(recipe -> recipe.getRecipeId().equals(recipeId))
                 .findFirst()
-                .orElseThrow(() -> new RecipeNotFoundException("Recipe with given ID not found"));
+                .orElseThrow(() -> new RecipeNotFoundException("Recipe with given Id not found"));
     }
 
     @Override
@@ -66,6 +69,8 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
         Recipe recipeToDelete = (matchingRecipes.size()>1) ?
             selectRecipeFromList(matchingRecipes, recipe.recipeId()) :
                 matchingRecipes.getFirst();
+        readRecipeRepository.findRecipeById(recipeToDelete.getRecipeId()).orElseThrow(()
+                -> new RecipeNotFoundException("Recipe with given Id not found"));
         deleteRecipeRepository.deleteRecipeById(recipeToDelete.getRecipeId());
     }
 }

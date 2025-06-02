@@ -2,14 +2,11 @@ package com.ania.cookbook.web.controllers.product;
 
 import com.ania.cookbook.application.services.implementations.product.ProductService;
 import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
-import com.ania.cookbook.domain.exceptions.ProductNotFoundException;
-import com.ania.cookbook.web.product.ProductMapping;
-import com.ania.cookbook.web.product.ProductMapping.ApiMapping;
-import com.ania.cookbook.web.product.ProductMapping.ModelMapping;
-
+import com.ania.cookbook.domain.model.Product;
 import com.ania.cookbook.web.product.ProductRequest;
 import com.ania.cookbook.web.product.ProductResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,31 +15,34 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
-    private final ApiMapping apiMapping;
-    private final ProductMapping.ModelMapping modelMapping;
 
     @PostMapping
     public ResponseEntity<ProductResponse> addProduct(@RequestBody ProductRequest request) {
-        var product = productService.addProduct(new ProductName(request.productName()));
-        return ResponseEntity.ok(modelMapping.map(product));
+        var product = productService.addProduct(request.productName());
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapToResponse(product));
     }
 
     @GetMapping("/{productName}")
-    public ResponseEntity<ProductResponse> getProductByName(@PathVariable String productName) {
-        var product = productService.findProductByName(new ProductName(productName))
-                .orElseThrow(() -> new ProductNotFoundException("Product not found."));
-        return ResponseEntity.ok(modelMapping.map(product));
+    public ResponseEntity<ProductResponse> getProductByName(@PathVariable ProductName productName) {
+        return productService.findProductByName(productName)
+                .map(product -> ResponseEntity.ok(mapToResponse(product)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @PutMapping("/{productName}")
-    public ResponseEntity<ProductResponse> updateProduct(@PathVariable String productName, @RequestBody ProductRequest request) {
-        var updatedProduct = productService.updateProductName(new ProductName(productName), new ProductName(request.productName()));
-        return ResponseEntity.ok(modelMapping.map(updatedProduct));
+    public ResponseEntity<ProductResponse> updateProduct(@PathVariable ProductName productName, @RequestBody ProductRequest request) {
+        var updatedProduct = productService.updateProductName(productName, request.productName());
+        return ResponseEntity.ok(mapToResponse(updatedProduct));
     }
 
     @DeleteMapping("/{productName}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable String productName) {
-        productService.removeProduct(new ProductName(productName));
+    public ResponseEntity<Void> deleteProduct(@PathVariable ProductName productName) {
+        productService.removeProduct(productName);
         return ResponseEntity.noContent().build();
     }
+
+    private ProductResponse mapToResponse(Product product) {
+        return new ProductResponse(product.getProductId(), product.getProductName());
+    }
+
 }
