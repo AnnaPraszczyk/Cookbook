@@ -1,16 +1,28 @@
-version: "3.8"
 services:
-  db:
-    image: postgres:15-alpine
+  postgres:
+    image: postgres:17
     container_name: cookbook-postgres
     environment:
-      POSTGRES_DB: mydb
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: recipes
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: Ania9786
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
 
+  app:
+    build:
+      context: target
+      dockerfile: Dockerfile
+    container_name: cookbook-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+        SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/recipes
+        SPRING_DATASOURCE_USERNAME: admin
+        SPRING_DATASOURCE_PASSWORD: Ania9786
 volumes:
-  pgdata:
+    postgres_data: {}

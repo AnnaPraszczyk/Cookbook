@@ -33,7 +33,7 @@ class ProductTest {
         UUID id = UUID.randomUUID();
         ProductValidationException exception = assertThrows(ProductValidationException.class, () ->
                 Product.newProduct(id,  new ProductName(null)));
-        assertEquals("Product name cannot be null or empty", exception.getMessage());
+        assertEquals("Product name cannot be null or empty.", exception.getMessage());
     }
 
     @Test
@@ -41,7 +41,7 @@ class ProductTest {
         UUID id = UUID.randomUUID();
         ProductValidationException exception = assertThrows(ProductValidationException.class, () ->
                 Product.newProduct(id, new ProductName("")));
-        assertEquals("Product name cannot be null or empty", exception.getMessage());
+        assertEquals("Product name cannot be null or empty.", exception.getMessage());
     }
 }
 

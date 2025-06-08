@@ -45,7 +45,7 @@ class RecipeTest {
 
         RecipeValidationException exception = assertThrows(RecipeValidationException.class,
                 () -> Recipe.newRecipe(null, recipeName,category, ingredients,instructions, numberOfServings,tags));
-        assertEquals("Recipe id cannot be null", exception.getMessage());
+        assertEquals("Recipe id cannot be null.", exception.getMessage());
     }
 
     @Test
@@ -59,7 +59,7 @@ class RecipeTest {
 
         RecipeValidationException exception = assertThrows(RecipeValidationException.class,
                 () -> Recipe.newRecipe(recipeId,null, category, ingredients,instructions, numberOfServings,tags));
-        assertEquals("Recipe name cannot be null or empty", exception.getMessage());
+        assertEquals("Recipe name cannot be null or empty.", exception.getMessage());
     }
 
     @Test
@@ -73,7 +73,7 @@ class RecipeTest {
 
         RecipeValidationException exception = assertThrows(RecipeValidationException.class,
                 () -> Recipe.newRecipe(recipeId, "",category, ingredients,instructions, numberOfServings,tags));
-        assertEquals("Recipe name cannot be null or empty", exception.getMessage());
+        assertEquals("Recipe name cannot be null or empty.", exception.getMessage());
     }
 
     @Test
@@ -87,7 +87,7 @@ class RecipeTest {
 
         RecipeValidationException exception = assertThrows(RecipeValidationException.class,
                 () -> Recipe.newRecipe(recipeId, recipeName,null, ingredients,instructions, numberOfServings,tags));
-        assertEquals("Recipe category cannot be null", exception.getMessage());
+        assertEquals("Recipe category cannot be null.", exception.getMessage());
     }
 
     @Test
@@ -129,7 +129,7 @@ class RecipeTest {
 
         RecipeValidationException exception = assertThrows(RecipeValidationException.class,
                 () -> Recipe.newRecipe(recipeId, recipeName,category, ingredients,null, numberOfServings,tags));
-        assertEquals("Recipe instructions cannot be null or empty", exception.getMessage());
+        assertEquals("Recipe instructions cannot be null or empty.", exception.getMessage());
     }
 
     @Test
@@ -143,7 +143,7 @@ class RecipeTest {
 
         RecipeValidationException exception = assertThrows(RecipeValidationException.class,
                 () -> Recipe.newRecipe(recipeId, recipeName,category, ingredients," ", numberOfServings,tags));
-        assertEquals("Recipe instructions cannot be null or empty", exception.getMessage());
+        assertEquals("Recipe instructions cannot be null or empty.", exception.getMessage());
     }
 
     @Test
@@ -172,7 +172,7 @@ class RecipeTest {
 
         RecipeValidationException exception = assertThrows(RecipeValidationException.class,
                 () -> Recipe.newRecipe(recipeId, recipeName,category, ingredients,instructions,-5,tags));
-        assertEquals("Recipe number of servings cannot be negative", exception.getMessage());
+        assertEquals("Recipe number of servings cannot be negative.", exception.getMessage());
     }
 
     @Test
