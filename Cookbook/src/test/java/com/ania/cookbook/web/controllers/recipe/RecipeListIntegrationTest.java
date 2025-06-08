@@ -30,21 +30,16 @@ public class RecipeListIntegrationTest {
         assertEquals("IntegrationList", getResponse.getBody().getListName().name(), "The list name does not match.");
     }
 
-    /**
-     * Test sprawdzający, czy przy przesłaniu pustej nazwy listy (lub samej spacji)
-     * otrzymujemy błąd walidacji, tzn. odpowiedź HTTP 400.
-     */
     @Test
-    public void testCreateRecipeListWhenNameIsBlank() {
-        // Wysyłamy żądanie z nazwą zawierającą tylko spację, aby mapping URL został znaleziony,
-        // a walidacja wewnątrz rekordu ListName się uruchomi.
+    public void createRecipeListWhenNameIsBlank() {
         RecipeListRequest request = RecipeListRequest.builder()
-                .listName(" ")   // Używamy " ", aby uniknąć sytuacji brakującej ścieżki
+                .listName(" ")
                 .build();
 
         ResponseEntity<String> response = restTemplate.postForEntity("/api/recipes/lists", request, String.class);
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(), "Oczekiwano statusu 400 BAD_REQUEST przy błędnej nazwie");
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(), "Expected 400 BAD_REQUEST status for an invalid name.");
+        assertNotNull(response.getBody());
         assertTrue(response.getBody().contains("List name cannot be null or empty."),
-                "Komunikat błędu nie zawiera oczekiwanego tekstu");
+                "The error message does not contain the expected text.");
     }
 }

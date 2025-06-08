@@ -1,8 +1,11 @@
-package com.ania.cookbook.web.recipe;
+package com.ania.cookbook.web.controllers.recipe;
 
 import com.ania.cookbook.application.services.implementations.recipe.RecipeManagementService;
 import com.ania.cookbook.application.services.interfaces.recipe.ListManagementUseCase.ListName;
 import com.ania.cookbook.domain.model.Recipe;
+import com.ania.cookbook.web.recipe.ReadRecipeResponse;
+import com.ania.cookbook.web.recipe.RecipeListRequest;
+import com.ania.cookbook.web.recipe.RecipeListResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

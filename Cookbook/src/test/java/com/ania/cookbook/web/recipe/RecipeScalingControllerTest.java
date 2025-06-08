@@ -4,6 +4,7 @@ import com.ania.cookbook.application.services.implementations.recipe.RecipeScali
 import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
 import com.ania.cookbook.application.services.interfaces.recipe.ScaleIngredientsUseCase.AdjustRecipe;
 import com.ania.cookbook.domain.model.*;
+import com.ania.cookbook.web.controllers.recipe.RecipeScalingController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

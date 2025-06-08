@@ -1,8 +1,10 @@
-package com.ania.cookbook.web.recipe;
+package com.ania.cookbook.web.controllers.recipe;
 
 import com.ania.cookbook.application.services.implementations.recipe.RecipeScalingService;
 import com.ania.cookbook.application.services.interfaces.recipe.ScaleIngredientsUseCase.AdjustRecipe;
 import com.ania.cookbook.domain.model.Recipe;
+import com.ania.cookbook.web.recipe.RecipeScalingRequest;
+import com.ania.cookbook.web.recipe.RecipeScalingResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

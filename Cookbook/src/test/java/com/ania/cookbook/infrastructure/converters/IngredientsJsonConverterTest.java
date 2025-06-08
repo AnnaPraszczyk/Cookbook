@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.UUID;
 
 class IngredientsJsonConverterTest {
+    private final IngredientsJsonConverter converter = new IngredientsJsonConverter();
+
 
     @Test
     void ListToJson() {
@@ -22,7 +24,7 @@ class IngredientsJsonConverterTest {
                 Ingredient.newIngredient(product2, 2.0f, Unit.G)
         );
 
-        String json = IngredientsJsonConverter.listToJson(ingredients);
+        String json = converter.convertToDatabaseColumn(ingredients);
 
         assertNotNull(json);
         assertTrue(json.contains("sugar"));
@@ -32,23 +34,30 @@ class IngredientsJsonConverterTest {
     @Test
     void ListToJsonWithEmptyList() {
         List<Ingredient> emptyList = List.of();
-        String json = IngredientsJsonConverter.listToJson(emptyList);
+        String json = converter.convertToDatabaseColumn(emptyList);
 
         assertEquals("[]", json);
     }
 
     @Test
     void ListToJsonWithNullList() {
-        String json = IngredientsJsonConverter.listToJson(null);
+        String json = converter.convertToDatabaseColumn(null);
 
         assertEquals("null", json);
     }
 
     @Test
-    void ListFromJson_WithValidJson() {
-        String json = "[{\"product\":{\"productId\":\"550e8400-e29b-41d4-a716-446655440000\",\"productName\":\"Flour\"},\"amount\":10,\"unit\":\"DAG\"}]";
+    void ListFromJsonWithValidJson() {
+        String json = "[{" +
+                "\"product\": {" +
+                "\"productId\": \"550e8400-e29b-41d4-a716-446655440000\"," +
+                "\"productName\": { \"name\": \"Flour\" }" +
+                "}," +
+                "\"amount\": 10," +
+                "\"unit\": \"DAG\"" +
+                "}]";
 
-        List<Ingredient> ingredients = IngredientsJsonConverter.listFromJson(json);
+        List<Ingredient> ingredients = converter.convertToEntityAttribute(json);
 
         assertNotNull(ingredients);
         assertFalse(ingredients.isEmpty());
@@ -56,20 +65,19 @@ class IngredientsJsonConverterTest {
         assertEquals("Flour", ingredients.getFirst().getProduct().getProductName().name());
         assertEquals(10, ingredients.getFirst().getAmount());
         assertEquals("DAG", ingredients.getFirst().getUnit().toString());
-
     }
 
     @Test
-    void ListFromJson_WithEmptyJson() {
-        List<Ingredient> ingredients = IngredientsJsonConverter.listFromJson("[]");
+    void ListFromJsonWithEmptyJson() {
+        List<Ingredient> ingredients = converter.convertToEntityAttribute("[]");
 
         assertNotNull(ingredients);
         assertTrue(ingredients.isEmpty());
     }
 
     @Test
-    void ListFromJson_WithNullJson() {
-        List<Ingredient> ingredients = IngredientsJsonConverter.listFromJson(null);
+    void ListFromJsonWithNullJson() {
+        List<Ingredient> ingredients = converter.convertToEntityAttribute(null);
 
         assertNotNull(ingredients);
         assertTrue(ingredients.isEmpty());

@@ -4,6 +4,7 @@ import com.ania.cookbook.application.services.implementations.recipe.RecipeManag
 import com.ania.cookbook.application.services.interfaces.recipe.ListManagementUseCase.ListName;
 import com.ania.cookbook.domain.exceptions.ListNotFoundException;
 import com.ania.cookbook.domain.model.Recipe;
+import com.ania.cookbook.web.controllers.recipe.RecipeListController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
