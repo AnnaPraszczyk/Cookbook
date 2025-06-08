@@ -1,7 +1,7 @@
 package com.ania.cookbook.application.services.implementations.recipe;
 
 import com.ania.cookbook.application.services.interfaces.recipe.ListManagementUseCase;
-import com.ania.cookbook.domain.exceptions.ListNotFoundExeption;
+import com.ania.cookbook.domain.exceptions.ListNotFoundException;
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.Ingredient;
@@ -54,7 +54,7 @@ public class RecipeManagementService implements ListManagementUseCase {
     @Override
     public void removeRecipeFromList(UUID recipeId, ListName list) {
         if (!recipeLists.containsKey(list.name())) {
-            throw new ListNotFoundExeption("Recipe list with the given name does not exist.");
+            throw new ListNotFoundException("Recipe list with the given name does not exist.");
         } else if (recipeId == null) {
             throw new RecipeValidationException("Recipe ID cannot be null.");
         }
@@ -74,11 +74,11 @@ public class RecipeManagementService implements ListManagementUseCase {
             return false;
         }
         if (!recipeLists.containsKey(list.name())) {
-            throw new ListNotFoundExeption("Recipe list with the given name does not exist.");
+            throw new ListNotFoundException("Recipe list with the given name does not exist.");
         }
         List<Recipe> recipes = recipeLists.get(list.name());
         if(recipes == null){
-            throw new ListNotFoundExeption("Recipe list with the given name does not exist.");
+            throw new ListNotFoundException("Recipe list with the given name does not exist.");
         }
             recipes.clear();
             return true;
@@ -87,18 +87,18 @@ public class RecipeManagementService implements ListManagementUseCase {
     @Override
     public void deleteRecipeList(ListName list) {
         if (!recipeLists.containsKey(list.name())) {
-            throw new ListNotFoundExeption("Recipe list with the given name does not exist.");
+            throw new ListNotFoundException("Recipe list with the given name does not exist.");
         }
         List<Recipe> removedList = recipeLists.remove(list.name());
         if (removedList == null) {
-            throw new ListNotFoundExeption("Recipe list with the given name does not exist.");
+            throw new ListNotFoundException("Recipe list with the given name does not exist.");
         }
     }
 
     @Override
     public Map<String, Float> generateShoppingList(ListName list) {
         if (!recipeLists.containsKey(list.name())) {
-            throw new ListNotFoundExeption("Recipe list with the given name does not exist.");
+            throw new ListNotFoundException("Recipe list with the given name does not exist.");
         }
         Map<String, Float> shoppingList = new HashMap<>();
         List<Recipe> recipes = recipeLists.get(list.name());

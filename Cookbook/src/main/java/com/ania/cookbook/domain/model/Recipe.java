@@ -1,6 +1,8 @@
 package com.ania.cookbook.domain.model;
 
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -8,9 +10,9 @@ import java.util.List;
 import java.util.UUID;
 import static io.micrometer.common.util.StringUtils.isBlank;
 
-
+@AllArgsConstructor
 @Getter
-
+@Builder
 public class Recipe {
     private final UUID recipeId;
     private final String recipeName;

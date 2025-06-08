@@ -5,7 +5,7 @@ import com.ania.cookbook.application.services.implementations.product.ProductSer
 import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
 import com.ania.cookbook.application.services.interfaces.recipe.CreateRecipeUseCase.CreateRecipe;
 import com.ania.cookbook.application.services.interfaces.recipe.ListManagementUseCase.ListName;
-import com.ania.cookbook.domain.exceptions.ListNotFoundExeption;
+import com.ania.cookbook.domain.exceptions.ListNotFoundException;
 import com.ania.cookbook.domain.exceptions.ListValidationException;
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
@@ -188,7 +188,7 @@ class RecipeManagementServiceTest {
 
     @Test
     void removeRecipeFromListWhenRecipeListDoesNotExist() {
-        Exception exception = assertThrows(ListNotFoundExeption.class, () -> recipeManagementService.removeRecipeFromList(UUID.randomUUID(), new ListName("NonExistingList")));
+        Exception exception = assertThrows(ListNotFoundException.class, () -> recipeManagementService.removeRecipeFromList(UUID.randomUUID(), new ListName("NonExistingList")));
         assertEquals("Recipe list with the given name does not exist.", exception.getMessage());
     }
 
@@ -270,7 +270,7 @@ class RecipeManagementServiceTest {
 
     @Test
     void clearRecipeListWhenRecipeListDoesNotExist() {
-        Exception exception = assertThrows(ListNotFoundExeption.class, () -> recipeManagementService.clearRecipeList(new ListName("NonExistingList"), true));
+        Exception exception = assertThrows(ListNotFoundException.class, () -> recipeManagementService.clearRecipeList(new ListName("NonExistingList"), true));
         assertEquals("Recipe list with the given name does not exist.", exception.getMessage());
     }
 
@@ -292,7 +292,7 @@ class RecipeManagementServiceTest {
 
     @Test
     void deleteRecipeListWhenRecipeListDoesNotExist() {
-        Exception exception = assertThrows(ListNotFoundExeption.class, () -> recipeManagementService.deleteRecipeList(new ListName("NonExistingList")));
+        Exception exception = assertThrows(ListNotFoundException.class, () -> recipeManagementService.deleteRecipeList(new ListName("NonExistingList")));
         assertEquals("Recipe list with the given name does not exist.", exception.getMessage());
     }
 
@@ -344,7 +344,7 @@ class RecipeManagementServiceTest {
 
     @Test
     void generateShoppingListWhenListDoesNotExist() {
-        Exception exception = assertThrows(ListNotFoundExeption.class, () -> recipeManagementService.generateShoppingList(new ListName("NonExistingList")));
+        Exception exception = assertThrows(ListNotFoundException.class, () -> recipeManagementService.generateShoppingList(new ListName("NonExistingList")));
         assertEquals("Recipe list with the given name does not exist.", exception.getMessage());
     }
 

@@ -1,8 +1,6 @@
 package com.ania.cookbook.web.exeptions;
 
-import com.ania.cookbook.domain.exceptions.IngredientValidationException;
-import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
-import com.ania.cookbook.domain.exceptions.RecipeValidationException;
+import com.ania.cookbook.domain.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -25,5 +23,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleRecipeNotFoundException(RecipeNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
+
+    @ExceptionHandler(ListValidationException.class)
+    public ResponseEntity<String> handleListValidationException(ListValidationException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(ListNotFoundException.class)
+    public ResponseEntity<String> handleListNotFoundException(ListNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+
 }
 
