@@ -8,11 +8,12 @@ import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
 import com.ania.cookbook.domain.repositories.recipe.SaveRecipe;
 import com.ania.cookbook.domain.repositories.recipe.UpdateRecipe;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+
+import java.util.*;
 
 @RequiredArgsConstructor
 @Repository
@@ -74,6 +75,36 @@ public class InMemoryRecipeRepository implements SaveRecipe, ReadRecipe, UpdateR
     @Override
     public void deleteRecipeById(UUID recipeId) {
         recipes.remove(recipeId);
+    }
+
+    @Override
+    public Page<Recipe> findRecipeByName(String name, Pageable pageable) {
+        List<Recipe> filtered = findRecipeByName(name);
+        return toPage(filtered, pageable);
+    }
+
+    @Override
+    public Page<Recipe> findRecipeByCategory(Category category, Pageable pageable) {
+        List<Recipe> filtered = findRecipeByCategory(category);
+        return toPage(filtered, pageable);
+    }
+
+    @Override
+    public Page<Recipe> findRecipeByTag(String tag, Pageable pageable) {
+        List<Recipe> filtered = findRecipeByTag(tag);
+        return toPage(filtered, pageable);
+    }
+
+    private Page<Recipe> toPage(List<Recipe> list, Pageable pageable) {
+        int total = list.size();
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), total);
+
+        List<Recipe> content = (start <= end)
+                ? list.subList(start, end)
+                : Collections.emptyList();
+
+        return new PageImpl<>(content, pageable, total);
     }
 }
 

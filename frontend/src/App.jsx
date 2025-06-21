@@ -9,7 +9,7 @@ import Ingredients from "./pages/Ingredients";
 import CreateRecipePage from "./pages/CreateRecipePage";
 import UpdateRecipePage from "./pages/UpdateRecipePage";
 import DeleteRecipePage from "./pages/DeleteRecipePage";
-
+import ShoppingListPage from "./pages/ShoppingListPage";
 
 
 const App = () => {
@@ -17,15 +17,18 @@ const App = () => {
         <>
             <Header/>
             <Navigation/>
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/ingredients" element={<Ingredients />} />
-                <Route path="/recipes" element={<Recipes />} />
-                <Route path="/recipes/create" element={<CreateRecipePage />} />
-                <Route path="/recipes/update" element={<UpdateRecipePage />} />
-                <Route path="/recipes/delete" element={<DeleteRecipePage />} />
-            </Routes>
+            <main className="pt-24">
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/products" element={<Products />} />
+                    <Route path="/ingredients" element={<Ingredients />} />
+                    <Route path="/recipes" element={<Recipes />} />
+                    <Route path="/recipes/create" element={<CreateRecipePage />} />
+                    <Route path="/recipes/update" element={<UpdateRecipePage />} />
+                    <Route path="/recipes/delete" element={<DeleteRecipePage />} />
+                    <Route path="/shopping/:listName" element={<ShoppingListPage />} />
+                </Routes>
+            </main>
         </>
     );
 };

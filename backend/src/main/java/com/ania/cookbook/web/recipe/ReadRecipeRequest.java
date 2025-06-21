@@ -12,4 +12,6 @@ public class ReadRecipeRequest {
     private String recipeName;
     private String category;
     private String tag;
+    private Integer page = 0;
+    private Integer size = 10;
 }

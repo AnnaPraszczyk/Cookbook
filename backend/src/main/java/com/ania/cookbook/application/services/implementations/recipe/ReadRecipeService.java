@@ -7,6 +7,8 @@ import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
 import com.ania.cookbook.domain.model.Recipe;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
@@ -77,4 +79,30 @@ public class ReadRecipeService implements FindRecipeUseCase{
         }
         return List.copyOf(recipes);
     }
+
+    @Override
+    public Page<Recipe> findRecipeByName(String recipeName, Pageable pageable) {
+        if (isBlank(recipeName)) {
+            throw new RecipeValidationException("Recipe name cannot be null or empty.");
+        }
+        return readRecipeRepository.findRecipeByName(recipeName, pageable);
+    }
+
+    @Override
+    public Page<Recipe> findRecipeByCategory(Category category, Pageable pageable) {
+        if (category == null) {
+            throw new RecipeValidationException("Recipe category cannot be null.");
+        }
+        return readRecipeRepository.findRecipeByCategory(category, pageable);
+    }
+
+    @Override
+    public Page<Recipe> findRecipeByTag(String tag, Pageable pageable) {
+        if (isBlank(tag)) {
+            throw new RecipeValidationException("Recipe tag cannot be null or empty.");
+        }
+        return readRecipeRepository.findRecipeByTag(tag, pageable);
+    }
+
+
 }

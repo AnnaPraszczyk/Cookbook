@@ -26,7 +26,7 @@ public class RecipeEntity {
         private final Category category;
         @Column(name = "ingredients", columnDefinition = "TEXT")
         @Convert(converter = IngredientsJsonConverter.class)
-        private final String ingredientsJson;
+        private List<Ingredient> ingredients = new ArrayList<>();
         @Column(name = "instructions", nullable = false)
         private final String instructions;
         @Column(name = "created", nullable = false, updatable = false)
@@ -37,13 +37,13 @@ public class RecipeEntity {
         private List<String> tags;
 
 
-        private RecipeEntity(UUID recipeId, String recipeName, Category category, String ingredientsJson, String instructions, int numberOfServings, List<String> tags) {
+        private RecipeEntity(UUID recipeId, String recipeName, Category category, List<Ingredient> ingredients, String instructions, int numberOfServings, List<String> tags) {
             if(recipeId==null){throw new RecipeValidationException("Recipe id cannot be null");}
             this.recipeId = recipeId;
             if(recipeName==null || recipeName.isBlank()){throw new RecipeValidationException("Recipe name cannot be null or empty");}
             this.recipeName = recipeName;
             this.category = category;
-            this.ingredientsJson = ingredientsJson;
+            this.ingredients = ingredients;
             if(instructions==null ||  instructions.isBlank()){throw new RecipeValidationException("Recipe instructions cannot be null or empty");}
             this.instructions = instructions;
             this.created = Instant.now();
@@ -56,14 +56,14 @@ public class RecipeEntity {
             recipeId = UUID.randomUUID();
             recipeName = null;
             category = null;
-            ingredientsJson = null;
+            ingredients = null;
             instructions = null;
             created = null;
             numberOfServings = 0;
             tags = null;
     }
 
-    public static RecipeEntity newRecipeEntity(UUID recipeId, String name, Category category, String ingredientsJson, String instructions, int numberOfServings, List<String> tags){
-            return new RecipeEntity(recipeId, name, category, ingredientsJson, instructions,numberOfServings, tags);
+    public static RecipeEntity newRecipeEntity(UUID recipeId, String name, Category category, List<Ingredient> ingredients, String instructions, int numberOfServings, List<String> tags){
+            return new RecipeEntity(recipeId, name, category, ingredients, instructions,numberOfServings, tags);
         }
 }

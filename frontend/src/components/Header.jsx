@@ -1,28 +1,19 @@
+import React from "react";
+
 const Header = () => {
     return (
-        <header style={{
-            position: "fixed",
-            top: "0",
-            left: "0",
-            width: "100%",
-            height: "100px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginTop: "20px",
-            marginLeft: "10px",
+        <header className="fixed top-0 left-0 w-full h-24 px-6 flex items-center justify-between z-50">
 
-        }}>
-            <div style={{ textAlign: "left" }}>
-                <h1 style={{ fontSize: "5rem", fontWeight: "bold", marginBottom: "5px"}}>Cookbook</h1>
-                <h2 style={{ fontSize: "1.8rem", marginLeft: "200px", marginTop: "-8px"}}>Application</h2>
+            <div className="text-left">
+                <h1 className="text-5xl font-bold leading-none">Cookbook</h1>
+                <h2 className="text-xl absolute left-32 top-18 sm:left-40 md:left-44">Application</h2>
             </div>
-            <div style={{ fontFamily: "'Monotype Corsiva', cursive", fontSize: "3rem", position: "absolute", left: "50%", transform: "translateX(-50%)" }}>
+
+            <div className="absolute left-1/2 transform -translate-x-1/2 font-serif text-3xl text-center whitespace-nowrap hidden sm:block">
                 My favorite recipes
             </div>
         </header>
     );
 };
-
 
 export default Header;

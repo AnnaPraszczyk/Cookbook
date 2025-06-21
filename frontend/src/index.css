@@ -57,36 +57,7 @@
   }
 form {
   display: flex;
-  flex-direction: row;
   align-items:center;
-}
-input, form input, label input {
-  flex:1;
-  padding: 12px;
-  font-size: 1rem;
-  border: 2px solid gray;
-  border-radius: 5px;
-  background-color: #333;
-  margin-top: 12px;
-  margin-bottom: 12px;
-  width: 430px;
-  box-sizing: border-box;
-  color: white;
-  margin-right: 10px;
-}
-button, form button {
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: none;
-  font-size: 1rem;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  background-color: gray;
-  transition: all 0.25s ease-in-out;
-  width: 150px;
-  height:45px;
-  box-sizing: border-box;
 }
 
 nav a {
