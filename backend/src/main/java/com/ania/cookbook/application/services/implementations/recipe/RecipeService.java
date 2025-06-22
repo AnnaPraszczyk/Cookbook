@@ -31,21 +31,20 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
     private final DeleteRecipe deleteRecipeRepository;
     private final ProductUseCase productUseCase;
 
-    private Product resolveOrCreateProduct(ProductName productName) {
-            return productUseCase.findProductByName(productName).orElseGet(() -> productUseCase.addProduct(productName));
-    }
 
     @Override
     public Recipe createRecipe(CreateRecipe recipe) {
         List<Ingredient> resolvedIngredients = recipe.ingredients().stream()
                 .map(i -> {
                     ProductName name = new ProductName(i.productName());
-                    Product product = resolveOrCreateProduct(name);
+                    Product product = productUseCase
+                            .findProductByName(name)
+                            .orElseGet(() -> productUseCase.addProduct(name));
                     return Ingredient.newIngredient(product, i.amount(), i.unit());
                 })
                 .toList();
-
-        Recipe newRecipe = Recipe.newRecipe(UUID.randomUUID(),recipe.recipeName(),recipe.category(),resolvedIngredients,
+        UUID id = UUID.randomUUID();
+        Recipe newRecipe = Recipe.newRecipe(id,recipe.recipeName(),recipe.category(),resolvedIngredients,
                 recipe.instructions(),recipe.numberOfServings(),
                 recipe.tags());
         return saveRecipeRepository.saveRecipe(newRecipe);

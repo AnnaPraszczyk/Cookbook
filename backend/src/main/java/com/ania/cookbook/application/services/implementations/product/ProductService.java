@@ -29,8 +29,8 @@ public class ProductService implements ProductUseCase {
 
     @Override
     public Product addProduct(ProductName product) {
-
-        var newProduct = Product.newProduct(UUID.randomUUID(), new ProductName(product.name()));
+        UUID id = UUID.randomUUID();
+        var newProduct = Product.newProduct(id, new ProductName(product.name()));
         return saveProductRepository.saveProduct(newProduct);
     }
 

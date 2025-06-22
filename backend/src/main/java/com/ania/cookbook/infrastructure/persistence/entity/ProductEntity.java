@@ -11,7 +11,6 @@ import java.util.UUID;
     public class ProductEntity {
 
         @Id
-        @GeneratedValue
         @Column(name = "product_id", nullable = false, updatable = false)
         private final UUID productId;
         @Column(name = "product_name", nullable = false, unique = true)
