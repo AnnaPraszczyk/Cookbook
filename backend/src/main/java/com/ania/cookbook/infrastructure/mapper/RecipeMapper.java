@@ -2,8 +2,12 @@ package com.ania.cookbook.infrastructure.mapper;
 
 import com.ania.cookbook.domain.model.Recipe;
 import com.ania.cookbook.infrastructure.persistence.entity.RecipeEntity;
+import org.springframework.stereotype.Component;
 
+@Component
 public class RecipeMapper {
+
+
     public Recipe toDomain(RecipeEntity e) {
         return Recipe.newRecipe(
                 e.getRecipeId(),

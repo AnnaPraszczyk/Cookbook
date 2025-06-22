@@ -8,12 +8,18 @@ import com.ania.cookbook.domain.repositories.product.DeleteProduct;
 import com.ania.cookbook.domain.repositories.product.ReadProduct;
 import com.ania.cookbook.domain.repositories.product.SaveProduct;
 import com.ania.cookbook.domain.repositories.product.UpdateProduct;
+
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+
+
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ProductService implements ProductUseCase {
     private final SaveProduct saveProductRepository;
@@ -23,17 +29,14 @@ public class ProductService implements ProductUseCase {
 
     @Override
     public Product addProduct(ProductName product) {
-        if (readProductRepository.existsProductByName(product.name())) {
-            throw new ProductValidationException("A product already exists.");
-        }
+
         var newProduct = Product.newProduct(UUID.randomUUID(), new ProductName(product.name()));
         return saveProductRepository.saveProduct(newProduct);
     }
 
     @Override
     public Optional<Product> findProductByName(ProductName product) {
-        return Optional.ofNullable(readProductRepository.findProductByName(product.name())
-                .orElseThrow(() -> new ProductNotFoundException("Unable to find the product because it does not exist.")));
+        return readProductRepository.findProductByName(product.name());
     }
 
     @Override

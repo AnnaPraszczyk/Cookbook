@@ -14,6 +14,7 @@ import com.ania.cookbook.domain.repositories.recipe.DeleteRecipe;
 import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
 import com.ania.cookbook.domain.repositories.recipe.SaveRecipe;
 import com.ania.cookbook.domain.repositories.recipe.UpdateRecipe;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.*;
@@ -21,6 +22,7 @@ import java.util.*;
 import static io.micrometer.common.util.StringUtils.isBlank;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, DeleteRecipeUseCase {
     private final SaveRecipe saveRecipeRepository;
@@ -30,21 +32,20 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
     private final ProductUseCase productUseCase;
 
     private Product resolveOrCreateProduct(ProductName productName) {
-        return productUseCase.findProductByName(productName)
-                .orElseGet(() -> productUseCase.addProduct(productName));
+            return productUseCase.findProductByName(productName).orElseGet(() -> productUseCase.addProduct(productName));
     }
 
     @Override
     public Recipe createRecipe(CreateRecipe recipe) {
         List<Ingredient> resolvedIngredients = recipe.ingredients().stream()
                 .map(i -> {
-                    ProductName name = i.getProduct().getProductName();
+                    ProductName name = new ProductName(i.productName());
                     Product product = resolveOrCreateProduct(name);
-                    return Ingredient.newIngredient(product, i.getAmount(), i.getUnit());
+                    return Ingredient.newIngredient(product, i.amount(), i.unit());
                 })
                 .toList();
 
-        var newRecipe = Recipe.newRecipe(UUID.randomUUID(),recipe.recipeName(),recipe.category(),resolvedIngredients,
+        Recipe newRecipe = Recipe.newRecipe(UUID.randomUUID(),recipe.recipeName(),recipe.category(),resolvedIngredients,
                 recipe.instructions(),recipe.numberOfServings(),
                 recipe.tags());
         return saveRecipeRepository.saveRecipe(newRecipe);

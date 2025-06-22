@@ -1,6 +1,7 @@
 package com.ania.cookbook.web.controllers.ingredient;
 
 import com.ania.cookbook.application.services.implementations.ingredient.IngredientService;
+import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
 import com.ania.cookbook.domain.model.Ingredient;
 import com.ania.cookbook.web.ingredient.IngredientRequest;
 import com.ania.cookbook.web.ingredient.IngredientResponse;
@@ -25,9 +26,9 @@ public class IngredientController {
     @PostMapping
     public ResponseEntity<IngredientResponse> createIngredient(@RequestBody IngredientRequest request) {
         log.info("Received request: {}", request);
-
+    ProductName productName = new ProductName(request.productName());
         Ingredient ingredient = ingredientService.createIngredient(
-                request.productName(),
+                productName,
                 request.amount(),
                 request.unit()
         );

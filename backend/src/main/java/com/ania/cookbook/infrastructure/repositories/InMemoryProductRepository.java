@@ -6,6 +6,7 @@ import com.ania.cookbook.domain.repositories.product.SaveProduct;
 import com.ania.cookbook.domain.repositories.product.UpdateProduct;
 import com.ania.cookbook.domain.model.Product;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 import java.util.HashMap;
 import java.util.Optional;
@@ -13,6 +14,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Repository
+@Profile("test")
 public class InMemoryProductRepository implements SaveProduct, ReadProduct, UpdateProduct, DeleteProduct {
     private final HashMap<UUID, Product> inMemoryRepository = new HashMap<>();
 

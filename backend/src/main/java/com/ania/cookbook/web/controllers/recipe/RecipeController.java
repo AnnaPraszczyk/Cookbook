@@ -28,16 +28,8 @@ public class RecipeController {
 
     @PostMapping
     public ResponseEntity<RecipeResponse> createRecipe(@RequestBody RecipeRequest request) {
-        Recipe recipe = recipeService.createRecipe(
-                new CreateRecipe(
-                        request.recipeName(),
-                        request.category(),
-                        request.ingredients(),
-                        request.instructions(),
-                        request.numberOfServings(),
-                        request.tags()
-                )
-        );
+        var recipe = recipeService.createRecipe(new CreateRecipe(request.recipeName(), request.category(),
+                request.ingredients(), request.instructions(), request.numberOfServings(), request.tags()));
         return ResponseEntity.status(HttpStatus.CREATED).body(mapToResponse(recipe));
     }
 

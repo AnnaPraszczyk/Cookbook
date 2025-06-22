@@ -32,7 +32,11 @@ const RecipeCreateForm = () => {
     const handleRecipeSubmit = async (e) => {
         e.preventDefault();
 
-        const ingredientsArray = ingredients;
+        const ingredientsArray = ingredients.map(i =>({
+            productName: i.product.productName.name,
+            amount:      i.amount,
+            unit:        i.unit.toUpperCase()
+        }));
 
         const tagsArray = tags.split(",").map((item) => item.trim()).filter((item) => item);
 
@@ -42,7 +46,7 @@ const RecipeCreateForm = () => {
             ingredients: ingredientsArray,
             instructions,
             numberOfServings: parseInt(numberOfServings, 10),
-            tags: tagsArray,
+            tags: tags.split(",").map(s => s.trim()).filter(Boolean),
         };
         console.log("🛫 Send on server:", requestData);
 
@@ -52,12 +56,26 @@ const RecipeCreateForm = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(requestData),
             });
+            if (!response.ok) {
+                const text = await response.text();
+                let errorPayload
+                try {
+                    errorPayload = JSON.parse(text)
+                } catch {
+                    errorPayload = text;
+                }
+                throw new Error(`Server ${response.status}: ${JSON.stringify(errorPayload)}`)
+            }
 
-
-            const data = await response.json();
-            console.log("📥 Status request:", response.status, "– body:", "data:", data);
-            setMessage({text:`Recipe created!`,type:"success"});
+            const ct = response.headers.get("content-type") || "";
+            let data;
+            if (ct.includes("application/json")) {
+                data = await response.json();
+            } else {
+                data = await response.text();
+            }
         } catch (error) {
+            console.error(error);
             setMessage({text: error.message,type:"error"});
         }
     };
