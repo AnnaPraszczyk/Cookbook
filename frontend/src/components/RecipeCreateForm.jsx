@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import IngredientInput from "./IngredientInput";
 import { HiX } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
+import { v4 as uuidv4 } from 'uuid';
 
+const UNITS = ['G','DAG','KG','OZ','LB','ST']
 const categoryOptions = [
     "Appetizer","Soup","Main Course","Sauce","Salad","Pasta","Snack","Beverage","Dessert","Cake","Pie","Bakery"
 ];
@@ -14,7 +16,7 @@ const RecipeCreateForm = () => {
     const [instructions, setInstructions] = useState("");
     const [numberOfServings, setNumberOfServings] = useState("");
     const [tags, setTags] = useState("");
-    const [message, setMessage] = useState(null);
+    const [message, setMessage] = useState({text: '', type: ''});
 
     const navigate = useNavigate();
 
@@ -30,10 +32,7 @@ const RecipeCreateForm = () => {
     const handleRecipeSubmit = async (e) => {
         e.preventDefault();
 
-        const ingredientsArray = ingredients.split(",").map((item) => {
-            const trimmed = item.trim();
-            return { productName: { name: trimmed }, amount: 1, unit: "g" };
-        });
+        const ingredientsArray = ingredients;
 
         const tagsArray = tags.split(",").map((item) => item.trim()).filter((item) => item);
 
@@ -45,17 +44,21 @@ const RecipeCreateForm = () => {
             numberOfServings: parseInt(numberOfServings, 10),
             tags: tagsArray,
         };
+        console.log("🛫 Send on server:", requestData);
 
         try {
-            const response = await fetch("/api/recipes", {
+            const response = await fetch('http://localhost:8080/api/recipes', {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(requestData),
             });
+
+
             const data = await response.json();
-            setMessage(`Recipe created! Received: ${JSON.stringify(data)}`);
+            console.log("📥 Status request:", response.status, "– body:", "data:", data);
+            setMessage({text:`Recipe created!`,type:"success"});
         } catch (error) {
-            setMessage(`Error: ${error.message}`);
+            setMessage({text: error.message,type:"error"});
         }
     };
     const messageClass =
@@ -98,12 +101,12 @@ const RecipeCreateForm = () => {
 
                 <ul className="mt-2 list-disc list-inside space-y-1">
                     {ingredients
-                        .filter(i => i.productName?.name)
+                        .filter(i => i.product?.productName?.name)
                         .map((i, idx) => (
                         <li key={idx}
                             className="flex items-center justify-between bg-[#333] text-white px-3 py-1 rounded">
                             <span>
-                                {i.productName.name} - {i.amount} {i.unit}
+                                {i.product.productName.name} - {i.amount} {i.unit}
                             </span>
                             <button
                                 type="button"
@@ -150,7 +153,9 @@ const RecipeCreateForm = () => {
                     Create Recipe
                 </button>
             </div>
-            {message && <p className={messageClass}>{message.text}</p>}
+             {message.text && <p className={message.type==="success"? "text-green-600" : "text-red-600"}>{message.text}</p>}
+
+
         </form>
     );
 };

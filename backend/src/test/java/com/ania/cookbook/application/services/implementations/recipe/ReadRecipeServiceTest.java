@@ -2,6 +2,7 @@ package com.ania.cookbook.application.services.implementations.recipe;
 
 import com.ania.cookbook.application.services.implementations.ingredient.IngredientService;
 import com.ania.cookbook.application.services.implementations.product.ProductService;
+import com.ania.cookbook.application.services.interfaces.product.ProductUseCase;
 import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
 import com.ania.cookbook.application.services.interfaces.recipe.CreateRecipeUseCase.CreateRecipe;
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
@@ -27,13 +28,14 @@ class ReadRecipeServiceTest {
     private ReadRecipeService readRecipeService;
     private IngredientService ingredientService;
     private RecipeService recipeService;
+    private ProductUseCase productUseCase;
 
     @BeforeEach
     void setUp() {
         InMemoryRecipeRepository recipeRepository = new InMemoryRecipeRepository();
         InMemoryProductRepository productRepository = new InMemoryProductRepository();
         readRecipeService = new ReadRecipeService(recipeRepository);
-        recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository);
+        recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository, productUseCase);
         ProductService productService = new ProductService(productRepository, productRepository, productRepository, productRepository);
         ingredientService = new IngredientService(productService);
     }

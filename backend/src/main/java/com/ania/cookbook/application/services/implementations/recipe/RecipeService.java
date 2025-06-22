@@ -1,11 +1,14 @@
 package com.ania.cookbook.application.services.implementations.recipe;
 
+import com.ania.cookbook.application.services.interfaces.product.ProductUseCase;
+import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
 import com.ania.cookbook.application.services.interfaces.recipe.CreateRecipeUseCase;
 import com.ania.cookbook.application.services.interfaces.recipe.DeleteRecipeUseCase;
 import com.ania.cookbook.application.services.interfaces.recipe.UpdateRecipeUseCase;
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
 import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.domain.model.Ingredient;
+import com.ania.cookbook.domain.model.Product;
 import com.ania.cookbook.domain.model.Recipe;
 import com.ania.cookbook.domain.repositories.recipe.DeleteRecipe;
 import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
@@ -24,11 +27,25 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
     private final ReadRecipe readRecipeRepository;
     private final UpdateRecipe updateRecipeRepository;
     private final DeleteRecipe deleteRecipeRepository;
+    private final ProductUseCase productUseCase;
+
+    private Product resolveOrCreateProduct(ProductName productName) {
+        return productUseCase.findProductByName(productName)
+                .orElseGet(() -> productUseCase.addProduct(productName));
+    }
 
     @Override
     public Recipe createRecipe(CreateRecipe recipe) {
-        var newRecipe = Recipe.newRecipe(UUID.randomUUID(),recipe.recipeName(),recipe.category(),
-                recipe.ingredients(), recipe.instructions(),recipe.numberOfServings(),
+        List<Ingredient> resolvedIngredients = recipe.ingredients().stream()
+                .map(i -> {
+                    ProductName name = i.getProduct().getProductName();
+                    Product product = resolveOrCreateProduct(name);
+                    return Ingredient.newIngredient(product, i.getAmount(), i.getUnit());
+                })
+                .toList();
+
+        var newRecipe = Recipe.newRecipe(UUID.randomUUID(),recipe.recipeName(),recipe.category(),resolvedIngredients,
+                recipe.instructions(),recipe.numberOfServings(),
                 recipe.tags());
         return saveRecipeRepository.saveRecipe(newRecipe);
     }

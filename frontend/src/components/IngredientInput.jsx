@@ -8,8 +8,10 @@ const IngredientInput = ({ onAdd, onRemove }) => {
 
     const add = e => {
         e.preventDefault();
-        onAdd({ productName: { name }, amount: +amt, unit });
-        setName(""); setAmt("");
+        onAdd({
+            product: { productName: { name }},
+            amount: +amt,
+            unit });
     };
 
     return (

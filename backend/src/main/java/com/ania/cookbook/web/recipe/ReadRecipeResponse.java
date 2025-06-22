@@ -31,6 +31,7 @@ public class ReadRecipeResponse {
                 .category(recipe.getCategory())
                 .ingredients(recipe.getIngredients())
                 .instructions(recipe.getInstructions())
+                .numberOfServings(recipe.getNumberOfServings())
                 .tags(recipe.getTags())
                 .build();
     }

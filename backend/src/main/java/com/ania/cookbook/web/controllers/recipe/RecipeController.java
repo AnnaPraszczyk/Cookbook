@@ -16,10 +16,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/recipes")
+@RequestMapping("/api/recipes")
 @RequiredArgsConstructor
 public class RecipeController {
     private final RecipeService recipeService;
+
+    @GetMapping("/ping")
+    public ResponseEntity<String> ping() {
+        return ResponseEntity.ok("pong");
+    }
 
     @PostMapping
     public ResponseEntity<RecipeResponse> createRecipe(@RequestBody RecipeRequest request) {

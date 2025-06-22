@@ -2,6 +2,7 @@ package com.ania.cookbook.application.services.implementations.recipe;
 
 import com.ania.cookbook.application.services.implementations.ingredient.IngredientService;
 import com.ania.cookbook.application.services.implementations.product.ProductService;
+import com.ania.cookbook.application.services.interfaces.product.ProductUseCase;
 import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
 import com.ania.cookbook.application.services.interfaces.recipe.CreateRecipeUseCase.CreateRecipe;
 import com.ania.cookbook.application.services.interfaces.recipe.ListManagementUseCase.ListName;
@@ -25,6 +26,7 @@ class RecipeManagementServiceTest {
     private RecipeManagementService recipeManagementService;
     private RecipeService recipeService;
     private IngredientService ingredientService;
+    private ProductUseCase productUseCase;
 
     @BeforeEach
     void setUp() {
@@ -32,7 +34,7 @@ class RecipeManagementServiceTest {
         recipeManagementService = new RecipeManagementService(recipeRepository, recipeRepository);
         InMemoryProductRepository productRepository = new InMemoryProductRepository();
         ProductService productService = new ProductService(productRepository, productRepository, productRepository, productRepository);
-        recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository);
+        recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository, productUseCase);
         ingredientService = new IngredientService(productService);
     }
 

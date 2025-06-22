@@ -2,6 +2,7 @@ package com.ania.cookbook.application.services.implementations.recipe;
 
 import com.ania.cookbook.application.services.implementations.ingredient.IngredientService;
 import com.ania.cookbook.application.services.implementations.product.ProductService;
+import com.ania.cookbook.application.services.interfaces.product.ProductUseCase;
 import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
 import com.ania.cookbook.application.services.interfaces.recipe.CreateRecipeUseCase.CreateRecipe;
 import com.ania.cookbook.application.services.interfaces.recipe.DeleteRecipeUseCase.DeleteRecipeCase;
@@ -20,31 +21,40 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+
 @ExtendWith(MockitoExtension.class)
 class RecipeServiceTest {
     private InMemoryRecipeRepository recipeRepository;
+    private ProductUseCase productUseCase;
     private RecipeService recipeService;
     private ReadRecipeService readRecipeService;
     private IngredientService ingredientService;
 
+
+
     @BeforeEach
     void setUp() {
         recipeRepository = new InMemoryRecipeRepository();
-        recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository);
-        readRecipeService = new ReadRecipeService(recipeRepository);
         InMemoryProductRepository productRepository = new InMemoryProductRepository();
+        productUseCase = new ProductService(productRepository, productRepository, productRepository, productRepository);
+        recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository, productUseCase);
+        readRecipeService = new ReadRecipeService(recipeRepository);
         ProductService productService = new ProductService(productRepository, productRepository, productRepository, productRepository);
         ingredientService = new IngredientService(productService);
     }
 
     @Test
     void createRecipe() {
-        Ingredient ingredient1 = ingredientService.createIngredient(new ProductName("Flour"),20,Unit.DAG);
-        Ingredient ingredient2 = ingredientService.createIngredient(new ProductName("Sugar"),10,Unit.G);
-        List<Ingredient> ingredients = List.of(ingredient1,ingredient2);
+
+        Product flourProduct = productUseCase.addProduct(new ProductName("Flour"));
+        Product sugarProduct = productUseCase.addProduct(new ProductName("Sugar"));
+
+
+        Ingredient raw1 = Ingredient.newIngredient(flourProduct, 20f, Unit.DAG);
+        Ingredient raw2 = Ingredient.newIngredient(sugarProduct, 10f, Unit.G);
 
         CreateRecipe request = new CreateRecipe("Pancakes", Category.DESSERT,
-                ingredients, "Mix and fry", 2, List.of("Easy"));
+                List.of(raw1,raw2), "Mix and fry", 2, List.of("Easy"));
 
         Recipe savedRecipe = recipeService.createRecipe(request);
 
@@ -53,6 +63,10 @@ class RecipeServiceTest {
         assertEquals(request.category(), savedRecipe.getCategory());
         assertEquals(request.ingredients().size(), savedRecipe.getIngredients().size());
         assertEquals(request.instructions(), savedRecipe.getInstructions());
+        for (Ingredient ing : savedRecipe.getIngredients()) {
+            assertNotNull(ing.getProduct().getProductId());
+            assertNotNull(ing.getProduct().getProductName());
+        }
     }
 
     @Test
