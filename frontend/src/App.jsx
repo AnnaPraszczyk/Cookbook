@@ -10,6 +10,7 @@ import CreateRecipePage from "./pages/CreateRecipePage";
 import UpdateRecipePage from "./pages/UpdateRecipePage";
 import DeleteRecipePage from "./pages/DeleteRecipePage";
 import ShoppingListPage from "./pages/ShoppingListPage";
+import RecipeDetailsPage from "./pages/RecipeDetailsPage.jsx";
 
 
 const App = () => {
@@ -24,6 +25,7 @@ const App = () => {
                     <Route path="/ingredients" element={<Ingredients />} />
                     <Route path="/recipes" element={<Recipes />} />
                     <Route path="/recipes/create" element={<CreateRecipePage />} />
+                    <Route path="/recipes/:id" element={<RecipeDetailsPage />} />
                     <Route path="/recipes/update" element={<UpdateRecipePage />} />
                     <Route path="/recipes/delete" element={<DeleteRecipePage />} />
                     <Route path="/shopping/:listName" element={<ShoppingListPage />} />

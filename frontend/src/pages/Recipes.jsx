@@ -120,27 +120,33 @@ const Recipes = () => {
                         </div>
 
             </form>
+            {loading && <p>Loading…</p>}
 
-            {loading ? (
-                <p>Loading…</p>
-            ) : recipes.length === 0 ? (
+            {searchInitiated && !loading && recipes.length === 0 && (
                 <p>No recipes found.</p>
-            ) : (
-                <table className="w-full table-auto  shadow rounded overflow-hidden bg-[#333] text-white border-2 border-gray-400">
+            )}
+            {searchInitiated && !loading && recipes.length > 0 && (
+
+                <table className="table-fixed w-full shadow rounded overflow-hidden bg-[#333] text-white border-2 border-gray-400">
                     <thead className="bg-[#222] text-gray-300">
                     <tr className="text-left text-gray-400 bg-[#333]">
-                        <th className="px-4 py-2 text-left bg-[#333] text-white border-2 border-gray-400">Name</th>
-                        <th className="px-4 py-2 text-left bg-[#333] text-white border-2 border-gray-400">Category</th>
-                        <th className="px-4 py-2 bg-[#333] text-white border-2 border-gray-400">Actions</th>
+                        <th className="px-4 py-2 bg-[#333] text-white text-center border-2 border-gray-400">Name</th>
+                        <th className="px-4 py-2 text-center bg-[#333] text-white border-2 border-gray-400">Category</th>
+                        <th className="px-4 py-2 bg-[#333] text-white border-2 border-gray-400 text-center">Actions</th>
                     </tr>
                     </thead>
                     <tbody>
                     {recipes.map(r => (
-                        <tr key={r.recipeId} className={`border-t cursor-pointer ${selectedRecipeId === r.recipeId ? 'bg-[#333] text-white border-2 border-gray-400 hover:bg-[#444] hover:text-white' : ''}`}
-                            onClick={() => setSelectedRecipeId(r.recipeId)}
-                        >
-                            <td className="px-4 py-2 bg-[#333] text-white border-2 border-gray-400">{r.recipeName}</td>
+                        <tr key={r.id} className="border-t cursor-pointer bg-[#333] text-white border-2 border-gray-400 hover:bg-[#444] hover:text-white">
+                            <td className="px-4 py-2 bg-[#333] text-white border-2 border-gray-400">{r.name}</td>
                             <td className="px-4 py-2 bg-[#333] text-white border-2 border-gray-400">{r.category}</td>
+                            <td className="px-4 py-2 bg-[#333] text-white border-2 border-gray-400">
+                                    <div className="flex gap-2">
+                                        <Link to={`/recipes/${r.id}`} className="px-2 py-1 text-white rounded hover:bg-gray-700 text-sm">View</Link>
+                                        <Link to={`/recipes/update/${r.id}`} className="px-2 py-1 text-white rounded hover:bg-gray-700 text-sm">Update</Link>
+                                        <Link to={`/recipes/delete/${r.id}`} className="px-2 py-1 text-white rounded hover:bg-gray-700 text-sm">Delete</Link>
+                                    </div>
+                            </td>
                         </tr>
                     ))}
                     </tbody>
@@ -149,23 +155,19 @@ const Recipes = () => {
             {selectedRecipeId && (
                 <div className="flex gap-4 justify-center mt-6">
                     <Link
+                        to={`/recipes/scale/${selectedRecipeId}`}
+                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+                        View
+                    </Link>
+                    <Link
                         to={`/recipes/update/${selectedRecipeId}`}
-                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                    >
+                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
                         Update
                     </Link>
                     <Link
                         to={`/recipes/delete/${selectedRecipeId}`}
-                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                    >
+                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
                         Delete
-                    </Link>
-
-                    <Link
-                        to={`/recipes/scale/${selectedRecipeId}`}
-                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                    >
-                        Scale
                     </Link>
                 </div>
             )}

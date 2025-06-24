@@ -137,6 +137,7 @@ const RecipeCreateForm = () => {
             <div>
                 <input
                     type="number"
+                    min="0"
                     placeholder="Number of Servings"
                     value={numberOfServings}
                     onChange={(e) => setNumberOfServings(e.target.value)}

@@ -8,10 +8,16 @@ const IngredientInput = ({ onAdd, onRemove }) => {
 
     const add = e => {
         e.preventDefault();
+        if (!name.trim() || !amt.trim()) return;
+        const parsedAmount = parseFloat(amt);
+        if (isNaN(parsedAmount) || parsedAmount <= 0) return;
         onAdd({
             product: { productName: { name }},
             amount: +amt,
             unit });
+        setName("");
+        setAmt("");
+        setUnit("g");
     };
 
     return (
