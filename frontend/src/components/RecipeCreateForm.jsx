@@ -2,9 +2,7 @@ import React, { useState } from "react";
 import IngredientInput from "./IngredientInput";
 import { HiX } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
-import { v4 as uuidv4 } from 'uuid';
 
-const UNITS = ['G','DAG','KG','OZ','LB','ST']
 const categoryOptions = [
     "Appetizer","Soup","Main Course","Sauce","Salad","Pasta","Snack","Beverage","Dessert","Cake","Pie","Bakery"
 ];
@@ -38,7 +36,6 @@ const RecipeCreateForm = () => {
             unit:        i.unit.toUpperCase()
         }));
 
-        const tagsArray = tags.split(",").map((item) => item.trim()).filter((item) => item);
 
         const requestData = {
             recipeName,
@@ -48,7 +45,6 @@ const RecipeCreateForm = () => {
             numberOfServings: parseInt(numberOfServings, 10),
             tags: tags.split(",").map(s => s.trim()).filter(Boolean),
         };
-        console.log("🛫 Send on server:", requestData);
 
         try {
             const response = await fetch('http://localhost:8080/api/recipes', {
@@ -67,23 +63,14 @@ const RecipeCreateForm = () => {
                 throw new Error(`Server ${response.status}: ${JSON.stringify(errorPayload)}`)
             }
 
-            const ct = response.headers.get("content-type") || "";
-            let data;
-            if (ct.includes("application/json")) {
-                data = await response.json();
-            } else {
-                data = await response.text();
-            }
+            await response.json();
+            navigate('/recipes');
         } catch (error) {
             console.error(error);
             setMessage({text: error.message,type:"error"});
         }
-    };
-    const messageClass =
-        message?.type === "success"
-            ? "mt-4 text-green-600"
-            : "mt-4 text-red-600";
 
+    };
 
     return (
         <form onSubmit={handleRecipeSubmit} className="flex flex-col max-w-xl mx-auto space-y-6">

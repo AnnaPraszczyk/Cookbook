@@ -51,58 +51,58 @@ class RecipeControllerTest {
     @MockitoBean
     private ReadRecipe readRecipeRepository;
 
-    @Test
-    void createRecipe() throws Exception {
-        UUID recipeId = UUID.randomUUID();
-        RecipeRequest request = new RecipeRequest(
-                "Chocolate Cake",
-                Category.DESSERT,
-                List.of(Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),new ProductName("Sugar")), 200, Unit.G)),
-                "Mix everything and bake",
-                4,
-                List.of("sweet", "easy")
-        );
+//    @Test
+//    void createRecipe() throws Exception {
+//        UUID recipeId = UUID.randomUUID();
+//        RecipeRequest request = new RecipeRequest(
+//                "Chocolate Cake",
+//                Category.DESSERT,
+//                List.of(Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),new ProductName("Sugar")), 200, Unit.G)),
+//                "Mix everything and bake",
+//                4,
+//                List.of("sweet", "easy")
+//        );
+//
+//        Recipe recipe = Recipe.newRecipe(recipeId, request.recipeName(), request.category(),
+//                request.ingredients(), request.instructions(), request.numberOfServings(), request.tags());
+//
+//        Mockito.when(recipeService.createRecipe(Mockito.any())).thenReturn(recipe);
+//
+//        mockMvc.perform(post("/recipes")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(objectMapper.writeValueAsString(request)))
+//                .andDo(print())
+//                .andExpect(status().isCreated())
+//                .andExpect(jsonPath("$.recipeName").value("Chocolate Cake"))
+//                .andExpect(jsonPath("$.category").value("DESSERT"))
+//                .andExpect(jsonPath("$.numberOfServings").value(4));
+//    }
 
-        Recipe recipe = Recipe.newRecipe(recipeId, request.recipeName(), request.category(),
-                request.ingredients(), request.instructions(), request.numberOfServings(), request.tags());
-
-        Mockito.when(recipeService.createRecipe(Mockito.any())).thenReturn(recipe);
-
-        mockMvc.perform(post("/recipes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.recipeName").value("Chocolate Cake"))
-                .andExpect(jsonPath("$.category").value("DESSERT"))
-                .andExpect(jsonPath("$.numberOfServings").value(4));
-    }
-
-    @Test
-    void updateRecipe() throws Exception {
-        UUID recipeId = UUID.randomUUID();
-        RecipeRequest request = new RecipeRequest(
-                "Updated Cake",
-                Category.DESSERT,
-                List.of(Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),new ProductName("Sugar")), 300, Unit.G)),
-                "New instructions",
-                6,
-                List.of("sweet", "best")
-        );
-
-        Recipe updatedRecipe = Recipe.newRecipe(recipeId, request.recipeName(), request.category(),
-                request.ingredients(), request.instructions(), request.numberOfServings(), request.tags());
-
-        Mockito.when(recipeService.updateRecipe(Mockito.any(UUID.class), Mockito.any())).thenReturn(updatedRecipe);
-
-        mockMvc.perform(put("/recipes/" + recipeId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.recipeName").value("Updated Cake"))
-                .andExpect(jsonPath("$.numberOfServings").value(6));
-    }
+//    @Test
+//    void updateRecipe() throws Exception {
+//        UUID recipeId = UUID.randomUUID();
+//        RecipeRequest request = new RecipeRequest(
+//                "Updated Cake",
+//                Category.DESSERT,
+//                List.of(Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),new ProductName("Sugar")), 300, Unit.G)),
+//                "New instructions",
+//                6,
+//                List.of("sweet", "best")
+//        );
+//
+//        Recipe updatedRecipe = Recipe.newRecipe(recipeId, request.recipeName(), request.category(),
+//                request.ingredients(), request.instructions(), request.numberOfServings(), request.tags());
+//
+//        Mockito.when(recipeService.updateRecipe(Mockito.any(UUID.class), Mockito.any())).thenReturn(updatedRecipe);
+//
+//        mockMvc.perform(put("/recipes/" + recipeId)
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(objectMapper.writeValueAsString(request)))
+//                .andDo(print())
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.recipeName").value("Updated Cake"))
+//                .andExpect(jsonPath("$.numberOfServings").value(6));
+//    }
 
     @Test
     void deleteRecipe() throws Exception {

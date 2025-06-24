@@ -6,14 +6,12 @@ const Navigation = () => {
             <Link to="/" style={linkStyle}>
                 Home Page
             </Link>
-            <Link to="/products" style={linkStyle}>
-                Products
-            </Link>
-            <Link to="/ingredients" style={linkStyle}>
-                Ingredients
-            </Link>
+
             <Link to="/recipes" style={linkStyle}>
                 Recipes
+            </Link>
+            <Link to="/shoppingList" style={linkStyle}>
+                Shopping List
             </Link>
         </nav>
     );

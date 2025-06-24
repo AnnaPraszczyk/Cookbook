@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Data
@@ -29,11 +30,14 @@ public class ReadRecipeResponse {
                 .id(recipe.getRecipeId())
                 .name(recipe.getRecipeName())
                 .category(recipe.getCategory())
-                .ingredients(recipe.getIngredients())
-                .instructions(recipe.getInstructions())
+                .ingredients(
+                        recipe.getIngredients() != null ? recipe.getIngredients() : List.of())
+                .instructions(Optional.ofNullable(recipe.getInstructions()).orElse(""))
                 .numberOfServings(recipe.getNumberOfServings())
-                .tags(recipe.getTags())
+                .tags(
+                        recipe.getTags() != null ? recipe.getTags() : List.of())
                 .build();
+
     }
 
 }

@@ -69,18 +69,6 @@ public class ReadRecipeService implements FindRecipeUseCase{
     }
 
     @Override
-    public List<Recipe> findRecipeByTag(String tag) {
-        if(isBlank(tag)) {
-            throw new RecipeValidationException("Recipe tag cannot be null or empty.");
-        }
-        List<Recipe> recipes = readRecipeRepository.findRecipeByTag(tag);
-        if (recipes.isEmpty()) {
-            throw new RecipeNotFoundException("No recipes found for the given tag.");
-        }
-        return List.copyOf(recipes);
-    }
-
-    @Override
     public Page<Recipe> findRecipeByName(String recipeName, Pageable pageable) {
         if (isBlank(recipeName)) {
             throw new RecipeValidationException("Recipe name cannot be null or empty.");
@@ -96,13 +84,6 @@ public class ReadRecipeService implements FindRecipeUseCase{
         return readRecipeRepository.findRecipeByCategory(category, pageable);
     }
 
-    @Override
-    public Page<Recipe> findRecipeByTag(String tag, Pageable pageable) {
-        if (isBlank(tag)) {
-            throw new RecipeValidationException("Recipe tag cannot be null or empty.");
-        }
-        return readRecipeRepository.findRecipeByTag(tag, pageable);
-    }
 
 
 }

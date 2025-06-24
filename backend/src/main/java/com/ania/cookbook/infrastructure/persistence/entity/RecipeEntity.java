@@ -3,8 +3,10 @@ package com.ania.cookbook.infrastructure.persistence.entity;
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.infrastructure.converters.IngredientsJsonConverter;
+import com.ania.cookbook.infrastructure.converters.TagsJsonConverter;
 import jakarta.persistence.*;
 import lombok.Getter;
+import org.springframework.data.annotation.PersistenceConstructor;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -32,10 +34,13 @@ public class RecipeEntity {
         @Column(name = "number_of_servings", nullable = false)
         private final int numberOfServings;
         @Column(name = "tags", columnDefinition = "TEXT")
+        @Convert(converter = TagsJsonConverter.class)
         private List<String> tags;
 
 
-        private RecipeEntity(UUID recipeId, String recipeName, Category category, List<IngredientJson> ingredients, String instructions, int numberOfServings, List<String> tags) {
+
+    @PersistenceConstructor
+    private RecipeEntity(UUID recipeId, String recipeName, Category category, List<IngredientJson> ingredients, String instructions, int numberOfServings, List<String> tags) {
             if(recipeId==null){throw new RecipeValidationException("Recipe id cannot be null");}
             this.recipeId = recipeId;
             if(recipeName==null || recipeName.isBlank()){throw new RecipeValidationException("Recipe name cannot be null or empty");}
@@ -50,18 +55,20 @@ public class RecipeEntity {
             this.tags = tags != null ? new ArrayList<>(tags) : new ArrayList<>();
         }
 
-    public RecipeEntity() {
-            recipeId = UUID.randomUUID();
-            recipeName = null;
-            category = null;
-            ingredients = null;
-            instructions = null;
-            created = null;
-            numberOfServings = 0;
-            tags = null;
-    }
 
     public static RecipeEntity newRecipeEntity(UUID recipeId, String name, Category category, List<IngredientJson> ingredients, String instructions, int numberOfServings, List<String> tags){
             return new RecipeEntity(recipeId, name, category, ingredients, instructions,numberOfServings, tags);
         }
+
+    protected RecipeEntity() {
+        this.recipeId = null;
+        this.recipeName = null;
+        this.category = null;
+        this.ingredients = null;
+        this.instructions = null;
+        this.created = null;
+        this.numberOfServings = 0;
+        this.tags = null;
+
+    }
 }

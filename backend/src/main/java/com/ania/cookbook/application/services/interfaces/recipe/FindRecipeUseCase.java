@@ -23,8 +23,6 @@ public interface FindRecipeUseCase {
     List<Recipe> findRecipeByCategory(Category category);
     Page<Recipe> findRecipeByCategory(Category category, Pageable pageable);
 
-    List<Recipe> findRecipeByTag(String tag);
-    Page<Recipe> findRecipeByTag(String tag, Pageable pageable);
 
 
 }

@@ -59,13 +59,6 @@ public class InMemoryRecipeRepository implements SaveRecipe, ReadRecipe, UpdateR
     }
 
     @Override
-    public List<Recipe> findRecipeByTag(String tag){
-        return recipes.values().stream()
-                .filter(recipe -> recipe.getTags().contains(tag))
-                .toList();
-    }
-
-    @Override
     public Recipe updateRecipe(Recipe recipe) {
         if (!recipes.containsKey(recipe.getRecipeId())) {
             throw new RecipeNotFoundException("Recipe not found!");
@@ -88,12 +81,6 @@ public class InMemoryRecipeRepository implements SaveRecipe, ReadRecipe, UpdateR
     @Override
     public Page<Recipe> findRecipeByCategory(Category category, Pageable pageable) {
         List<Recipe> filtered = findRecipeByCategory(category);
-        return toPage(filtered, pageable);
-    }
-
-    @Override
-    public Page<Recipe> findRecipeByTag(String tag, Pageable pageable) {
-        List<Recipe> filtered = findRecipeByTag(tag);
         return toPage(filtered, pageable);
     }
 

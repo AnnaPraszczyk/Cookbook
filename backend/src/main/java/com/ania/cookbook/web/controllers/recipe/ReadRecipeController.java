@@ -13,11 +13,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import lombok.extern.slf4j.Slf4j;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/recipes")
 @RequiredArgsConstructor
@@ -54,47 +57,43 @@ public class ReadRecipeController {
     }
 
     @GetMapping("/byCategory")
-    public ResponseEntity<List<ReadRecipeResponse>> getRecipesByCategory(@RequestParam("category") String categoryStr) {
-        Category category = Category.valueOf(categoryStr.toUpperCase());
-        List<Recipe> recipes = finder.findRecipeByCategory(category);
-        List<ReadRecipeResponse> responses = recipes.stream()
-                .map(ReadRecipeResponse::from)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(responses);
+    public ResponseEntity<List<ReadRecipeResponse>> getRecipesByCategory(@RequestParam String category) {
+        Category cat = resolveCategory(category);
+        List<Recipe> recipes = finder.findRecipeByCategory(cat);
+        return ResponseEntity.ok(recipes.stream().map(ReadRecipeResponse::from).toList());
     }
 
-    @GetMapping("/byTag")
-    public ResponseEntity<List<ReadRecipeResponse>> getRecipesByTag(@RequestParam("tag") String tag) {
-        List<Recipe> recipes = finder.findRecipeByTag(tag);
-        List<ReadRecipeResponse> responses = recipes.stream()
-                .map(ReadRecipeResponse::from)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(responses);
-    }
 
     @GetMapping("/search")
     public Page<ReadRecipeResponse> search(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String category,
-            @RequestParam(required = false) String tag,
-            @PageableDefault(sort = "recipeName") Pageable pageable
-    ) {
-        if (name != null) {
-            return finder.findRecipeByName(name, pageable)
-                    .map(ReadRecipeResponse::from);
+            @PageableDefault(sort = "recipeName") Pageable pageable) {
+        try {
+            if (name != null && !name.isBlank()) {
+                return finder.findRecipeByName(name, pageable)
+                        .map(ReadRecipeResponse::from);
+            }
+            if (category != null && !category.isBlank()) {
+                Category cat = resolveCategory(category);
+                return finder.findRecipeByCategory(cat, pageable)
+                        .map(ReadRecipeResponse::from);
+            }
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Provide either name or category");
+        } catch (IllegalArgumentException ex) {
+            log.warn("Invalid category value: {}", category);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid category: " + category, ex);
+        } catch (Exception e) {
+            log.error("❌ Internal error during recipe search", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", e);
         }
-        if (category != null) {
-            var cat = Category.valueOf(category.toUpperCase());
-            return finder.findRecipeByCategory(cat, pageable)
-                    .map(ReadRecipeResponse::from);
-        }
-        if (tag != null) {
-            return finder.findRecipeByTag(tag, pageable)
-                    .map(ReadRecipeResponse::from);
-        }
-        throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Provide one of: name, category or tag"
-        );
     }
+
+    private Category resolveCategory(String categoryValue) {
+        return Arrays.stream(Category.values())
+                .filter(cat -> cat.name().equalsIgnoreCase(categoryValue.trim()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Invalid category: " + categoryValue));
+    }
+
 }
