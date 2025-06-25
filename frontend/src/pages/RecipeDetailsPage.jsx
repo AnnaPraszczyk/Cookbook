@@ -58,7 +58,7 @@ const RecipeDetailsPage = () => {
     }, [id]);
 
     if (loading) return <p className="text-center text-gray-400">Loading...</p>;
-    if (!recipe) return <p className="text-center text-red-500">Recipe not found.</p>;
+    if (!recipe) return <p className="text-center text-white">Recipe not found.</p>;
 
     return (
         <div className="w-full-max-5xl mx-auto p-6 bg-[#333] text-gray-300 rounded shadow">

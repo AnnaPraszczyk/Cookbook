@@ -43,7 +43,8 @@ public class RecipeController {
     }
 
     @DeleteMapping("/{recipeId}")
-    public ResponseEntity<Void> deleteRecipe(@RequestBody @Valid DeleteRecipeCase request) {
+    public ResponseEntity<Void> deleteRecipe(@PathVariable UUID recipeId,
+                                             @RequestBody DeleteRecipeCase request) {
         recipeService.deleteRecipe(request);
         return ResponseEntity.noContent().build();
     }

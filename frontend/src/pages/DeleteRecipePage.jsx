@@ -4,7 +4,7 @@ import RecipeDeleteForm from "../components/RecipeDeleteForm";
 
 const DeleteRecipePage = () => {
     return (
-        <div style={{ padding: "20px", marginTop: "100px" }}>
+        <div style={{ padding: "20px"}}>
             <h1>Delete Recipe</h1>
             <RecipeDeleteForm />
         </div>

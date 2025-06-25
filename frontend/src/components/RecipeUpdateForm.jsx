@@ -1,152 +1,181 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import IngredientInput from "./IngredientInput.jsx";
 
 const categoryOptions = [
-    "Appetizer","Soup","Main Course","Sauce","Salad","Pasta","Snack","Beverage","Dessert","Cake","Pie","Bakery"
+    "Appetizer", "Soup", "Main Course", "Sauce", "Salad",
+    "Pasta", "Snack", "Beverage", "Dessert", "Cake", "Pie", "Bakery"
 ];
 
 const RecipeUpdateForm = () => {
-    const [recipeId, setRecipeId] = useState("");
-    const [recipeName, setRecipeName] = useState("");
+    const { id } = useParams();
+
+    const [name, setName] = useState("");
     const [category, setCategory] = useState(categoryOptions[0]);
-    const [ingredients, setIngredients] = useState("");
+    const [ingredients, setIngredients] = useState([]);
     const [instructions, setInstructions] = useState("");
     const [numberOfServings, setNumberOfServings] = useState("");
     const [tags, setTags] = useState("");
-    const [message, setMessage] = useState(null);
+    const [message, setMessage] = useState({ text: "", type: "" });
+
+    useEffect(() => {
+        if (!id) return;
+
+        const fetchRecipe = async () => {
+            try {
+                const response = await fetch(`/api/recipes/${id}`);
+                if (!response.ok) throw new Error("Recipe not found");
+
+                const data = await response.json();
+
+                setName(data.name || "");
+                setCategory(data.category || categoryOptions[0]);
+                setIngredients(data.ingredients || []);
+                setInstructions(data.instructions || "");
+                setNumberOfServings(data.numberOfServings?.toString() || "");
+                setTags((data.tags || []).join(", "));
+            } catch (error) {
+                setMessage({ text: `Error fetching recipe: ${error.message}`, type: "error" });
+            }
+        };
+
+        fetchRecipe();
+    }, [id]);
+
+    const handleAddIngredient = (ingredient) => {
+        setIngredients((prev) => [...prev, ingredient]);
+    };
+
+    const handleRemoveIngredientAt = (indexToRemove) => {
+        setIngredients((prev) =>
+            prev.filter((_, index) => index !== indexToRemove)
+        );
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const ingredientsArray = ingredients.split(",").map((item) => {
-            const trimmed = item.trim();
-            return { productName: { name: trimmed }, amount: 1, unit: "g" };
-        });
-
         const tagsArray = tags.split(",").map((item) => item.trim()).filter((item) => item);
 
         const requestData = {
-            recipeName,
+            name,
             category,
-            ingredients: ingredientsArray,
+            ingredients: ingredients,
             instructions,
             numberOfServings: parseInt(numberOfServings, 10),
             tags: tagsArray,
         };
 
         try {
-            const response = await fetch(`/recipes/${recipeId}`, {
+            const response = await fetch(`/api/recipes/${id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(requestData),
             });
             const data = await response.json();
-            setMessage(`Recipe updated! Received: ${JSON.stringify(data)}`);
+            setMessage({ text: "✅ Recipe updated!", type: "success" });
         } catch (error) {
-            setMessage(`Error: ${error.message}`);
+            setMessage({text: "❌ Error updating recipe", type: error.message});
         }
     };
 
     return (
-        <form
-            onSubmit={handleSubmit}
-            style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "10px",
-                maxWidth: "500px",
-                margin: "20px auto",
-            }}
-        >
-            <label>
-                <input
-                    type="text"
-                    placeholder="Recipe ID"
-                    value={recipeId}
-                    onChange={(e) => setRecipeId(e.target.value)}
-                    required
-                    style={{ padding: "8px", fontSize: "16px" }}
-                />
-            </label>
-
-            <label>
+        <form onSubmit={handleSubmit} className="flex flex-col max-w-xl mx-auto space-y-6 mt-6">
+            <div>
                 <input
                     type="text"
                     placeholder="Recipe Name"
-                    value={recipeName}
-                    onChange={(e) => setRecipeName(e.target.value)}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     required
-                    style={{ padding: "8px", fontSize: "16px" }}
+                    className="p-2 text-lg border-2 border-gray-400 bg-[#333] text-gray-400 rounded w-[450px] focus:outline-none focus:ring-2 focus:ring-white"
                 />
-            </label>
+            </div>
 
-            <label>
+            <div>
                 <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     required
-                    style={{ padding: "8px", fontSize: "16px", backgroundColor: "#333", marginRight: "10px", width: "430px",color: "gray", border: "2px solid gray",
-                        borderRadius: "5px" }}
+                    className="p-2 text-lg border-2 border-gray-400 bg-[#333] text-gray-400 rounded w-[450px] h-13 focus:outline-none focus:ring-2 focus:ring-white"
                 >
                     {categoryOptions.map((option) => (
-                        <option key={option} value={option}>
-                            {option}
-                        </option>
+                        <option key={option} value={option}>{option}</option>
                     ))}
                 </select>
-            </label>
+            </div>
 
-            <label>
-                <textarea
-                    value={ingredients}
-                    onChange={(e) => setIngredients(e.target.value)}
-                    required
-                    style={{ padding: "8px", fontSize: "16px", backgroundColor: "#333", marginRight: "10px", width: "415px",color: "gray", border: "2px solid gray",
-                        borderRadius: "5px" }}
-                    placeholder="Enter ingredient names separated by commas"
-                />
-            </label>
+            <div>
+                <IngredientInput onAdd={handleAddIngredient} />
 
-            <label>
-                <textarea
-                    value={instructions}
-                    placeholder="Instructions"
-                    onChange={(e) => setInstructions(e.target.value)}
-                    required
-                    style={{ padding: "8px", fontSize: "16px", backgroundColor: "#333", marginRight: "10px", width: "415px",color: "gray", border: "2px solid gray",
-                        borderRadius: "5px" }}
-                />
-            </label>
+                <ul className="mt-2 list-disc list-inside space-y-1">
+                    {ingredients.map((ing, idx) => (
+                        <li
+                            key={idx}
+                            className="flex items-center justify-between bg-[#333] text-white px-3 py-1 rounded"
+                        >
+      <span>
+        {ing.product?.productName?.name || ing.productName?.name} - {ing.amount} {ing.unit}
+      </span>
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveIngredientAt(idx)}
+                                className="text-red-500 hover:text-red-700 ml-4"
+                            >
+                                ×
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            </div>
 
-            <label>
+            <div>
+        <textarea
+            placeholder="Instructions"
+            value={instructions}
+            onChange={(e) => setInstructions(e.target.value)}
+            required
+            className="p-3 border-2 border-gray-400 text-lg text-gray-400 bg-[#333] w-[450px] rounded-md h-32 resize-y focus:outline-none focus:ring-2 focus:ring-white"
+        />
+            </div>
+
+            <div>
                 <input
                     type="number"
+                    min="0"
                     placeholder="Number of Servings"
                     value={numberOfServings}
                     onChange={(e) => setNumberOfServings(e.target.value)}
                     required
-                    style={{ padding: "8px", fontSize: "16px", backgroundColor: "#333", marginRight: "10px", width: "430px",color: "gray", border: "2px solid gray",
-                        borderRadius: "5px" }}
+                    className="p-2 text-lg border-2 border-gray-400 bg-[#333] text-gray-400 rounded w-[450px] focus:outline-none focus:ring-2 focus:ring-white"
                 />
-            </label>
+            </div>
 
-            <label>
+            <div>
                 <input
                     type="text"
-                    placeholder="Tags"
+                    placeholder="Tags (comma separated)"
                     value={tags}
                     onChange={(e) => setTags(e.target.value)}
-                    style={{ padding: "8px", fontSize: "16px" }}
+                    className="p-2 text-lg border-2 border-gray-400 bg-[#333] text-gray-400 rounded w-[450px] focus:outline-none focus:ring-2 focus:ring-white"
                 />
-            </label>
+            </div>
 
-            <button
-                type="submit"
-            >
-                Update Recipe
-            </button>
-            {message && <p>{message}</p>}
+            <div>
+                <button
+                    type="submit"
+                    className="mt-4 text-lg px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition-colors duration-200"
+                >
+                    Update Recipe
+                </button>
+            </div>
+
+            {message.text && (
+                <p className={message.type === "success" ? "text-green-600" : "text-red-600"}>
+                    {message.text}
+                </p>
+            )}
         </form>
     );
 };
-
 export default RecipeUpdateForm;
