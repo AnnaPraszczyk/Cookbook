@@ -11,6 +11,8 @@ import UpdateRecipePage from "./pages/UpdateRecipePage";
 import DeleteRecipePage from "./pages/DeleteRecipePage";
 import ShoppingListPage from "./pages/ShoppingListPage";
 import RecipeDetailsPage from "./pages/RecipeDetailsPage.jsx";
+import RecipeSelectorPage from "./pages/RecipeSelectorPage.jsx";
+import RecipeListViewPage from "./pages/RecipeListViewPage.jsx";
 
 
 const App = () => {
@@ -29,6 +31,9 @@ const App = () => {
                     <Route path="/recipes/update/:id" element={<UpdateRecipePage />} />
                     <Route path="/recipes/delete/:id" element={<DeleteRecipePage />} />
                     <Route path="/shoppingList" element={<ShoppingListPage />} />
+                    <Route path="/shoppingList/:listName" element={<ShoppingListPage />} />
+                    <Route path="/lists/:listName/select-recipes" element={<RecipeSelectorPage />} />
+                    <Route path="/lists/:listName/view" element={<RecipeListViewPage />}/>
                 </Routes>
             </main>
         </>

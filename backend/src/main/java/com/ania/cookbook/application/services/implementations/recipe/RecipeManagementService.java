@@ -2,6 +2,7 @@ package com.ania.cookbook.application.services.implementations.recipe;
 
 import com.ania.cookbook.application.services.interfaces.recipe.ListManagementUseCase;
 import com.ania.cookbook.domain.exceptions.ListNotFoundException;
+import com.ania.cookbook.domain.exceptions.ListValidationException;
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.Ingredient;
@@ -12,6 +13,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 @RequiredArgsConstructor
@@ -20,11 +22,23 @@ public class RecipeManagementService implements ListManagementUseCase {
     private final SaveRecipe saveRecipeRepository;
     private final ReadRecipe readRecipeRepository;
     private final List<Recipe> recipeList = new ArrayList<>();
-    private final Map<String, List<Recipe>> recipeLists = new HashMap<>();
+    //private final Map<String, List<Recipe>> recipeLists = new HashMap<>();
+    private final Map<String, List<Recipe>> recipeLists = new LinkedHashMap<>() {
+        private static final int MAX_ENTRIES = 10;
+
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, List<Recipe>> eldest) {
+            return size() > MAX_ENTRIES;
+        }
+    };
 
     @Override
     public void createRecipeList(ListName list) {
-        recipeLists.put(list.name(), new ArrayList<>());
+        boolean listExists = recipeLists.containsKey(list.name());
+        if(listExists) {
+            throw new ListValidationException("Recipe list with the given name already exists.");
+        }
+        recipeLists.putIfAbsent(list.name(), new ArrayList<>());
     }
 
     @Override
@@ -35,6 +49,13 @@ public class RecipeManagementService implements ListManagementUseCase {
         if (!recipes.contains(matchingRecipe)) {
             recipes.add(matchingRecipe);
         }
+    }
+
+    @Override
+    public List<ListName> getAllLists() {
+        return recipeLists.keySet().stream()
+                .map(ListName::new)
+                .collect(Collectors.toList());
     }
 
     @Override

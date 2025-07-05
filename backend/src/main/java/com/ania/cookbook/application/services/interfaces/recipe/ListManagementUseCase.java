@@ -18,7 +18,7 @@ public interface ListManagementUseCase {
     boolean clearRecipeList(ListName listName, boolean confirm);
     void deleteRecipeList(ListName listName);
     Map<String, Float> generateShoppingList(ListName list);
-
+    List<ListName> getAllLists();
     record ListName(String name){
         public ListName{
             if(isBlank(name)){

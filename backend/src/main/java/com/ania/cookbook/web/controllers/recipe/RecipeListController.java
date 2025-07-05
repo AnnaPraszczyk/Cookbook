@@ -15,7 +15,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/recipes/lists")
+@RequestMapping("/api/lists")
 @RequiredArgsConstructor
 public class RecipeListController {
     private final RecipeManagementService recipeManagementService;
@@ -38,6 +38,15 @@ public class RecipeListController {
     public ResponseEntity<Void> saveRecipesList(@PathVariable String listName) {
         recipeManagementService.saveRecipesList(new ListName(listName));
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("")
+    public ResponseEntity<List<String>> getAllLists() {
+        List<ListName> all = recipeManagementService.getAllLists();
+        List<String> names = all.stream()
+                .map(ListName::name)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(names);
     }
 
     @GetMapping("/{listName}")
