@@ -7,12 +7,13 @@ import com.ania.cookbook.application.services.interfaces.recipe.UpdateRecipeUseC
 import com.ania.cookbook.domain.model.Recipe;
 import com.ania.cookbook.web.recipe.RecipeRequest;
 import com.ania.cookbook.web.recipe.RecipeResponse;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -21,12 +22,7 @@ import java.util.UUID;
 public class RecipeController {
     private final RecipeService recipeService;
 
-    @GetMapping("/ping")
-    public ResponseEntity<String> ping() {
-        return ResponseEntity.ok("pong");
-    }
-
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<RecipeResponse> createRecipe(@RequestBody RecipeRequest request) {
         var recipe = recipeService.createRecipe(new CreateRecipe(request.recipeName(), request.category(),
                 request.ingredients(), request.instructions(), request.numberOfServings(), request.tags()));

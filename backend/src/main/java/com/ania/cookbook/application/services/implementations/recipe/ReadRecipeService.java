@@ -84,6 +84,8 @@ public class ReadRecipeService implements FindRecipeUseCase{
         return readRecipeRepository.findRecipeByCategory(category, pageable);
     }
 
-
-
+    @Override
+    public List<Recipe> getLatestRecipes(int limit) {
+        return readRecipeRepository.findTopNByOrderByCreatedDesc(limit);
+    }
 }

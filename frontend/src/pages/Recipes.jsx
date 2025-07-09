@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import {Link, useLocation} from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-
-
 
 const Recipes = () => {
     const [nameQuery, setNameQuery] = useState("");
@@ -15,8 +13,10 @@ const Recipes = () => {
     const [categoryQuery, setCategoryQuery] = useState("");
     const [selectedRecipeId, setSelectedRecipeId] = useState(null);
     const navigate = useNavigate();
+    const location = useLocation();
 
-
+    const showCategoryViewOnly = !!categoryQuery && !nameQuery;
+    const showFullPanel = !categoryQuery && !nameQuery;
     const fetchRecipes = async (q, type, p= page) => {
         setLoading(true);
         setSearchInitiated(true);
@@ -43,29 +43,41 @@ const Recipes = () => {
             setLoading(false);
         }
     };
-
-
     useEffect(() => {
-        if (recipes.length > 0) {
-            if (categoryQuery) fetchRecipes(categoryQuery, "category", page);
-            else if (nameQuery) fetchRecipes(nameQuery, "name", page);
-        }
-    }, [page]);
+        const params = new URLSearchParams(location.search);
+        const category = params.get("category");
+        const name = params.get("name");
+        const currentPage = parseInt(params.get("page") || "0");
 
+        if (category) {
+            setCategoryQuery(category);
+            fetchRecipes(category, "category", currentPage);
+        } else if (name) {
+            setNameQuery(name);
+            fetchRecipes(name, "name", currentPage);
+        }
+        setPage(currentPage);
+        setSearchInitiated(true);
+    }, [location.search]);
 
     return (
         <div className="p-6 space-y-6 max-w-4xl mx-auto">
-            <h1 className="text-3xl font-bold">Recipes Management</h1>
-
-            <div className="flex justify-between items-end mb-6 flex-wrap gap-y-4">
+            {showCategoryViewOnly ? (
+                <h1 className="text-3xl font-bold">
+                    Category: <span className="text-[#c0a060]">{categoryQuery}</span>
+                </h1>
+            ) : (
+                <h1 className="text-3xl font-bold">Recipes Management</h1>
+            )}
+            {showFullPanel && (
+                <>
+                <div className="flex justify-between items-end mb-6 flex-wrap gap-y-4">
                 <Link
                     to="/recipes/create"
-                    className="px-4 py-2 text-lg rounded transition-colors duration-200 hover:bg-[#ad9854]"
-                >
+                    className="px-4 py-2 text-lg rounded transition-colors duration-200 hover:bg-[#ad9854]">
                     Add Recipe
                 </Link>
             </div>
-
             <form
                 className="flex flex-wrap gap-2 items-center">
 
@@ -120,6 +132,8 @@ const Recipes = () => {
                         </div>
 
             </form>
+                </>
+            )}
             {loading && <p>Loading…</p>}
 
             {searchInitiated && !loading && recipes.length === 0 && (
@@ -174,17 +188,22 @@ const Recipes = () => {
             {searchInitiated && recipes.length > 0 && (
                 <div className="flex justify-center items-center gap-4 pt-4">
                 <button
-                    onClick={() => setPage(p => Math.max(p - 1, 0))}
+                    onClick={() => navigate(`/recipes/search?${categoryQuery
+                        ? `category=${categoryQuery}&page=${page - 1}`
+                        : `name=${nameQuery}&page=${page - 1}`}`)
+                    }
                     disabled={page === 0}
-                    className="mt-4 text-lg px-4 py-2 bg-gray-500 mb-4 w-[100px] text-white rounded hover:bg-gray-600 transition-colors duration-200"
-                >
+                    className="mt-4 text-lg px-4 py-2 bg-gray-500 mb-4 w-[100px] text-white rounded hover:bg-gray-600 transition-colors duration-200">
                     Previous
                 </button>
                 <span>
           Page {page + 1} / {totalPages}
         </span>
                 <button
-                    onClick={() => setPage(p => Math.min(p + 1, totalPages - 1))}
+                    onClick={() => navigate(`/recipes/search?${categoryQuery
+                        ? `category=${categoryQuery}&page=${page + 1}`
+                        : `name=${nameQuery}&page=${page + 1}`}`)
+                    }
                     disabled={page + 1 >= totalPages}
                     className="mt-4 text-lg px-4 py-2 bg-gray-500 mb-4 w-[100px] text-white rounded hover:bg-gray-600 transition-colors duration-200"
                 >

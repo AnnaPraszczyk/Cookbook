@@ -28,6 +28,12 @@ public class ReadRecipeController {
     private final FindRecipeUseCase finder;
 
 
+    @GetMapping("/latest")
+    public ResponseEntity<List<ReadRecipeResponse>> getLatestRecipes() {
+        List<Recipe> latest = finder.getLatestRecipes(12);
+        return ResponseEntity.ok(latest.stream().map(ReadRecipeResponse::from).toList());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ReadRecipeResponse> getRecipeById(@PathVariable UUID id) {
         Recipe recipe = finder.findRecipeById(id).orElseThrow(()

@@ -22,7 +22,7 @@ public interface FindRecipeUseCase {
 
     List<Recipe> findRecipeByCategory(Category category);
     Page<Recipe> findRecipeByCategory(Category category, Pageable pageable);
-
+    List<Recipe> getLatestRecipes(int limit);
 
 
 }

@@ -6,6 +6,7 @@ import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
 import com.ania.cookbook.infrastructure.mapper.RecipeMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import java.util.List;
@@ -61,5 +62,21 @@ public class ReadRecipeAdapter implements ReadRecipe {
     public Page<Recipe> findRecipeByCategory(Category category, Pageable pageable) {
         return jpaRepository.findByCategory(category, pageable)
                 .map(recipeMapper::toDomain);
+    }
+
+    @Override
+    public List<Recipe> findTopNByOrderByCreatedDesc(int limit) {
+        return jpaRepository
+                .findAllByOrderByCreatedDesc(PageRequest.of(0, limit))
+                .stream()
+                .map(recipeMapper::toDomain)
+                .toList();
+    }
+
+    public List<Recipe> findLatestRecipes(int limit) {
+        return jpaRepository.findAllByOrderByCreatedDesc(PageRequest.of(0, limit))
+                .stream()
+                .map(recipeMapper::toDomain)
+                .toList();
     }
 }

@@ -1,38 +1,72 @@
 import React from "react";
+import { useEffect, useState } from "react";
 import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
+import { Link } from "react-router-dom";
+
+const categories = [
+    { value: "APPETIZER", label: "Appetizer" },
+    { value: "SOUP", label: "Soup" },
+    { value: "SAUCE", label: "Sauce" },
+    { value: "MAIN_COURSE", label: "Main Course" },
+    { value: "PASTA", label: "Pasta" },
+    { value: "SALAD", label: "Salad" },
+    { value: "SNACK", label: "Snack" },
+    { value: "BEVERAGE", label: "Beverage" },
+    { value: "DESSERT", label: "Dessert" },
+    { value: "CAKE", label: "Cake" },
+    { value: "PIE", label: "Pie" },
+    { value: "BAKERY", label: "Bakery" }
+];
 
 const Home = () => {
+    const [latestRecipes, setLatestRecipes] = useState([]);
+    useEffect(() => {
+        fetch("http://localhost:8080/api/recipes/latest")
+            .then(res => {
+                if (!res.ok) throw new Error("Failed to fetch latest recipes");
+                return res.json();
+            })
+            .then(data => setLatestRecipes(data))
+            .catch(err => console.error("❌ Error during loading latest recipes:", err));
+    }, []);
+
     return (
         <div className="flex flex-col min-h-screen pt-8">
             <div className="w-full px-4 mx-auto flex flex-wrap lg:flex-nowrap gap-6">
-                 <aside className="w-full sm:w-1/3 md:w-1/5 lg:w-1/5 xl:w-1/6 2xl:w-1/6">
+                 <aside className="w-full text-left text-lg sm:w-1/3 md:w-1/5 lg:w-1/5 xl:w-1/6 2xl:w-1/6">
                     <h2 className="text-xl font-semibold mb-2">Categories</h2>
-                    <ul className="text-gray-600 space-y-1">
-                        <li>Appetizers</li>
-                        <li>Soups</li>
-                        <li>Sauces</li>
-                        <li>Main courses</li>
-                        <li>Pastas</li>
-                        <li>Salads</li>
-                        <li>Snacks</li>
-                        <li>Beverages</li>
-                        <li>Desserts</li>
-                        <li>Cakes</li>
-                        <li>Pies</li>
-                        <li>Bakeries</li>
-                    </ul>
-                </aside>
+                     {categories.map(({ value, label }) => (
+                         <ul>
+                             <Link key={value}
+                                   to={`/recipes/search?category=${value}&page=0`}
+                                   className="hover:text-[#c0a060] hover:underline">
+                                 {label}
+                             </Link>
+                         </ul>
+                     ))}
+
+                 </aside>
 
                 <main className="w-full sm:w-2/3 md:w-3/5 lg:w-3/5 xl:w-4/6 2xl:w-full text-center">
                     <img src="/src/assets/logo.png" alt="Cookbook Logo" className="w-full h-auto max-w-none mx-auto mt-5"/>
                 </main>
 
                 <aside className="w-full sm:w-1/3 md:w-1/5 lg:w-1/5 xl:w-1/6 2xl:w-1/6">
-                    <h2 className="text-xl font-semibold mb-2">Recommended</h2>
-                    <ul className="text-gray-600 space-y-1">
-                        <li>Spaghetti Carbonara</li>
-                        <li>Curry chicken</li>
-                        <li>Cheesecake</li>
+                    <h2 className="text-xl font-semibold mb-2">Latest</h2>
+                    <ul className="text-gray-500 text-lg">
+                        {latestRecipes.length === 0 ? (
+                            <li className="italic text-gray-400">Loading...</li>
+                        ) : (
+                            latestRecipes.map(recipe => (
+                                <li key={recipe.id}>
+                                    <Link
+                                        to={`/recipes/${recipe.id}`}
+                                        className="hover:text-[#c0a060] hover:underline">
+                                        {recipe.name.length > 32 ? recipe.name.slice(0, 32) + "..." : recipe.name}
+                                    </Link>
+                                </li>
+                            ))
+                        )}
                     </ul>
                 </aside>
             </div>

@@ -17,5 +17,5 @@ public interface SpringDataRecipeRepository extends JpaRepository<RecipeEntity, 
 
     List<RecipeEntity> findByCategory(Category category);
     Page<RecipeEntity> findByCategory(Category category, Pageable pageable);
-
+    List<RecipeEntity> findAllByOrderByCreatedDesc(Pageable pageable);
 }

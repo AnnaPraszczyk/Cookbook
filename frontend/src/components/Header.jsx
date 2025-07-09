@@ -1,4 +1,5 @@
 import React from "react";
+import { MdMenuBook } from "react-icons/md";
 
 const Header = () => {
     return (
@@ -12,6 +13,10 @@ const Header = () => {
             <div className="absolute left-1/2 transform -translate-x-1/2 font-serif text-3xl text-center whitespace-nowrap hidden sm:block">
                 My favorite recipes
             </div>
+            <div className="text-[#c0a060] text-7xl mr-4 relative top-5 -left-14">
+                <MdMenuBook title={"Cookbook"} className="hover:rotate-6 transition-transform duration-300" />
+            </div>
+
         </header>
     );
 };

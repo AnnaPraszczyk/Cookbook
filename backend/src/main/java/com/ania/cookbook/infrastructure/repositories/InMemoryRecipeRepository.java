@@ -84,6 +84,13 @@ public class InMemoryRecipeRepository implements SaveRecipe, ReadRecipe, UpdateR
         return toPage(filtered, pageable);
     }
 
+    @Override
+    public List<Recipe> findTopNByOrderByCreatedDesc(int limit){
+        List<Recipe> sorted = new ArrayList<>(recipes.values());
+        sorted.sort(Comparator.comparing(Recipe::getCreated).reversed());
+        return sorted.subList(0, Math.min(sorted.size(), limit));
+    }
+
     private Page<Recipe> toPage(List<Recipe> list, Pageable pageable) {
         int total = list.size();
         int start = (int) pageable.getOffset();
