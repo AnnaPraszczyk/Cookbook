@@ -6,6 +6,7 @@ import com.ania.cookbook.infrastructure.mapper.ProductMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,6 +36,14 @@ public class ReadProductAdapter implements ReadProduct {
     @Override
     public boolean existsProductByName(String name) {
         return jpaRepository.existsByProductName(name);
+    }
+
+    @Override
+    public List<Product> findAll() {
+        return jpaRepository.findAll()
+                .stream()
+                .map(productMapper::toDomain)
+                .toList();
     }
 
 }

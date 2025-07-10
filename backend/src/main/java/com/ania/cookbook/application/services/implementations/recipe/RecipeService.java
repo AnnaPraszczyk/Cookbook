@@ -55,7 +55,17 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
         Recipe originalRecipe = readRecipeRepository.findRecipeById(recipeId).orElseThrow(() -> new RecipeNotFoundException("Unable to find the recipe because it does not exist."));
         String updatedName = !isBlank(recipe.name()) ? recipe.name() : originalRecipe.getRecipeName();
         Category updatedCategory = recipe.category() != null ? recipe.category() : originalRecipe.getCategory();
-        List<Ingredient> updatedIngredients = recipe.ingredients() != null ? recipe.ingredients() : originalRecipe.getIngredients();
+        List<Ingredient> updatedIngredients = recipe.ingredients() != null
+                ? recipe.ingredients().stream()
+                .map(i -> {
+                    ProductName name = new ProductName(i.productName());
+                    Product product = productUseCase
+                            .findProductByName(name)
+                            .orElseGet(() -> productUseCase.addProduct(name));
+                    return Ingredient.newIngredient(product, i.amount(), i.unit());
+                })
+                .toList()
+                : originalRecipe.getIngredients();
         String updatedInstructions = !isBlank(recipe.instructions()) ? recipe.instructions() : originalRecipe.getInstructions();
         int updatedNumberOfServings = recipe.numberOfServings() >= 0 ? recipe.numberOfServings() :  originalRecipe.getNumberOfServings();
         List<String> updatedTags = recipe.tags() != null ? recipe.tags() : originalRecipe.getTags();

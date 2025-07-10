@@ -14,6 +14,9 @@ public class ProductMapper {
 
 
     public Product toDomain(ProductEntity entity) {
+        if (entity.getProductName() == null) {
+            System.err.println("❌ ProductEntity has null name: " + entity.getProductId());
+        }
         return Product.newProduct(
                 entity.getProductId(),
                 new ProductName(entity.getProductName())

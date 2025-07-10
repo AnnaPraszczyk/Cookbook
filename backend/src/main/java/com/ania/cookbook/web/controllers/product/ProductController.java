@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
@@ -27,6 +29,13 @@ public class ProductController {
         return productService.findProductByName(productName)
                 .map(product -> ResponseEntity.ok(mapToResponse(product)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @GetMapping
+    public List<ProductResponse> getAllProducts() {
+        return productService.findAll().stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     @PutMapping("/{productName}")

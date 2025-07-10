@@ -9,7 +9,6 @@ const categoryOptions = [
 
 const RecipeUpdateForm = () => {
     const { id } = useParams();
-
     const [name, setName] = useState("");
     const [category, setCategory] = useState(categoryOptions[0]);
     const [ingredients, setIngredients] = useState([]);
@@ -17,6 +16,17 @@ const RecipeUpdateForm = () => {
     const [numberOfServings, setNumberOfServings] = useState("");
     const [tags, setTags] = useState("");
     const [message, setMessage] = useState({ text: "", type: "" });
+    const [productOptions, setProductOptions] = useState([]);
+    const [autoCalculate, setAutoCalculate] = useState(false);
+    useEffect(() => {
+        fetch("http://localhost:8080/products")
+            .then(res => res.json())
+            .then(data => {
+                console.log("✅ Products:", data);
+                setProductOptions(data.map(p => p.productName.name));
+            })
+            .catch(err => console.error("❌ Failed to load products", err));
+    }, []);
 
     useEffect(() => {
         if (!id) return;
@@ -60,9 +70,13 @@ const RecipeUpdateForm = () => {
         const requestData = {
             name,
             category,
-            ingredients: ingredients,
+            ingredients: ingredients.map(i => ({
+                productName: i.product?.productName?.name || i.productName?.name,
+                amount: i.amount,
+                unit: i.unit
+            })),
             instructions,
-            numberOfServings: parseInt(numberOfServings, 10),
+            numberOfServings: autoCalculate ? 0 : parseInt(numberOfServings, 10),
             tags: tagsArray,
         };
 
@@ -106,7 +120,7 @@ const RecipeUpdateForm = () => {
             </div>
 
             <div>
-                <IngredientInput onAdd={handleAddIngredient} />
+                <IngredientInput onAdd={handleAddIngredient} productOptions={productOptions} />
 
                 <ul className="mt-2 list-disc list-inside space-y-1">
                     {ingredients.map((ing, idx) => (
@@ -140,15 +154,29 @@ const RecipeUpdateForm = () => {
             </div>
 
             <div>
-                <input
-                    type="number"
-                    min="0"
-                    placeholder="Number of Servings"
-                    value={numberOfServings}
-                    onChange={(e) => setNumberOfServings(e.target.value)}
-                    required
-                    className="p-2 text-lg border-2 border-gray-400 bg-[#333] text-gray-400 rounded w-[450px] focus:outline-none focus:ring-2 focus:ring-white"
-                />
+                <div className="flex items-center gap-2 mb-4 text-gray-300 ">
+                    <input
+                        type="checkbox"
+                        id="autoCalculate"
+                        checked={autoCalculate}
+                        onChange={e => setAutoCalculate(e.target.checked)}
+                        className="w-4 h-4"
+                    />
+                    <label htmlFor="autoCalculate" className="text-gray-300 text-sm">
+                        Automatically calculate servings from ingredients
+                    </label>
+                </div>
+                {!autoCalculate && (
+                    <input
+                        type="number"
+                        min="1"
+                        placeholder="Number of Servings"
+                        value={numberOfServings}
+                        onChange={(e) => setNumberOfServings(e.target.value)}
+                        required
+                        className="p-2 text-lg border-2 border-gray-400 bg-[#333] text-gray-400 rounded w-[450px] focus:outline-none focus:ring-2 focus:ring-white"
+                    />
+                )}
             </div>
 
             <div>

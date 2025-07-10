@@ -1,18 +1,20 @@
 import React, { useState } from "react";
 
-const IngredientInput = ({ onAdd, onRemove }) => {
+const IngredientInput = ({ onAdd, onRemove, productOptions = [] }) => {
     const [name, setName]   = useState("");
     const [amt, setAmt]     = useState("");
     const [unit, setUnit]   = useState("g");
     const units = ["g","dag","kg","oz","lb","st"];
-
+    const [customName, setCustomName] = useState("");
     const add = e => {
         e.preventDefault();
         if (!name.trim() || !amt.trim()) return;
         const parsedAmount = parseFloat(amt);
         if (isNaN(parsedAmount) || parsedAmount <= 0) return;
+        const finalName = name === "__custom__" ? customName : name;
+        if (!finalName.trim() || !amt.trim()) return;
         onAdd({
-            product: { productName: { name }},
+            product: { productName: { name : finalName}},
             amount: +amt,
             unit });
         setName("");
@@ -22,12 +24,24 @@ const IngredientInput = ({ onAdd, onRemove }) => {
 
     return (
         <div className="flex flex-wrap items-end gap-3">
-            <input
+            <select
                 value={name}
-                onChange={e=>setName(e.target.value)}
-                placeholder="Product"
-                className=" p-2 w-64 border-2 text-lg border-gray-400 rounded bg-[#333] text-gray-400"
-            />
+                onChange={e => setName(e.target.value)}
+                className="p-2 w-64 h-12 border-2 text-lg border-gray-400 rounded bg-[#333] text-gray-400">
+                <option value="">Select product </option>
+                {productOptions.map((p, i) => (
+                    <option key={i} value={p}>{p}</option>
+                ))}
+                <option value="__custom__">Other...</option>
+            </select>
+            { name === "__custom__" && (
+                <input
+                    value={customName}
+                    onChange={e => setCustomName(e.target.value)}
+                    placeholder="Enter new product name"
+                    className="mt-2 p-2 w-64 border-2 text-lg border-gray-400 rounded bg-[#333] text-gray-400"
+                />
+            )}
             <input
                 type="number"
                 min="0"

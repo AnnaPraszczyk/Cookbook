@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 
-
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -42,6 +42,11 @@ public class ProductService implements ProductUseCase {
     @Override
     public boolean existsProductByName(ProductName product) {
         return readProductRepository.existsProductByName(product.name());
+    }
+
+    @Override
+    public List<Product> findAll() {
+        return readProductRepository.findAll();
     }
 
     @Override

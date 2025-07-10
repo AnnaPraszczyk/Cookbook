@@ -18,7 +18,6 @@ public enum Unit {
 
     @JsonCreator
     public static Unit fromString(String s) {
-        // ignorujemy wielkość liter i dopasowujemy do displayName lub nazwy enuma
         String normalized = s.trim().toLowerCase();
         return Arrays.stream(values())
                 .filter(u -> u.displayName.equals(normalized) || u.name().toLowerCase().equals(normalized))
@@ -28,7 +27,7 @@ public enum Unit {
 
     @JsonValue
     public String toValue() {
-        return name();      // lub displayName, jeśli chcesz zwracać np. "g" zamiast "G"
+        return name();
     }
 
     public float toGrams(float amount) {

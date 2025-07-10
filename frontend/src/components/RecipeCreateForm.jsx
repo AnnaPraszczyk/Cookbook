@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import IngredientInput from "./IngredientInput";
 import { HiX } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
@@ -15,17 +15,25 @@ const RecipeCreateForm = () => {
     const [numberOfServings, setNumberOfServings] = useState("");
     const [tags, setTags] = useState("");
     const [message, setMessage] = useState({text: '', type: ''});
-
     const navigate = useNavigate();
-
+    const [productOptions, setProductOptions] = useState([]);
     const handleAddIngredient = ing =>
         setIngredients(prev => [...prev, ing]);
+    const [autoCalculate, setAutoCalculate] = useState(false);
 
     const handleRemoveIngredientAt = (indexToRemove) => {
         setIngredients((prev) =>
             prev.filter((_, index) => index !== indexToRemove)
         );
     };
+    useEffect(() => {
+        fetch("http://localhost:8080/products")
+            .then(res => res.json())
+            .then(data => {
+                console.log("✅ Products from backend:", data);
+                setProductOptions(data.map(p => p.productName.name));})
+            .catch(err => console.error("❌ Error loading products", err));
+    }, []);
 
     const handleRecipeSubmit = async (e) => {
         e.preventDefault();
@@ -42,7 +50,7 @@ const RecipeCreateForm = () => {
             category,
             ingredients: ingredientsArray,
             instructions,
-            numberOfServings: parseInt(numberOfServings, 10),
+            numberOfServings: autoCalculate ? 0 : parseInt(numberOfServings, 10),
             tags: tags.split(",").map(s => s.trim()).filter(Boolean),
         };
 
@@ -99,10 +107,7 @@ const RecipeCreateForm = () => {
                 </select>
             </div>
             <div>
-                <IngredientInput
-                    onAdd={handleAddIngredient}
-
-                />
+                <IngredientInput onAdd={handleAddIngredient} productOptions={productOptions} />
 
                 <ul className="mt-2 list-disc list-inside space-y-1">
                     {ingredients
@@ -135,15 +140,29 @@ const RecipeCreateForm = () => {
                 />
             </div>
             <div>
-                <input
-                    type="number"
-                    min="0"
-                    placeholder="Number of Servings"
-                    value={numberOfServings}
-                    onChange={(e) => setNumberOfServings(e.target.value)}
-                    required
-                    className="p-2 text-lg border-2 border-gray-400 bg-[#333] text-whiteborder-gray-400 rounded text-gray-400 w-[450px] focus:outline-none focus:ring-2 focus:ring-white"
-                />
+                <div className="flex items-center gap-2 mb-4 text-gray-300 ">
+                    <input
+                        type="checkbox"
+                        id="autoCalculate"
+                        checked={autoCalculate}
+                        onChange={e => setAutoCalculate(e.target.checked)}
+                        className="w-4 h-4"
+                    />
+                    <label htmlFor="autoCalculate" className="text-gray-300 text-sm">
+                        Automatically calculate servings from ingredients
+                    </label>
+                </div>
+                {!autoCalculate && (
+                    <input
+                        type="number"
+                        min="1"
+                        placeholder="Number of Servings"
+                        value={numberOfServings}
+                        onChange={(e) => setNumberOfServings(e.target.value)}
+                        required
+                        className="p-2 text-lg border-2 border-gray-400 bg-[#333] text-gray-400 rounded w-[450px] focus:outline-none focus:ring-2 focus:ring-white"
+                    />
+                )}
             </div>
             <div>
                 <input

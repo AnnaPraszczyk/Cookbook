@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
+@Getter
 public class Ingredient {
     private final Product product;
     private final float amount;
@@ -25,18 +26,6 @@ public class Ingredient {
     public static Ingredient newIngredient(Product product, float amount, Unit unit){
         return new Ingredient(product, amount, unit);
     }
-    public Product getProduct() {
-        return product;
-    }
-
-    public float getAmount() {
-        return amount;
-    }
-
-    public Unit getUnit() {
-        return unit;
-    }
-
 }
 
 

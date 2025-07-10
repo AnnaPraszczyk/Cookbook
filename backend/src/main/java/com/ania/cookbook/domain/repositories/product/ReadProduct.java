@@ -1,6 +1,8 @@
 package com.ania.cookbook.domain.repositories.product;
 
 import com.ania.cookbook.domain.model.Product;
+
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,4 +15,6 @@ public interface ReadProduct{
     Optional<Product> findProductByName(String name);
 
     boolean existsProductByName(String name);
+
+    List<Product> findAll();
 }

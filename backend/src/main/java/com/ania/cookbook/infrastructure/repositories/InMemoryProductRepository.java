@@ -8,9 +8,8 @@ import com.ania.cookbook.domain.model.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.UUID;
+
+import java.util.*;
 
 @RequiredArgsConstructor
 @Repository
@@ -43,6 +42,11 @@ public class InMemoryProductRepository implements SaveProduct, ReadProduct, Upda
     @Override
     public boolean existsProductByName(String name){
         return inMemoryRepository.values().stream().anyMatch(product -> name.equals(product.getProductName().name()));
+    }
+
+    @Override
+    public List<Product> findAll() {
+        return new ArrayList<>(inMemoryRepository.values());
     }
 
     @Override
