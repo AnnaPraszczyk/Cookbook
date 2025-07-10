@@ -14,28 +14,23 @@ const Recipes = () => {
     const [selectedRecipeId, setSelectedRecipeId] = useState(null);
     const navigate = useNavigate();
     const location = useLocation();
+    const params = new URLSearchParams( location.search);
+    const activeCategory = params.get("category");
+    const activeName = params.get("name");
+    const showCategoryViewOnly = !!activeCategory && !activeName;
+    const showFullPanel = !activeCategory && !activeName;
 
-    const showCategoryViewOnly = !!categoryQuery && !nameQuery;
-    const showFullPanel = !categoryQuery && !nameQuery;
-    const fetchRecipes = async (q, type, p= page) => {
+    const fetchRecipes = async (query, type, currentPage= 0) => {
         setLoading(true);
-        setSearchInitiated(true);
-
-        const params = new URLSearchParams({ page: p, size});
-        if (q.trim() !== "") {
-            params.append(type, q.trim());
-        } else {
-            setLoading(false);
-            setRecipes([]);
-            return;
-        }
+        const params = new URLSearchParams({ page: currentPage, size: 10 });
+        params.append(type, query.trim());
 
         try {
             const res  = await fetch(`/api/recipes/search?${params}`);
             if (!res.ok) throw new Error(`Server ${res.status}`);
-            const body = await res.json();
-            setRecipes(body.content);
-            setTotal(body.totalPages);
+            const data = await res.json();
+            setRecipes(data.content || []);
+            setTotal(data.totalPages || 0);
         } catch (e) {
             console.error("Search failed:", e);
             setRecipes([]);
@@ -47,24 +42,23 @@ const Recipes = () => {
         const params = new URLSearchParams(location.search);
         const category = params.get("category");
         const name = params.get("name");
-        const currentPage = parseInt(params.get("page") || "0");
-
-        if (category) {
-            setCategoryQuery(category);
-            fetchRecipes(category, "category", currentPage);
-        } else if (name) {
-            setNameQuery(name);
-            fetchRecipes(name, "name", currentPage);
-        }
-        setPage(currentPage);
+        const pageParam = parseInt(params.get("page") || "0");
+        setPage(pageParam);
         setSearchInitiated(true);
+        if (category) {
+            fetchRecipes(category, "category", pageParam);
+        } else if (name) {
+            fetchRecipes(name, "name", pageParam);
+        } else {
+            setRecipes([]);
+        }
     }, [location.search]);
 
     return (
         <div className="p-6 space-y-6 max-w-4xl mx-auto">
             {showCategoryViewOnly ? (
                 <h1 className="text-3xl font-bold">
-                    Category: <span className="text-[#c0a060]">{categoryQuery}</span>
+                    Category: <span className="text-[#c0a060]">{activeCategory}</span>
                 </h1>
             ) : (
                 <h1 className="text-3xl font-bold">Recipes Management</h1>
@@ -94,8 +88,8 @@ const Recipes = () => {
                 />
                 <button
                     type="button"
-                    onClick={() => fetchRecipes(nameQuery, "name", 0)}
-                    className="mt-4 text-lg px-4 py-2 bg-[#c0a060] mb-4 text-white rounded hover:bg-gray-600 transition-colors duration-200">
+                    onClick={() => {navigate(`/recipes/search?name=${nameQuery}&page=0`);}}
+                        className="mt-4 text-lg px-4 py-2 bg-[#c0a060] mb-4 text-white rounded hover:bg-gray-600 transition-colors duration-200">
                     Search
                 </button>
                         </div>
@@ -124,7 +118,7 @@ const Recipes = () => {
                                 </select>
                                 <button
                                     type="button"
-                                    onClick={() => fetchRecipes(categoryQuery,"category", 0)}
+                                    onClick={() => {  navigate(`/recipes/search?category=${categoryQuery}&page=0`);}}
                                     className="mt-4 text-lg px-4 py-2 bg-[#c0a060] mb-4 text-white rounded hover:bg-gray-600 transition-colors duration-200">
                                     Search
                                 </button>

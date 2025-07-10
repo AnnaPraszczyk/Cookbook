@@ -35,16 +35,17 @@ const Home = () => {
             <div className="w-full px-4 mx-auto flex flex-wrap lg:flex-nowrap gap-6">
                  <aside className="w-full text-left text-lg sm:w-1/3 md:w-1/5 lg:w-1/5 xl:w-1/6 2xl:w-1/6">
                     <h2 className="text-xl font-semibold mb-2">Categories</h2>
+                     <ul>
                      {categories.map(({ value, label }) => (
-                         <ul>
-                             <Link key={value}
+                         <li key={value}>
+                             <Link
                                    to={`/recipes/search?category=${value}&page=0`}
                                    className="hover:text-[#c0a060] hover:underline">
                                  {label}
                              </Link>
-                         </ul>
+                         </li>
                      ))}
-
+                     </ul>
                  </aside>
 
                 <main className="w-full sm:w-2/3 md:w-3/5 lg:w-3/5 xl:w-4/6 2xl:w-full text-center">
