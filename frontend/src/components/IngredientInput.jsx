@@ -1,11 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-const IngredientInput = ({ onAdd, onRemove, productOptions = [] }) => {
+const IngredientInput = ({ onAdd, productOptions = [], resetCount }) => {
     const [name, setName]   = useState("");
     const [amt, setAmt]     = useState("");
     const [unit, setUnit]   = useState("g");
     const units = ["g","dag","kg","oz","lb","st"];
     const [customName, setCustomName] = useState("");
+    useEffect(() => {
+            setName("");
+            setAmt("");
+            setUnit("g");
+            setCustomName("");
+    }, [resetCount]);
+
     const add = e => {
         e.preventDefault();
         if (!name.trim() || !amt.trim()) return;
