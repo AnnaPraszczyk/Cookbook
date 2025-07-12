@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import {useNavigate, useParams, useLocation, Link} from "react-router-dom";
 
 const categoryOptions = [
     "Appetizer", "Soup", "Main Course", "Sauce", "Salad",
@@ -9,7 +9,7 @@ const categoryOptions = [
 const RecipeDeleteForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-
+    const location = useLocation();
     const [recipe, setRecipe] = useState(null);
     const [message, setMessage] = useState({ text: "", type: "" });
 
@@ -39,7 +39,7 @@ const RecipeDeleteForm = () => {
             });
             if (!res.ok) throw new Error(`Server responded with ${res.status}`);
             setMessage({ text: "✅ Recipe deleted successfully!", type: "success" });
-            setTimeout(() => navigate("/recipes"), 1500);
+            setTimeout(() => navigate(`/recipes${location.search}`), 1500);
         } catch (error) {
             setMessage({ text: `❌ ${error.message}`, type: "error" });
         }
@@ -134,6 +134,9 @@ const RecipeDeleteForm = () => {
                     {message.text}
                 </p>
             )}
+            <Link to={`/recipes${location.search}`} className="text-[#c0a060] hover:underline block mt-6">
+                ← Back to recipe list
+            </Link>
         </form>
     );
 };

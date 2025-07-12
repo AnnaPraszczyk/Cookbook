@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {Link, useLocation} from "react-router-dom";
+import {Link, useLocation, useSearchParams} from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 const Recipes = () => {
@@ -19,6 +19,9 @@ const Recipes = () => {
     const activeName = params.get("name");
     const showCategoryViewOnly = !!activeCategory && !activeName;
     const showFullPanel = !activeCategory && !activeName;
+    const [searchParams] = useSearchParams();
+    const searchTerm = searchParams.get("search") || "";
+    const selectedCategory = searchParams.get("category") || "";
 
     const fetchRecipes = async (query, type, currentPage= 0) => {
         setLoading(true);
@@ -37,19 +40,24 @@ const Recipes = () => {
         } finally {
             setLoading(false);
         }
+        console.log("➡️ Fetching recipes with:", type, query);
     };
     useEffect(() => {
         const params = new URLSearchParams(location.search);
+        const search = params.get("search");
         const category = params.get("category");
-        const name = params.get("name");
         const pageParam = parseInt(params.get("page") || "0");
         setPage(pageParam);
-        setSearchInitiated(true);
-        if (category) {
-            fetchRecipes(category, "category", pageParam);
-        } else if (name) {
-            fetchRecipes(name, "name", pageParam);
+        console.log("🔍 Search param:", search);
+        if (category || search) {
+            setSearchInitiated(true);
+            if(category){
+                fetchRecipes(category, "category", pageParam);
+            } else if (search) {
+                fetchRecipes(search, "name", pageParam);
+            }
         } else {
+            setSearchInitiated(false);
             setRecipes([]);
         }
     }, [location.search]);
@@ -88,8 +96,16 @@ const Recipes = () => {
                 />
                 <button
                     type="button"
-                    onClick={() => {navigate(`/recipes/search?name=${nameQuery}&page=0`);}}
-                        className="mt-4 text-lg px-4 py-2 bg-[#c0a060] mb-4 text-white rounded hover:bg-gray-600 transition-colors duration-200">
+                    onClick={() => {
+                        const term = nameQuery.trim();
+                        if (term) {
+                            const params = new URLSearchParams();
+                            params.append("search", term);
+                            params.append("page", "0");
+                            navigate(`/recipes?${params.toString()}`);
+                        }
+                    }}
+                    className="mt-4 text-lg px-4 py-2 bg-[#c0a060] mb-4 text-white rounded hover:bg-gray-600 transition-colors duration-200">
                     Search
                 </button>
                         </div>
@@ -150,9 +166,12 @@ const Recipes = () => {
                             <td className="px-4 py-2 bg-[#333] text-white border-2 border-gray-400">{r.category}</td>
                             <td className="px-4 py-2 bg-[#333] text-white border-2 border-gray-400">
                                     <div className="flex gap-2">
-                                        <Link to={`/recipes/${r.id}`} className="px-2 py-1 text-white rounded hover:bg-gray-700 text-sm">View</Link>
-                                        <Link to={`/recipes/update/${r.id}`} className="px-2 py-1 text-white rounded hover:bg-gray-700 text-sm">Update</Link>
-                                        <Link to={`/recipes/delete/${r.id}`} className="px-2 py-1 text-white rounded hover:bg-gray-700 text-sm">Delete</Link>
+                                        <Link to={`/recipes/${r.id}?${searchTerm ? `search=${searchTerm}` : `category=${selectedCategory}`}`}
+                                              className="px-2 py-1 text-white rounded hover:bg-gray-700 text-sm">View</Link>
+                                        <Link to={`/recipes/update/${r.id}?${searchTerm ? `search=${searchTerm}` : `category=${selectedCategory}`}`}
+                                              className="px-2 py-1 text-white rounded hover:bg-gray-700 text-sm">Update</Link>
+                                        <Link to={`/recipes/delete/${r.id}?${searchTerm ? `search=${searchTerm}` : `category=${selectedCategory}`}`}
+                                              className="px-2 py-1 text-white rounded hover:bg-gray-700 text-sm">Delete</Link>
                                     </div>
                             </td>
                         </tr>
@@ -182,10 +201,13 @@ const Recipes = () => {
             {searchInitiated && recipes.length > 0 && (
                 <div className="flex justify-center items-center gap-4 pt-4">
                 <button
-                    onClick={() => navigate(`/recipes/search?${categoryQuery
-                        ? `category=${categoryQuery}&page=${page - 1}`
-                        : `name=${nameQuery}&page=${page - 1}`}`)
-                    }
+                    onClick={() => {
+                        const params = new URLSearchParams();
+                        params.append("page", page - 1);
+                        if (searchTerm) params.append("search", searchTerm);
+                        else if (selectedCategory) params.append("category", selectedCategory);
+                        navigate(`/recipes?${params.toString()}`);
+                    }}
                     disabled={page === 0}
                     className="mt-4 text-lg px-4 py-2 bg-gray-500 mb-4 w-[100px] text-white rounded hover:bg-gray-600 transition-colors duration-200">
                     Previous
@@ -194,10 +216,14 @@ const Recipes = () => {
           Page {page + 1} / {totalPages}
         </span>
                 <button
-                    onClick={() => navigate(`/recipes/search?${categoryQuery
-                        ? `category=${categoryQuery}&page=${page + 1}`
-                        : `name=${nameQuery}&page=${page + 1}`}`)
-                    }
+                    onClick={() => {
+                        const params = new URLSearchParams();
+                        params.append("page", page + 1);
+                        if (searchTerm) params.append("search", searchTerm);
+                        else if (selectedCategory) params.append("category", selectedCategory);
+
+                        navigate(`/recipes?${params.toString()}`);
+                    }}
                     disabled={page + 1 >= totalPages}
                     className="mt-4 text-lg px-4 py-2 bg-gray-500 mb-4 w-[100px] text-white rounded hover:bg-gray-600 transition-colors duration-200"
                 >

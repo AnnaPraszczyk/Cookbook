@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 
 const RecipeDetailsPage = () => {
     const { id } = useParams();
@@ -7,6 +7,8 @@ const RecipeDetailsPage = () => {
     const [loading, setLoading] = useState(true);
     const [newServings, setNewServings] = useState("");
     const [scaledRecipe, setScaledRecipe] = useState(null);
+    const location = useLocation();
+
 
     const handleScale = async () => {
         if (!newServings || isNaN(newServings) || newServings <= 0) return;
@@ -101,7 +103,7 @@ const RecipeDetailsPage = () => {
                 </div>
             </div>
             <div className="mt-6">
-                <Link to="/recipes" className="text-[#c0a060] hover:underline">
+                <Link to={`/recipes${location.search}`} className="text-[#c0a060] hover:underline">
                     ← Back to recipe list
                 </Link>
             </div>

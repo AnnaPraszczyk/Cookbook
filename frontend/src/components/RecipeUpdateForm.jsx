@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import {useParams, useLocation, Link} from "react-router-dom";
 import IngredientInput from "./IngredientInput.jsx";
 
 const categoryOptions = [
@@ -18,6 +18,8 @@ const RecipeUpdateForm = () => {
     const [message, setMessage] = useState({ text: "", type: "" });
     const [productOptions, setProductOptions] = useState([]);
     const [autoCalculate, setAutoCalculate] = useState(false);
+    const location = useLocation();
+
     useEffect(() => {
         fetch("http://localhost:8080/products")
             .then(res => res.json())
@@ -197,12 +199,14 @@ const RecipeUpdateForm = () => {
                     Update Recipe
                 </button>
             </div>
-
             {message.text && (
                 <p className={message.type === "success" ? "text-green-600" : "text-red-600"}>
                     {message.text}
                 </p>
             )}
+            <Link to={`/recipes${location.search}`} className="text-[#c0a060] hover:underline block mt-6">
+                ← Back to recipe list
+            </Link>
         </form>
     );
 };
