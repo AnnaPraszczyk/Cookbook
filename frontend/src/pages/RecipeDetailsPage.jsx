@@ -59,6 +59,9 @@ const RecipeDetailsPage = () => {
         fetchRecipe();
     }, [id]);
 
+    useEffect(() => {
+        console.log("🧪 fetched recipe:", recipe);
+    }, [recipe]);
     if (loading) return <p className="text-center text-gray-400">Loading...</p>;
     if (!recipe) return <p className="text-center text-white">Recipe not found.</p>;
 
@@ -75,12 +78,10 @@ const RecipeDetailsPage = () => {
             <ul className="list-disc list-inside space-y-1">
                 {recipe.ingredients.map((i, index) => (
                     <li key={index}>
-                        {i.product?.productName?.name} — {i.amount} {i.unit}
-
+                        {i.productName} — {i.amount} {i.unit}
                     </li>
                 ))}
             </ul>
-
             <h2 className="text-2xl font-semibold mt-6 mb-2">Instructions</h2>
             <p className="whitespace-pre-line">{recipe.instructions}</p>
 

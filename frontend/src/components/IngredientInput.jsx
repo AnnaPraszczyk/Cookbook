@@ -6,6 +6,7 @@ const IngredientInput = ({ onAdd, productOptions = [], resetCount }) => {
     const [unit, setUnit]   = useState("g");
     const units = ["g","dag","kg","oz","lb","st"];
     const [customName, setCustomName] = useState("");
+    const productNames = productOptions.map(p => p.productName);
     useEffect(() => {
             setName("");
             setAmt("");
@@ -33,11 +34,19 @@ const IngredientInput = ({ onAdd, productOptions = [], resetCount }) => {
         <div className="flex flex-wrap items-end gap-3">
             <select
                 value={name}
-                onChange={e => setName(e.target.value)}
+                onChange={e => {
+                    const selected = e.target.value;
+                    setName(selected);
+                    if (selected === "__custom__") {
+                        setCustomName("");
+                    }
+                }}
                 className="p-2 w-64 h-12 border-2 text-lg border-gray-400 rounded bg-[#333] text-gray-400">
                 <option value="">Select product </option>
-                {productOptions.map((p, i) => (
-                    <option key={i} value={p}>{p}</option>
+                {productOptions
+                    .filter(p => p && p.productName)
+                    .map((p, i) => (
+                        <option key={i} value={p.productName}>{p.productName}</option>
                 ))}
                 <option value="__custom__">Other...</option>
             </select>

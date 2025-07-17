@@ -25,7 +25,7 @@ const RecipeUpdateForm = () => {
             .then(res => res.json())
             .then(data => {
                 console.log("✅ Products:", data);
-                setProductOptions(data.map(p => p.productName.name));
+                setProductOptions(data.map(p => p.productName));
             })
             .catch(err => console.error("❌ Failed to load products", err));
     }, []);
@@ -131,7 +131,7 @@ const RecipeUpdateForm = () => {
                             className="flex items-center justify-between bg-[#333] text-white px-3 py-1 rounded"
                         >
       <span>
-        {ing.product?.productName?.name || ing.productName?.name} - {ing.amount} {ing.unit}
+        {ing.productName} - {ing.amount} {ing.unit}
       </span>
                             <button
                                 type="button"

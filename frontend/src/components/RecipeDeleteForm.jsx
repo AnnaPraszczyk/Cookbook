@@ -90,7 +90,7 @@ const RecipeDeleteForm = () => {
                             className="flex items-center justify-between bg-[#333] text-white px-3 py-1 rounded"
                         >
         <span>
-          {ing.product?.productName?.name || ing.productName?.name} - {ing.amount} {ing.unit}
+          {ing.productName} - {ing.amount} {ing.unit}
         </span>
                         </li>
                     ))}

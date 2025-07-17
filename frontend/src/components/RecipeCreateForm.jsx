@@ -48,7 +48,8 @@ const RecipeCreateForm = () => {
                 .then(res => res.json())
                 .then(data => {
                     console.log("✅ Products from backend:", data);
-                    setProductOptions(data.map(p => p.productName.name));
+                    const validProducts = data.filter(p => p && p.productName);
+                    setProductOptions(validProducts);
                 })
                 .catch(err => console.error("❌ Error loading products", err));
         }, []);
