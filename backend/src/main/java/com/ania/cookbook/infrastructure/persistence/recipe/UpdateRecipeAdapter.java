@@ -21,5 +21,4 @@ public class UpdateRecipeAdapter implements UpdateRecipe {
         RecipeEntity updated = jpaRepository.save(entity);
         return recipeMapper.toDomain(updated);
     }
-
 }

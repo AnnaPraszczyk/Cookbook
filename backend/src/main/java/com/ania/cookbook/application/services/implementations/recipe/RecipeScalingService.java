@@ -3,7 +3,6 @@ package com.ania.cookbook.application.services.implementations.recipe;
 import com.ania.cookbook.application.services.interfaces.recipe.ScaleIngredientsUseCase;
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
 import com.ania.cookbook.domain.model.Ingredient;
-import com.ania.cookbook.domain.model.Product;
 import com.ania.cookbook.domain.model.Recipe;
 import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +22,7 @@ public class RecipeScalingService implements ScaleIngredientsUseCase {
 
         List<Ingredient> adjustedIngredients = selectedRecipe.getIngredients().stream()
                 .map(ingredient -> Ingredient.newIngredient(
-                        Product.newProduct(ingredient.getProduct().getProductId(), ingredient.getProduct().getProductName()),
+                        ingredient.getProduct(),
                         ingredient.getAmount() * recipe.servings() / selectedRecipe.getNumberOfServings(),
                         ingredient.getUnit()))
                 .toList();

@@ -29,9 +29,12 @@ public class ProductService implements ProductUseCase {
 
     @Override
     public Product addProduct(ProductName product) {
-        UUID id = UUID.randomUUID();
-        var newProduct = Product.newProduct(id, new ProductName(product.name()));
-        return saveProductRepository.saveProduct(newProduct);
+        return readProductRepository.findProductByName(product.name())
+                .orElseGet(() -> {
+                    UUID id = UUID.randomUUID();
+                    var newProduct = Product.newProduct(id, product);
+                    return saveProductRepository.saveProduct(newProduct);
+                });
     }
 
     @Override
@@ -51,12 +54,17 @@ public class ProductService implements ProductUseCase {
 
     @Override
     public Product updateProductName(ProductName product, ProductName newName) {
-        var foundProduct = readProductRepository.findProductByName(product.name())
-                .orElseThrow(() -> new ProductNotFoundException("Product not found. Unable to update."));
-        if(readProductRepository.existsProductByName(newName.name())) throw new ProductValidationException("This product already exists.");
+        var existing = readProductRepository.findProductByName(newName.name());
+        if (existing.isPresent()) {
+            return existing.get();
+        }
 
-        Product updatedProduct = Product.newProduct(foundProduct.getProductId(), newName);
-        return updateProductRepository.updateProduct(updatedProduct);
+        var found = readProductRepository.findProductByName(product.name())
+                .orElseThrow(() -> new ProductNotFoundException("Product not found. Unable to update."));
+
+        Product updated = Product.newProduct(found.getProductId(), newName);
+        return updateProductRepository.updateProduct(updated);
+
     }
 
     @Override

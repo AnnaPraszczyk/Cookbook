@@ -4,7 +4,6 @@ import com.ania.cookbook.domain.repositories.recipe.DeleteRecipe;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-
 import java.util.UUID;
 
 @Repository

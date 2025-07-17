@@ -14,5 +14,4 @@ public class IngredientJson {
     private String productName;
     private float amount;
     private Unit unit;
-
 }

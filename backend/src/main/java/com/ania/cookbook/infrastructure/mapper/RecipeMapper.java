@@ -1,6 +1,6 @@
 package com.ania.cookbook.infrastructure.mapper;
 
-import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
+import com.ania.cookbook.application.services.implementations.product.ProductName;
 import com.ania.cookbook.domain.model.Ingredient;
 import com.ania.cookbook.domain.model.Product;
 import com.ania.cookbook.domain.model.Recipe;
@@ -10,13 +10,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RecipeMapper {
-
-
     private Ingredient fromJson(IngredientJson j) {
         Product p = Product.newProduct(j.getProductId(), new ProductName(j.getProductName()));
         return Ingredient.newIngredient(p, j.getAmount(), j.getUnit());
     }
-
 
     public Recipe toDomain(RecipeEntity e) {
         return Recipe.newRecipe(
@@ -36,6 +33,7 @@ public class RecipeMapper {
                 ing.getAmount(),
                 ing.getUnit());
     }
+
     public RecipeEntity toEntity(Recipe d) {
         return RecipeEntity.newRecipeEntity(
                 d.getRecipeId(),
@@ -47,6 +45,4 @@ public class RecipeMapper {
                 d.getTags()
         );
     }
-
-
 }

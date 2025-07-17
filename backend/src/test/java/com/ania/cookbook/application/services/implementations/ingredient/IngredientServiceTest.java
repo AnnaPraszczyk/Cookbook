@@ -1,14 +1,13 @@
 package com.ania.cookbook.application.services.implementations.ingredient;
 
+import com.ania.cookbook.application.services.implementations.product.ProductName;
 import com.ania.cookbook.application.services.implementations.product.ProductService;
-import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
 import com.ania.cookbook.domain.model.Ingredient;
 import com.ania.cookbook.domain.model.Product;
 import com.ania.cookbook.domain.model.Unit;
 import com.ania.cookbook.infrastructure.repositories.InMemoryProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class IngredientServiceTest {
@@ -30,7 +29,7 @@ class IngredientServiceTest {
 
     @Test
     void addProductIfNotExists() {
-        ProductName productName = new ProductName("Honey");
+        ProductName productName = ProductName.from("Honey");
 
         assertFalse(productRepository.existsProductByName(productName.name()));
 
@@ -42,12 +41,11 @@ class IngredientServiceTest {
 
     @Test
     void createIngredientAndAddProductIfNotExists() {
-        ProductName product = new ProductName("Sugar");
+        ProductName product = ProductName.from("Sugar");
         float amount = 200;
         Unit unit = Unit.G;
 
         Ingredient ingredient = ingredientService.createIngredient(product, amount, unit);
-
         assertNotNull(ingredient);
         assertEquals(product.name(), ingredient.getProduct().getProductName().name());
         assertEquals(amount, ingredient.getAmount());
@@ -55,7 +53,7 @@ class IngredientServiceTest {
     }
     @Test
     void testCreateIngredient() {
-        Ingredient ingredient = ingredientService.createIngredient(new ProductName("Sugar"), 500, Unit.G);
+        Ingredient ingredient = ingredientService.createIngredient(ProductName.from("Sugar"), 500, Unit.G);
         assertNotNull(ingredient);
         assertEquals("Sugar", ingredient.getProduct().getProductName().name());
         assertEquals(500, ingredient.getAmount());

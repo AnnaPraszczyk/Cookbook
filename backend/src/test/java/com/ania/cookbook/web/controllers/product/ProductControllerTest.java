@@ -1,37 +1,40 @@
 package com.ania.cookbook.web.controllers.product;
 
+import com.ania.cookbook.application.services.implementations.product.ProductName;
 import com.ania.cookbook.application.services.implementations.product.ProductService;
-import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
 import com.ania.cookbook.domain.model.Product;
 import com.ania.cookbook.web.product.ProductRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
-
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.Optional;
 import java.util.UUID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
-@ExtendWith(SpringExtension.class)
-@WebMvcTest(ProductController.class)
+@ExtendWith(MockitoExtension.class)
 class ProductControllerTest {
-    @Autowired
-    private MockMvc mockMvc;
-    @MockitoBean
+    @Mock
     private ProductService productService;
+    @InjectMocks
+    private ProductController productController;
+
+    private MockMvc mockMvc;
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setup() {
+        mockMvc = MockMvcBuilders.standaloneSetup(productController).build();
+    }
 
     @Test
     void addProduct() throws Exception {
@@ -44,8 +47,9 @@ class ProductControllerTest {
         mockMvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
+
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.productName.name").value("New Product"));
+                .andExpect(jsonPath("$.productName").value("New Product"));
     }
 
     @Test
@@ -57,7 +61,7 @@ class ProductControllerTest {
 
         mockMvc.perform(get("/products/{productName}", productName))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.productName.name").value(productName.name()));
+                .andExpect(jsonPath("$.productName").value(productName.name()));
     }
 
     @Test
@@ -82,7 +86,7 @@ class ProductControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.productName.name").value(newName.name()));
+                    .andExpect(jsonPath("$.productName").value(newName.name()));
         }
 
     @Test

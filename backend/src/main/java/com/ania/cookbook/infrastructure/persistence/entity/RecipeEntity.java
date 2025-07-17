@@ -5,15 +5,17 @@ import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.infrastructure.converters.IngredientsJsonConverter;
 import com.ania.cookbook.infrastructure.converters.TagsJsonConverter;
 import jakarta.persistence.*;
-import lombok.Getter;
-import org.springframework.data.annotation.PersistenceConstructor;
-
+import lombok.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 @Getter
+@Setter
 @Entity
+@Builder
+@AllArgsConstructor
 @Table(name = "recipe")
 public class RecipeEntity {
         @Id
@@ -37,9 +39,6 @@ public class RecipeEntity {
         @Convert(converter = TagsJsonConverter.class)
         private List<String> tags;
 
-
-
-    @PersistenceConstructor
     private RecipeEntity(UUID recipeId, String recipeName, Category category, List<IngredientJson> ingredients, String instructions, int numberOfServings, List<String> tags) {
             if(recipeId==null){throw new RecipeValidationException("Recipe id cannot be null");}
             this.recipeId = recipeId;

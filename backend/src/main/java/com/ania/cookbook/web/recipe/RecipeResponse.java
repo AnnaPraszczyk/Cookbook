@@ -2,7 +2,6 @@ package com.ania.cookbook.web.recipe;
 
 import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.domain.model.Ingredient;
-
 import java.util.List;
 import java.util.UUID;
 

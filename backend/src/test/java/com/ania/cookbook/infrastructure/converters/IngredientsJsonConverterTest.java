@@ -1,16 +1,10 @@
 package com.ania.cookbook.infrastructure.converters;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
-import com.ania.cookbook.domain.model.Ingredient;
-import com.ania.cookbook.domain.model.Product;
 import com.ania.cookbook.domain.model.Unit;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import java.util.List;
-import java.util.UUID;
 
 class IngredientsJsonConverterTest {
     private final IngredientsJsonConverter converter = new IngredientsJsonConverter();

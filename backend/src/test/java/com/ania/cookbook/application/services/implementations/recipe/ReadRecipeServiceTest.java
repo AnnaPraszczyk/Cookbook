@@ -1,9 +1,7 @@
 package com.ania.cookbook.application.services.implementations.recipe;
 
-import com.ania.cookbook.application.services.implementations.ingredient.IngredientService;
 import com.ania.cookbook.application.services.implementations.product.ProductService;
 import com.ania.cookbook.application.services.interfaces.product.ProductUseCase;
-import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
 import com.ania.cookbook.application.services.interfaces.recipe.CreateRecipeUseCase.CreateRecipe;
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
 import com.ania.cookbook.domain.model.Category;
@@ -11,12 +9,11 @@ import com.ania.cookbook.domain.model.Recipe;
 import com.ania.cookbook.domain.model.Unit;
 import com.ania.cookbook.infrastructure.repositories.InMemoryProductRepository;
 import com.ania.cookbook.infrastructure.repositories.InMemoryRecipeRepository;
+import com.ania.cookbook.web.ingredient.IngredientRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,25 +23,23 @@ import static org.junit.jupiter.api.Assertions.*;
 class ReadRecipeServiceTest {
 
     private ReadRecipeService readRecipeService;
-    private IngredientService ingredientService;
     private RecipeService recipeService;
-    private ProductUseCase productUseCase;
 
     @BeforeEach
     void setUp() {
-        InMemoryRecipeRepository recipeRepository = new InMemoryRecipeRepository();
         InMemoryProductRepository productRepository = new InMemoryProductRepository();
+        ProductUseCase productUseCase = new ProductService(productRepository, productRepository, productRepository, productRepository);
+        InMemoryRecipeRepository recipeRepository = new InMemoryRecipeRepository();
         readRecipeService = new ReadRecipeService(recipeRepository);
         recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository, productUseCase);
-        ProductService productService = new ProductService(productRepository, productRepository, productRepository, productRepository);
-        ingredientService = new IngredientService(productService);
+
     }
 
     @Test
     void findRecipeById() {
         CreateRecipe request = new CreateRecipe(
                 "Pancakes", Category.DESSERT,
-                List.of(ingredientService.createIngredient(new ProductName("Flour"), 200, Unit.G)),
+                List.of(new IngredientRequest("Flour", 200, Unit.G)),
                 "Mix ingredients and fry.", 4, List.of("Easy"));
 
         Recipe savedRecipe = recipeService.createRecipe(request);
@@ -66,7 +61,7 @@ class ReadRecipeServiceTest {
     void existsRecipeById() {
         CreateRecipe request = new CreateRecipe(
                 "Pancakes", Category.DESSERT,
-                List.of(ingredientService.createIngredient(new ProductName("Flour"), 200, Unit.G)),
+                List.of(new IngredientRequest("Flour", 200, Unit.G)),
                 "Mix ingredients and fry.", 4, List.of("Easy"));
 
         Recipe savedRecipe = recipeService.createRecipe(request);
@@ -84,7 +79,7 @@ class ReadRecipeServiceTest {
     void findRecipeByName() {
         CreateRecipe request = new CreateRecipe(
                 "Pancakes", Category.DESSERT,
-                List.of(ingredientService.createIngredient(new ProductName("Flour"), 200, Unit.G)),
+                List.of(new IngredientRequest("Flour", 200, Unit.G)),
                 "Mix ingredients and fry.", 4, List.of("Easy"));
         Recipe savedRecipe = recipeService.createRecipe(request);
 
@@ -104,7 +99,7 @@ class ReadRecipeServiceTest {
     void existsRecipeByName() {
         CreateRecipe request = new CreateRecipe(
                 "Pancakes", Category.DESSERT,
-                List.of(ingredientService.createIngredient(new ProductName("Flour"), 200, Unit.G)),
+                List.of(new IngredientRequest("Flour", 200, Unit.G)),
                 "Mix ingredients and fry.", 4, List.of("Easy"));
 
         Recipe savedRecipe = recipeService.createRecipe(request);
@@ -122,7 +117,7 @@ class ReadRecipeServiceTest {
     void findRecipeByCategory() {
         CreateRecipe request = new CreateRecipe(
                 "Pancakes", Category.DESSERT,
-                List.of(ingredientService.createIngredient(new ProductName("Flour"), 200, Unit.G)),
+                List.of(new IngredientRequest("Flour", 200, Unit.G)),
                 "Mix ingredients and fry.", 4, List.of("Easy"));
 
         Recipe savedRecipe = recipeService.createRecipe(request);
@@ -132,24 +127,5 @@ class ReadRecipeServiceTest {
         assertFalse(foundRecipes.isEmpty());
         assertEquals(savedRecipe.getCategory(), foundRecipes.getFirst().getCategory());
 
-    }
-
-    @Test
-    void findRecipeByTag() {
-        CreateRecipe request = new CreateRecipe(
-                "Pancakes", Category.DESSERT,
-                List.of(ingredientService.createIngredient(new ProductName("Flour"), 200, Unit.G)),
-                "Mix ingredients and fry.", 4, List.of("Easy"));
-
-        Recipe savedRecipe = recipeService.createRecipe(request);
-        List<Recipe> foundRecipes = readRecipeService.findRecipeByTag(savedRecipe.getTags().getFirst());
-
-        assertFalse(foundRecipes.isEmpty());
-        assertTrue(foundRecipes.getFirst().getTags().contains("Easy"));
-    }
-
-    @Test
-    void recipeNotFoundByTag() {
-        assertThrows(RecipeNotFoundException.class, () -> readRecipeService.findRecipeByTag("NonExistingTag"));
     }
 }

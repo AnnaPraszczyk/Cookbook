@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +30,4 @@ public class TagsJsonConverter implements AttributeConverter<List<String>, Strin
             throw new IllegalArgumentException("Error reading tags from JSON", e);
         }
     }
-
-
-
 }

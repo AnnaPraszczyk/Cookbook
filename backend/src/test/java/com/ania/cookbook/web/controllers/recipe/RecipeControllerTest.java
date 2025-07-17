@@ -1,150 +1,125 @@
 package com.ania.cookbook.web.controllers.recipe;
 
-import com.ania.cookbook.application.services.implementations.recipe.ReadRecipeService;
+import com.ania.cookbook.application.services.implementations.product.ProductName;
 import com.ania.cookbook.application.services.implementations.recipe.RecipeService;
-import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
+import com.ania.cookbook.application.services.interfaces.recipe.CreateRecipeUseCase.CreateRecipe;
 import com.ania.cookbook.application.services.interfaces.recipe.DeleteRecipeUseCase.DeleteRecipeCase;
 import com.ania.cookbook.application.services.interfaces.recipe.UpdateRecipeUseCase.UpdateRecipeCase;
-import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
 import com.ania.cookbook.domain.model.*;
-import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
+import com.ania.cookbook.web.ingredient.IngredientRequest;
 import com.ania.cookbook.web.recipe.RecipeRequest;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hamcrest.Matchers;
+import com.ania.cookbook.web.recipe.RecipeResponse;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.http.MediaType;
-
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
-@ExtendWith(SpringExtension.class)
-@WebMvcTest(RecipeController.class)
 class RecipeControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockitoBean
+    @Mock
     private RecipeService recipeService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @InjectMocks
+    private RecipeController recipeController;
 
-    @MockitoBean
-    private ReadRecipe readRecipeRepository;
-
-//    @Test
-//    void createRecipe() throws Exception {
-//        UUID recipeId = UUID.randomUUID();
-//        RecipeRequest request = new RecipeRequest(
-//                "Chocolate Cake",
-//                Category.DESSERT,
-//                List.of(Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),new ProductName("Sugar")), 200, Unit.G)),
-//                "Mix everything and bake",
-//                4,
-//                List.of("sweet", "easy")
-//        );
-//
-//        Recipe recipe = Recipe.newRecipe(recipeId, request.recipeName(), request.category(),
-//                request.ingredients(), request.instructions(), request.numberOfServings(), request.tags());
-//
-//        Mockito.when(recipeService.createRecipe(Mockito.any())).thenReturn(recipe);
-//
-//        mockMvc.perform(post("/recipes")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(request)))
-//                .andDo(print())
-//                .andExpect(status().isCreated())
-//                .andExpect(jsonPath("$.recipeName").value("Chocolate Cake"))
-//                .andExpect(jsonPath("$.category").value("DESSERT"))
-//                .andExpect(jsonPath("$.numberOfServings").value(4));
-//    }
-
-//    @Test
-//    void updateRecipe() throws Exception {
-//        UUID recipeId = UUID.randomUUID();
-//        RecipeRequest request = new RecipeRequest(
-//                "Updated Cake",
-//                Category.DESSERT,
-//                List.of(Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),new ProductName("Sugar")), 300, Unit.G)),
-//                "New instructions",
-//                6,
-//                List.of("sweet", "best")
-//        );
-//
-//        Recipe updatedRecipe = Recipe.newRecipe(recipeId, request.recipeName(), request.category(),
-//                request.ingredients(), request.instructions(), request.numberOfServings(), request.tags());
-//
-//        Mockito.when(recipeService.updateRecipe(Mockito.any(UUID.class), Mockito.any())).thenReturn(updatedRecipe);
-//
-//        mockMvc.perform(put("/recipes/" + recipeId)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(request)))
-//                .andDo(print())
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.recipeName").value("Updated Cake"))
-//                .andExpect(jsonPath("$.numberOfServings").value(6));
-//    }
-
-    @Test
-    void deleteRecipe() throws Exception {
-        UUID recipeId = UUID.randomUUID();
-
-        Mockito.doNothing().when(recipeService).deleteRecipe(Mockito.any());
-
-        mockMvc.perform(delete("/recipes/" + recipeId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(new DeleteRecipeCase(recipeId, "Recipe Name"))))
-                .andDo(print())
-                .andExpect(status().isNoContent());
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
-
-
-
     @Test
-    void notFoundForNonExistingRecipe() throws Exception {
+    void createRecipe() {
         UUID recipeId = UUID.randomUUID();
 
-        Mockito.when(recipeService.updateRecipe(Mockito.any(UUID.class), Mockito.any()))
-                .thenThrow(new RecipeNotFoundException("Recipe not found."));
+        RecipeRequest request = new RecipeRequest(
+                "Lasagna",
+                Category.MAIN_COURSE,
+                List.of(new IngredientRequest("Sugar", 200, Unit.G)),
+                "Bake layers",
+                4,
+                List.of("italian")
+        );
+        Ingredient domainIngredient = Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(), ProductName.from("Sugar")),
+                200, Unit.G
+        );
 
-        mockMvc.perform(put("/recipes/" + recipeId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new UpdateRecipeCase("Updated",Category.DESSERT, List.of(),"",2,List.of()))))
-                .andDo(print())
-                .andExpect(status().isNotFound());
+        Recipe recipe = Recipe.newRecipe(
+                recipeId,
+                request.recipeName(),
+                request.category(),
+                List.of(domainIngredient),
+                request.instructions(),
+                request.numberOfServings(),
+                request.tags()
+        );
+        when(recipeService.createRecipe(any(CreateRecipe.class))).thenReturn(recipe);
+        ResponseEntity<RecipeResponse> response = recipeController.createRecipe(request);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals("Lasagna", response.getBody().recipeName());
+        assertEquals(Category.MAIN_COURSE, response.getBody().category());
+        assertEquals(4, response.getBody().numberOfServings());
+        }
+
+    @Test
+    void shouldUpdateRecipe() {
+        UUID recipeId = UUID.randomUUID();
+        Ingredient ingredient = Ingredient.newIngredient(
+                Product.newProduct(UUID.randomUUID(), ProductName.from("Sugar")),
+                200,
+                Unit.G
+        );
+        Recipe updated = Recipe.newRecipe(
+                recipeId,
+                "Pizza",
+                Category.MAIN_COURSE,
+                List.of(ingredient),
+                "Bake",
+                2,
+                List.of("cheese")
+        );
+        when(recipeService.updateRecipe(eq(recipeId), any(UpdateRecipeCase.class))).thenReturn(updated);
+        UpdateRecipeCase updateRequest = new UpdateRecipeCase(
+                updated.getRecipeName(),
+                updated.getCategory(),
+                List.of(new IngredientRequest("Sugar", 200, Unit.G)),
+                updated.getInstructions(),
+                updated.getNumberOfServings(),
+                updated.getTags()
+        );
+        ResponseEntity<RecipeResponse> response = recipeController.updateRecipe(recipeId, updateRequest);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertNotNull(response.getBody());
+        assertEquals("Pizza", response.getBody().recipeName());
+        assertEquals(2, response.getBody().numberOfServings());
+        assertEquals(1, response.getBody().ingredients().size());
+        assertEquals("Sugar", response.getBody().ingredients().getFirst().getProduct().getProductName().getName());
     }
 
     @Test
-    void notFoundForDeletingNonExistingRecipe() throws Exception {
+    void shouldDeleteRecipe() {
         UUID recipeId = UUID.randomUUID();
+        String recipeName = "Pizza";
+        DeleteRecipeCase deleteCase = new DeleteRecipeCase(recipeId, recipeName);
 
-        Mockito.doThrow(new RecipeNotFoundException("Recipe with given Id not found"))
-                .when(recipeService).deleteRecipe(Mockito.any(DeleteRecipeCase.class));
+        doNothing().when(recipeService).deleteRecipe(deleteCase);
 
-        mockMvc.perform(delete("/recipes/" + recipeId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(new DeleteRecipeCase(recipeId, "Valid Recipe Name"))))
-                .andDo(print())
-                .andExpect(status().isNotFound())
-                .andExpect(content().string(Matchers.containsString("Recipe with given Id not found")));
+        ResponseEntity<Void> response = recipeController.deleteRecipe(recipeId, deleteCase);
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        assertNull(response.getBody());
+        verify(recipeService, times(1)).deleteRecipe(deleteCase);
     }
+
+
 }

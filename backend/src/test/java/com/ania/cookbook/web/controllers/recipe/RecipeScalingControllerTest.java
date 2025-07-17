@@ -1,10 +1,10 @@
-package com.ania.cookbook.web.recipe;
+package com.ania.cookbook.web.controllers.recipe;
 
+import com.ania.cookbook.application.services.implementations.product.ProductName;
 import com.ania.cookbook.application.services.implementations.recipe.RecipeScalingService;
-import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
 import com.ania.cookbook.application.services.interfaces.recipe.ScaleIngredientsUseCase.AdjustRecipe;
 import com.ania.cookbook.domain.model.*;
-import com.ania.cookbook.web.controllers.recipe.RecipeScalingController;
+import com.ania.cookbook.web.recipe.RecipeScalingRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

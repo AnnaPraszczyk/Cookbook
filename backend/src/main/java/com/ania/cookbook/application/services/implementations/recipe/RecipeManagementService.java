@@ -9,11 +9,17 @@ import com.ania.cookbook.domain.model.Ingredient;
 import com.ania.cookbook.domain.model.Recipe;
 import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
 import com.ania.cookbook.domain.repositories.recipe.SaveRecipe;
+import com.ania.cookbook.infrastructure.mapper.RecipeMapper;
+import com.ania.cookbook.infrastructure.persistence.entity.RecipeEntity;
+import com.ania.cookbook.infrastructure.persistence.entity.RecipeListEntry;
+import com.ania.cookbook.infrastructure.persistence.entity.SavedRecipeList;
+import com.ania.cookbook.infrastructure.persistence.list.RecipeListEntryRepository;
+import com.ania.cookbook.infrastructure.persistence.list.SavedRecipeListRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Getter
 @RequiredArgsConstructor
@@ -22,122 +28,117 @@ public class RecipeManagementService implements ListManagementUseCase {
     private final SaveRecipe saveRecipeRepository;
     private final ReadRecipe readRecipeRepository;
     private final List<Recipe> recipeList = new ArrayList<>();
-    //private final Map<String, List<Recipe>> recipeLists = new HashMap<>();
-    private final Map<String, List<Recipe>> recipeLists = new LinkedHashMap<>() {
-        private static final int MAX_ENTRIES = 10;
-
-        @Override
-        protected boolean removeEldestEntry(Map.Entry<String, List<Recipe>> eldest) {
-            return size() > MAX_ENTRIES;
-        }
-    };
+    private final RecipeListEntryRepository entryRepository;
+    private final SavedRecipeListRepository listRepository;
+    private final RecipeMapper recipeMapper;
 
     @Override
     public void createRecipeList(ListName list) {
-        boolean listExists = recipeLists.containsKey(list.name());
-        if(listExists) {
-            throw new ListValidationException("Recipe list with the given name already exists.");
+        if (listRepository.existsByListName(list.name())) {
+            throw new ListValidationException("Recipe list already exists.");
         }
-        recipeLists.putIfAbsent(list.name(), new ArrayList<>());
+        SavedRecipeList savedList = SavedRecipeList.builder()
+                .listName(list.name())
+                .createdAt(Instant.now())
+                .expectedPortions(0)
+                .listDescription("")
+                .entries(new ArrayList<>())
+                .build();
+        listRepository.save(savedList);
     }
 
     @Override
     public void addRecipeToList(UUID recipeId, ListName list) {
-        Recipe matchingRecipe = readRecipeRepository.findRecipeById(recipeId).orElseThrow(
-                () -> new RecipeNotFoundException("Unable to find the recipe because it does not exist."));
-        List<Recipe> recipes = recipeLists.computeIfAbsent(list.name(), k -> new ArrayList<>());
-        if (!recipes.contains(matchingRecipe)) {
-            recipes.add(matchingRecipe);
-        }
-    }
-
-    @Override
-    public List<ListName> getAllLists() {
-        return recipeLists.keySet().stream()
-                .map(ListName::new)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public void saveRecipesList(ListName list) {
-        List<Recipe> recipes = recipeLists.get(list.name());
-        if (recipes.isEmpty()) {
-            throw new RecipeNotFoundException("No recipes found in the list.");
-        }
-        recipeList.forEach(saveRecipeRepository::saveRecipe);
+        Recipe recipe = readRecipeRepository.findRecipeById(recipeId)
+                .orElseThrow(() -> new RecipeNotFoundException("Recipe not found."));
+        SavedRecipeList savedList = listRepository.findByListName(list.name())
+                .orElseThrow(() -> new ListNotFoundException("List not found."));
+        boolean alreadyExists = entryRepository.findBySavedList_ListName(list.name()).stream()
+                .anyMatch(entry -> entry.getRecipe().getRecipeId().equals(recipeId));
+        if (alreadyExists) return;
+        RecipeEntity entity = recipeMapper.toEntity(recipe);
+        RecipeListEntry entry = RecipeListEntry.builder()
+                .recipe(entity)
+                .savedList(savedList)
+                .portions(recipe.getNumberOfServings())
+                .build();
+        entryRepository.save(entry);
     }
 
     @Override
     public List<Recipe> getRecipesList(ListName list) {
-        return recipeLists.getOrDefault(list.name(), List.of());
+        boolean exists = listRepository.existsById(list.name());
+        if (!exists) {
+            throw new ListNotFoundException("Recipe list with the given name does not exist.");
+        }
+        return entryRepository.findBySavedList_ListName(list.name()).stream()
+                .map(entry -> recipeMapper.toDomain(entry.getRecipe()))
+                .toList();
     }
 
     @Override
     public void removeRecipeFromList(UUID recipeId, ListName list) {
-        if (!recipeLists.containsKey(list.name())) {
-            throw new ListNotFoundException("Recipe list with the given name does not exist.");
-        } else if (recipeId == null) {
+        if (recipeId == null) {
             throw new RecipeValidationException("Recipe ID cannot be null.");
         }
-        List<Recipe> recipes = recipeLists.get(list.name());
-        if(recipes == null || recipes.isEmpty()){
-            throw new RecipeNotFoundException("No recipes found in the list.");
-        }
-        boolean removed = recipes.removeIf(recipe -> recipe.getRecipeId().equals(recipeId));
-        if(!removed){
-            throw new RecipeNotFoundException("Recipe with given ID does not exist in the list.");
-        }
-    }
+        listRepository.findByListName(list.name())
+                .orElseThrow(() -> new ListNotFoundException("Recipe list with the given name does not exist."));
+        List<RecipeListEntry> entries = entryRepository.findBySavedList_ListName(list.name());
 
-    @Override
-    public boolean clearRecipeList(ListName list, boolean confirm) {
-        if (!confirm) {
-            return false;
-        }
-        if (!recipeLists.containsKey(list.name())) {
-            throw new ListNotFoundException("Recipe list with the given name does not exist.");
-        }
-        List<Recipe> recipes = recipeLists.get(list.name());
-        if(recipes == null){
-            throw new ListNotFoundException("Recipe list with the given name does not exist.");
-        }
-            recipes.clear();
-            return true;
+        RecipeListEntry entryToRemove = entries.stream()
+                .filter(e -> e.getRecipe().getRecipeId().equals(recipeId))
+                .findFirst()
+                .orElseThrow(() -> new RecipeNotFoundException("Recipe not found in list."));
+
+        entryRepository.delete(entryToRemove);
     }
 
     @Override
     public void deleteRecipeList(ListName list) {
-        if (!recipeLists.containsKey(list.name())) {
-            throw new ListNotFoundException("Recipe list with the given name does not exist.");
+        SavedRecipeList savedList = listRepository.findByListName(list.name())
+                .orElseThrow(() -> new ListNotFoundException("List not found."));
+
+        listRepository.delete(savedList);
+    }
+
+    @Override
+    public boolean clearRecipeList(ListName list, boolean confirm) {
+        if (!confirm) return false;
+
+        List<RecipeListEntry> entries = entryRepository.findBySavedList_ListName(list.name());
+
+        if (entries.isEmpty()) {
+            throw new ListNotFoundException("List is empty or not found.");
         }
-        List<Recipe> removedList = recipeLists.remove(list.name());
-        if (removedList == null) {
-            throw new ListNotFoundException("Recipe list with the given name does not exist.");
-        }
+
+        entryRepository.deleteAll(entries);
+        return true;
     }
 
     @Override
     public Map<String, Float> generateShoppingList(ListName list) {
-        if (!recipeLists.containsKey(list.name())) {
-            throw new ListNotFoundException("Recipe list with the given name does not exist.");
+        List<RecipeListEntry> entries = entryRepository.findBySavedList_ListName(list.name());
+        if (entries.isEmpty()) {
+            return Map.of();
         }
         Map<String, Float> shoppingList = new HashMap<>();
-        List<Recipe> recipes = recipeLists.get(list.name());
-
-        for (Recipe recipe : recipes) {
-            Map<String, Float> singleRecipeIngredients = new HashMap<>();
-
+        for (RecipeListEntry entry : entries) {
+            Recipe recipe = recipeMapper.toDomain(entry.getRecipe());
+            float scale = entry.getPortions() / (float) recipe.getNumberOfServings();
             for (Ingredient ingredient : recipe.getIngredients()) {
-                String productName = ingredient.getProduct().getProductName().name();
-                float amountInGrams = ingredient.getUnit().toGrams(ingredient.getAmount());
-
-                singleRecipeIngredients.merge(productName, amountInGrams, Float::sum);
-            }
-
-            for (Map.Entry<String, Float> entry : singleRecipeIngredients.entrySet()) {
-                shoppingList.merge(entry.getKey(), entry.getValue(), Float::sum);
+                String name = ingredient.getProduct().getProductName().name();
+                float amount = scale * ingredient.getUnit().toGrams(ingredient.getAmount());
+                shoppingList.merge(name, amount, Float::sum);
             }
         }
         return shoppingList;
     }
+
+    @Override
+    public List<ListName> getAllLists() {
+        return listRepository.findAll().stream()
+                .map(list -> new ListName(list.getListName()))
+                .toList();
+    }
 }
+

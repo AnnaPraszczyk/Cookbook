@@ -1,4 +1,5 @@
 package com.ania.cookbook.infrastructure.converters;
+
 import com.ania.cookbook.domain.exceptions.IngredientConversionException;
 import com.ania.cookbook.infrastructure.persistence.entity.IngredientJson;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -6,8 +7,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 

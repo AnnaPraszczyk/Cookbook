@@ -1,6 +1,6 @@
 package com.ania.cookbook.web.product;
 
-import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
+import com.ania.cookbook.application.services.implementations.product.ProductName;
 
 import java.util.UUID;
 

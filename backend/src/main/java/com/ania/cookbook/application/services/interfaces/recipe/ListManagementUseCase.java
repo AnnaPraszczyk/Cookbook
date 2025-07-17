@@ -5,15 +5,13 @@ import com.ania.cookbook.domain.model.Recipe;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 import static io.micrometer.common.util.StringUtils.isBlank;
 
 public interface ListManagementUseCase {
 
     void createRecipeList(ListName name);
-    void addRecipeToList(UUID recipeId, ListName listName) ;
-    List<Recipe> getRecipesList(ListName name);
-    void saveRecipesList(ListName listName);
+    void addRecipeToList(UUID recipeId, ListName listName);
+    List<Recipe> getRecipesList(ListName list);
     void removeRecipeFromList(UUID recipeId, ListName listName);
     boolean clearRecipeList(ListName listName, boolean confirm);
     void deleteRecipeList(ListName listName);

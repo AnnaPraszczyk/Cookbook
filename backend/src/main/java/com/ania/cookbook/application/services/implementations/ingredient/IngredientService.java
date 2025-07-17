@@ -1,7 +1,7 @@
 package com.ania.cookbook.application.services.implementations.ingredient;
 
+import com.ania.cookbook.application.services.implementations.product.ProductName;
 import com.ania.cookbook.application.services.implementations.product.ProductService;
-import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
 import com.ania.cookbook.domain.exceptions.IngredientValidationException;
 import com.ania.cookbook.domain.model.Ingredient;
 import com.ania.cookbook.domain.model.Product;

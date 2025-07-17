@@ -1,7 +1,7 @@
 package com.ania.cookbook.application.services.implementations.recipe;
 
+import com.ania.cookbook.application.services.implementations.product.ProductName;
 import com.ania.cookbook.application.services.interfaces.product.ProductUseCase;
-import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
 import com.ania.cookbook.application.services.interfaces.recipe.CreateRecipeUseCase;
 import com.ania.cookbook.application.services.interfaces.recipe.DeleteRecipeUseCase;
 import com.ania.cookbook.application.services.interfaces.recipe.UpdateRecipeUseCase;
@@ -31,12 +31,12 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
     private final DeleteRecipe deleteRecipeRepository;
     private final ProductUseCase productUseCase;
 
-
     @Override
     public Recipe createRecipe(CreateRecipe recipe) {
-        List<Ingredient> resolvedIngredients = recipe.ingredients().stream()
+
+        List<Ingredient> ingredients = recipe.ingredients().stream()
                 .map(i -> {
-                    ProductName name = new ProductName(i.productName());
+                    ProductName name = ProductName.from(i.productName());
                     Product product = productUseCase
                             .findProductByName(name)
                             .orElseGet(() -> productUseCase.addProduct(name));
@@ -44,7 +44,7 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
                 })
                 .toList();
         UUID id = UUID.randomUUID();
-        Recipe newRecipe = Recipe.newRecipe(id,recipe.recipeName(),recipe.category(),resolvedIngredients,
+        Recipe newRecipe = Recipe.newRecipe(id,recipe.recipeName(),recipe.category(),ingredients,
                 recipe.instructions(),recipe.numberOfServings(),
                 recipe.tags());
         return saveRecipeRepository.saveRecipe(newRecipe);
@@ -58,7 +58,7 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
         List<Ingredient> updatedIngredients = recipe.ingredients() != null
                 ? recipe.ingredients().stream()
                 .map(i -> {
-                    ProductName name = new ProductName(i.productName());
+                    ProductName name = ProductName.from(i.productName());
                     Product product = productUseCase
                             .findProductByName(name)
                             .orElseGet(() -> productUseCase.addProduct(name));

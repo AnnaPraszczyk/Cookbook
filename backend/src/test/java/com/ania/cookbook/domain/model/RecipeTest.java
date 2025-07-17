@@ -3,8 +3,7 @@ package com.ania.cookbook.domain.model;
 import static com.ania.cookbook.domain.model.Ingredient.newIngredient;
 import static com.ania.cookbook.domain.model.Product.newProduct;
 import static org.junit.jupiter.api.Assertions.*;
-
-import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
+import com.ania.cookbook.application.services.implementations.product.ProductName;
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import org.junit.jupiter.api.Test;
 import java.util.List;

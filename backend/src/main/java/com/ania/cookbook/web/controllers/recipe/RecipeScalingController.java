@@ -18,9 +18,7 @@ public class RecipeScalingController {
     @PostMapping
     public ResponseEntity<RecipeScalingResponse> scaleRecipe(@RequestBody RecipeScalingRequest request) {
         AdjustRecipe adjustRecipe = new AdjustRecipe(request.getRecipeId(), request.getServings());
-
         Recipe scaledRecipe = recipeScalingService.adjustRecipeByServings(adjustRecipe);
-
         RecipeScalingResponse response = RecipeScalingResponse.from(scaledRecipe);
         return ResponseEntity.ok(response);
     }

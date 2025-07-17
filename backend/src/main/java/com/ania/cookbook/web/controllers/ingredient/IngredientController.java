@@ -1,7 +1,7 @@
 package com.ania.cookbook.web.controllers.ingredient;
 
 import com.ania.cookbook.application.services.implementations.ingredient.IngredientService;
-import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
+import com.ania.cookbook.application.services.implementations.product.ProductName;
 import com.ania.cookbook.domain.model.Ingredient;
 import com.ania.cookbook.web.ingredient.IngredientRequest;
 import com.ania.cookbook.web.ingredient.IngredientResponse;
@@ -44,6 +44,4 @@ public class IngredientController {
                 ingredient.getUnit()
         );
     }
-
-
 }

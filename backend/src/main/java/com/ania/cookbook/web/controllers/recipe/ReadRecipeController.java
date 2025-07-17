@@ -14,11 +14,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import lombok.extern.slf4j.Slf4j;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import static io.micrometer.common.util.StringUtils.isBlank;
 
 @Slf4j
 @RestController
@@ -76,11 +76,11 @@ public class ReadRecipeController {
             @RequestParam(required = false) String category,
             @PageableDefault(sort = "recipeName") Pageable pageable) {
         try {
-            if (name != null && !name.isBlank()) {
+            if (!isBlank(name)) {
                 return finder.findRecipeByName(name, pageable)
                         .map(ReadRecipeResponse::from);
             }
-            if (category != null && !category.isBlank()) {
+            if (!isBlank(category)) {
                 Category cat = resolveCategory(category);
                 return finder.findRecipeByCategory(cat, pageable)
                         .map(ReadRecipeResponse::from);
@@ -89,6 +89,8 @@ public class ReadRecipeController {
         } catch (IllegalArgumentException ex) {
             log.warn("Invalid category value: {}", category);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid category: " + category, ex);
+        } catch (ResponseStatusException ex) {
+            throw ex;
         } catch (Exception e) {
             log.error("❌ Internal error during recipe search", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", e);

@@ -3,6 +3,8 @@ package com.ania.cookbook.web.controllers.recipe;
 import com.ania.cookbook.application.services.interfaces.recipe.DeleteRecipeUseCase.DeleteRecipeCase;
 import com.ania.cookbook.application.services.interfaces.recipe.UpdateRecipeUseCase.UpdateRecipeCase;
 import com.ania.cookbook.domain.model.Category;
+import com.ania.cookbook.domain.model.Unit;
+import com.ania.cookbook.web.ingredient.IngredientRequest;
 import com.ania.cookbook.web.recipe.RecipeRequest;
 import com.ania.cookbook.web.recipe.RecipeResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,12 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -33,23 +33,20 @@ public class RecipeControllerIntegrationTest {
 
     @Test
     public void createRecipe() throws Exception {
-        RecipeRequest request = new RecipeRequest(
-                "Pasta",
-                Category.MAIN_COURSE,
-                Collections.emptyList(),
-                "Boil pasta and add sauce",
-                2,
-                Collections.singletonList("Italian")
+        List<IngredientRequest> ingredients = List.of(
+                new IngredientRequest("Sugar", 200, Unit.G)
         );
+        RecipeRequest request = new RecipeRequest("Pasta", Category.MAIN_COURSE, ingredients, "Boil pasta and add sauce",
+                2, Collections.singletonList("Italian"));
 
         String jsonRequest = objectMapper.writeValueAsString(request);
 
-        mockMvc.perform(post("/recipes")
+        mockMvc.perform(post("/api/recipes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.recipeName").value("Pasta"))
-                .andExpect(jsonPath("$.category").value("MAIN_COURSE"))
+                .andExpect(jsonPath("$.category").value("Main Course"))
                 .andExpect(jsonPath("$.instructions").value("Boil pasta and add sauce"))
                 .andExpect(jsonPath("$.numberOfServings").value(2))
                 .andExpect(jsonPath("$.tags[0]").value("Italian"));
@@ -57,17 +54,13 @@ public class RecipeControllerIntegrationTest {
 
     @Test
     public void updateRecipe() throws Exception {
-        RecipeRequest createRequest = new RecipeRequest(
-                "Salad",
-                Category.APPETIZER,
-                Collections.emptyList(),
-                "Mix veggies",
-                1,
-                Collections.singletonList("Healthy")
+        List<IngredientRequest> ingredients = List.of(
+                new IngredientRequest("Sugar", 200, Unit.G)
         );
+        RecipeRequest createRequest = new RecipeRequest("Salad", Category.APPETIZER, ingredients, "Mix veggies",
+                1, Collections.singletonList("Healthy"));
         String createJson = objectMapper.writeValueAsString(createRequest);
-
-        String responseContent = mockMvc.perform(post("/recipes")
+        String responseContent = mockMvc.perform(post("/api/recipes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(createJson))
                 .andExpect(status().isCreated())
@@ -86,7 +79,7 @@ public class RecipeControllerIntegrationTest {
         );
         String updateJson = objectMapper.writeValueAsString(updateRequest);
 
-        mockMvc.perform(put("/recipes/" + recipeId)
+        mockMvc.perform(put("/api/recipes/" + recipeId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updateJson))
                 .andExpect(status().isOk())
@@ -98,17 +91,18 @@ public class RecipeControllerIntegrationTest {
 
     @Test
     public void deleteRecipe() throws Exception {
+        List<IngredientRequest> ingredients = List.of(new IngredientRequest("Sugar", 200, Unit.G));
         RecipeRequest createRequest = new RecipeRequest(
                 "Soup",
                 Category.MAIN_COURSE,
-                Collections.emptyList(),
+                ingredients,
                 "Boil water and add vegetables",
                 3,
                 Collections.singletonList("Winter")
         );
         String createJson = objectMapper.writeValueAsString(createRequest);
 
-        String responseContent = mockMvc.perform(post("/recipes")
+        String responseContent = mockMvc.perform(post("/api/recipes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(createJson))
                 .andExpect(status().isCreated())
@@ -121,7 +115,7 @@ public class RecipeControllerIntegrationTest {
         DeleteRecipeCase deleteRequest = new DeleteRecipeCase(recipeId,recipeName);
         String deleteJson = objectMapper.writeValueAsString(deleteRequest);
 
-        mockMvc.perform(delete("/recipes/" + recipeId)
+        mockMvc.perform(delete("/api/recipes/" + recipeId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(deleteJson))
                 .andExpect(status().isNoContent());

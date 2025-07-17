@@ -1,7 +1,7 @@
 package com.ania.cookbook.web.controllers.product;
 
+import com.ania.cookbook.application.services.implementations.product.ProductName;
 import com.ania.cookbook.application.services.implementations.product.ProductService;
-import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
 import com.ania.cookbook.domain.model.Product;
 import com.ania.cookbook.web.product.ProductRequest;
 import com.ania.cookbook.web.product.ProductResponse;

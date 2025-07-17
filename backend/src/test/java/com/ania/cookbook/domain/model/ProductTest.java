@@ -1,6 +1,6 @@
 package com.ania.cookbook.domain.model;
 
-import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
+import com.ania.cookbook.application.services.implementations.product.ProductName;
 import com.ania.cookbook.domain.exceptions.ProductValidationException;
 import org.junit.jupiter.api.Test;
 import java.util.UUID;
@@ -32,7 +32,7 @@ class ProductTest {
     void testNewProductNullName() {
         UUID id = UUID.randomUUID();
         ProductValidationException exception = assertThrows(ProductValidationException.class, () ->
-                Product.newProduct(id,  new ProductName(null)));
+                Product.newProduct(id, ProductName.from(null)));
         assertEquals("Product name cannot be null or empty.", exception.getMessage());
     }
 
@@ -40,7 +40,7 @@ class ProductTest {
     void testNewProductBlankName() {
         UUID id = UUID.randomUUID();
         ProductValidationException exception = assertThrows(ProductValidationException.class, () ->
-                Product.newProduct(id, new ProductName("")));
+                Product.newProduct(id,ProductName.from("")));
         assertEquals("Product name cannot be null or empty.", exception.getMessage());
     }
 }

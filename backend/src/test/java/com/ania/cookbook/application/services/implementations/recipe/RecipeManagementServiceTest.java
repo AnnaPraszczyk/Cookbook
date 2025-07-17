@@ -1,363 +1,472 @@
 package com.ania.cookbook.application.services.implementations.recipe;
 
-import com.ania.cookbook.application.services.implementations.ingredient.IngredientService;
-import com.ania.cookbook.application.services.implementations.product.ProductService;
-import com.ania.cookbook.application.services.interfaces.product.ProductUseCase;
-import com.ania.cookbook.application.services.interfaces.product.ProductUseCase.ProductName;
-import com.ania.cookbook.application.services.interfaces.recipe.CreateRecipeUseCase.CreateRecipe;
+import com.ania.cookbook.application.services.implementations.product.ProductName;
 import com.ania.cookbook.application.services.interfaces.recipe.ListManagementUseCase.ListName;
 import com.ania.cookbook.domain.exceptions.ListNotFoundException;
 import com.ania.cookbook.domain.exceptions.ListValidationException;
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.*;
-import com.ania.cookbook.infrastructure.repositories.InMemoryProductRepository;
-import com.ania.cookbook.infrastructure.repositories.InMemoryRecipeRepository;
+import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
+import com.ania.cookbook.infrastructure.mapper.RecipeMapper;
+import com.ania.cookbook.infrastructure.persistence.entity.IngredientJson;
+import com.ania.cookbook.infrastructure.persistence.entity.RecipeEntity;
+import com.ania.cookbook.infrastructure.persistence.entity.RecipeListEntry;
+import com.ania.cookbook.infrastructure.persistence.entity.SavedRecipeList;
+import com.ania.cookbook.infrastructure.persistence.list.RecipeListEntryRepository;
+import com.ania.cookbook.infrastructure.persistence.list.SavedRecipeListRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import java.time.Instant;
+import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
+
+@ExtendWith(MockitoExtension.class)
 class RecipeManagementServiceTest {
-    private RecipeManagementService recipeManagementService;
-    private RecipeService recipeService;
-    private IngredientService ingredientService;
-    private ProductUseCase productUseCase;
+    @Mock
+    private ReadRecipe readRecipeRepository;
+    @Mock
+    private RecipeListEntryRepository entryRepository;
+    @Mock
+    private SavedRecipeListRepository savedListRepository;
+    @Mock
+    private RecipeMapper recipeMapper;
+    @InjectMocks
+    private RecipeManagementService service;
+
+    private ListName listName;
+    private SavedRecipeList savedList;
 
     @BeforeEach
-    void setUp() {
-        InMemoryRecipeRepository recipeRepository = new InMemoryRecipeRepository();
-        recipeManagementService = new RecipeManagementService(recipeRepository, recipeRepository);
-        InMemoryProductRepository productRepository = new InMemoryProductRepository();
-        ProductService productService = new ProductService(productRepository, productRepository, productRepository, productRepository);
-        recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository, productUseCase);
-        ingredientService = new IngredientService(productService);
+    void setup() {
+        listName = new ListName("TestList");
+        savedList = SavedRecipeList.builder()
+                .listName(listName.name())
+                .createdAt(Instant.now())
+                .listDescription("")
+                .expectedPortions(0)
+                .entries(new ArrayList<>())
+                .build();
     }
-
     @Test
-    void createRecipeList() {
-        ListName listName = new ListName("Desserts");
-        recipeManagementService.createRecipeList(listName);
+    void createNewList() {
+        Mockito.when(savedListRepository.existsByListName(listName.name())).thenReturn(false);
+        service.createRecipeList(listName);
 
-        assertNotNull(recipeManagementService.getRecipesList(listName));
-        assertTrue(recipeManagementService.getRecipesList(listName).isEmpty());
+        Mockito.verify(savedListRepository).save(Mockito.argThat(list ->
+                list.getListName().equals(savedList.getListName()) &&
+                        list.getListDescription().equals(savedList.getListDescription()) &&
+                        list.getEntries().isEmpty()
+        ));
     }
 
     @Test
     void createRecipeListWhenNameIsBlank() {
         assertThrows(ListValidationException.class,
-                () -> recipeManagementService.createRecipeList(new ListName("")));
+                () -> service.createRecipeList(new ListName("")));
     }
 
     @Test
     void createRecipeListWhenNameIsNull() {
         assertThrows(ListValidationException.class,
-                () -> recipeManagementService.createRecipeList(new ListName(null)));
+                () -> service.createRecipeList(new ListName(null)));
     }
 
     @Test
-    void addRecipeById() {
-        CreateRecipe createRequest = new CreateRecipe("Pancakes", Category.DESSERT,
-                List.of(ingredientService.createIngredient(new ProductName("Flour"), 10, Unit.DAG)),
-                "Mix and cook", 2, List.of("Easy", "Breakfast"));
-        CreateRecipe createRequest2 = new CreateRecipe("Pancakes", Category.DESSERT,
-                List.of(ingredientService.createIngredient(new ProductName("Milk"), 10, Unit.G)),
-                "Mix and cook", 2, List.of("Easy", "Breakfast"));
-        Recipe recipe = recipeService.createRecipe(createRequest);
-        Recipe recipe2 = recipeService.createRecipe(createRequest2);
-        ListName listName = new ListName("New list");
-        recipeManagementService.createRecipeList(listName);
-        UUID recipeId = recipe.getRecipeId();
-        UUID recipeId2 = recipe2.getRecipeId();
-        recipeManagementService.addRecipeToList(recipeId, listName);
-        recipeManagementService.addRecipeToList(recipeId2, listName);
-        List<Recipe> newList = recipeManagementService.getRecipesList(listName);
+    void addRecipeToList() {
+        UUID recipeId = UUID.randomUUID();
+        ListName list = new ListName("Weekend");
+        Recipe recipe = mock(Recipe.class);
+        RecipeEntity recipeEntity = mock(RecipeEntity.class);
+        SavedRecipeList savedList = SavedRecipeList.builder().listName(list.name()).build();
 
-        assertNotNull(newList);
-        assertEquals(2, newList.size());
-        assertEquals("Pancakes", newList.getFirst().getRecipeName());
+        Mockito.when(readRecipeRepository.findRecipeById(recipeId)).thenReturn(Optional.of(recipe));
+        Mockito.when(savedListRepository.findByListName(list.name())).thenReturn(Optional.of(savedList));
+        Mockito.when(entryRepository.findBySavedList_ListName(list.name())).thenReturn(List.of());
+        Mockito.when(recipeMapper.toEntity(recipe)).thenReturn(recipeEntity);
+        Mockito.when(recipe.getNumberOfServings()).thenReturn(4);
+        service.addRecipeToList(recipeId, list);
+
+        Mockito.verify(entryRepository).save(Mockito.argThat(entry ->
+                entry.getRecipe().equals(recipeEntity) &&
+                        entry.getSavedList().equals(savedList) &&
+                        entry.getPortions() == 4
+        ));
     }
 
     @Test
     void addRecipeByIdWhenRecipeNotFound() {
+        UUID fakeRecipeId = UUID.randomUUID();
+        ListName listName = new ListName("New List");
+        Mockito.when(readRecipeRepository.findRecipeById(fakeRecipeId))
+                .thenReturn(Optional.empty());
 
-        assertThrows(RecipeNotFoundException.class,
-                () -> recipeManagementService.addRecipeToList(UUID.randomUUID(), new ListName("New List")));
+        assertThrows(RecipeNotFoundException.class, () ->
+                service.addRecipeToList(fakeRecipeId, listName));
     }
 
     @Test
-    void addRecipeByIdDuplicateRecipes() {
-        CreateRecipe createRequest = new CreateRecipe("Pancakes", Category.DESSERT,
-                List.of(ingredientService.createIngredient(new ProductName("Flour"), 10, Unit.DAG)),
-                "Mix and cook", 2, List.of("Easy", "Breakfast"));
-        Recipe recipe = recipeService.createRecipe(createRequest);
+    void notDuplicateRecipeEntriesInList() {
         ListName listName = new ListName("Desserts");
-        recipeManagementService.createRecipeList(listName);
-        UUID recipeId = recipe.getRecipeId();
-        recipeManagementService.addRecipeToList(recipeId, listName);
+        SavedRecipeList savedList = SavedRecipeList.builder().listName(listName.name()).build();
+        UUID recipeId = UUID.randomUUID();
+        IngredientJson ingredient = new IngredientJson(UUID.randomUUID(), "Flour", 200F, Unit.G);
+        RecipeEntity recipeEntity = RecipeEntity.builder()
+                .recipeId(recipeId)
+                .recipeName("Test")
+                .category(Category.DESSERT)
+                .ingredients(List.of(ingredient))
+                .instructions("Mix")
+                .numberOfServings(2)
+                .tags(List.of())
+                .build();
+        Recipe recipe = mock(Recipe.class);
+        Mockito.when(recipe.getNumberOfServings()).thenReturn(2);
+        Mockito.when(recipeMapper.toEntity(recipe)).thenReturn(recipeEntity);
+        Mockito.when(readRecipeRepository.findRecipeById(recipeId)).thenReturn(Optional.of(recipe));
+        Mockito.when(savedListRepository.findByListName(listName.name())).thenReturn(Optional.of(savedList));
+        Mockito.when(entryRepository.findBySavedList_ListName(listName.name()))
+                .thenReturn(List.of())
+                .thenReturn(List.of(
+                        RecipeListEntry.builder()
+                                .recipe(recipeEntity)
+                                .savedList(savedList)
+                                .portions(2)
+                                .build()
+                ));
+        service.addRecipeToList(recipeId, listName);
 
-        recipeManagementService.addRecipeToList(recipe.getRecipeId(), listName);
-        recipeManagementService.addRecipeToList(recipe.getRecipeId(), listName);
-
-        List<Recipe> drinksList = recipeManagementService.getRecipesList(listName);
-
-        assertEquals(1, drinksList.size());
+        Mockito.when(entryRepository.findBySavedList_ListName(listName.name()))
+                .thenReturn(List.of(
+                        RecipeListEntry.builder().recipe(recipeEntity).savedList(savedList).portions(2).build()
+                ));
+        service.addRecipeToList(recipeId, listName);
+        service.addRecipeToList(recipeId, listName);
+        Mockito.verify(entryRepository, Mockito.times(1)).save(Mockito.any());
     }
 
     @Test
-    void saveRecipesList() {
-        CreateRecipe createRequest = new CreateRecipe("Pancakes", Category.DESSERT,
-                List.of(ingredientService.createIngredient(new ProductName("Flour"), 10, Unit.DAG)),
-                "Mix and cook", 2, List.of("Easy", "Breakfast"));
-        Recipe recipe = recipeService.createRecipe(createRequest);
-        ListName listName = new ListName("New list");
-        recipeManagementService.createRecipeList(listName);
-        UUID recipeId = recipe.getRecipeId();
-        recipeManagementService.addRecipeToList(recipeId, listName);
-
-        recipeManagementService.saveRecipesList(listName);
-
-        assertEquals(1, recipeManagementService.getRecipesList(listName).size());
-        assertEquals("Pancakes", recipeManagementService.getRecipesList(listName).getFirst().getRecipeName());
-    }
-
-    @Test
-    void saveRecipesListWhenListNameIsBlank() {
-        Exception exception = assertThrows(ListValidationException.class, () -> recipeManagementService.saveRecipesList(new ListName("")));
-        assertEquals("List name cannot be null or empty.", exception.getMessage());
-    }
-
-    @Test
-    void saveRecipeListWhenListNameIsNull() {
-
-        Exception exception = assertThrows(ListValidationException.class, () -> recipeManagementService.saveRecipesList(new ListName(null)));
-        assertEquals("List name cannot be null or empty.", exception.getMessage());
-    }
-
-    @Test
-    void getRecipesList() {
-        CreateRecipe createRequest = new CreateRecipe("Pancakes", Category.DESSERT,
-                List.of(ingredientService.createIngredient(new ProductName("Flour"), 10, Unit.DAG)),
-                "Mix and cook", 2, List.of("Easy", "Breakfast"));
-        Recipe recipe = recipeService.createRecipe(createRequest);
+    void returnRecipesFromList() {
         ListName listName = new ListName("Desserts");
-        recipeManagementService.createRecipeList(listName);
-        UUID recipeId = recipe.getRecipeId();
-        recipeManagementService.addRecipeToList(recipeId, listName);
-        recipeManagementService.saveRecipesList(listName);
-
-        List<Recipe> result = recipeManagementService.getRecipesList(listName);
+        SavedRecipeList savedList = SavedRecipeList.builder()
+                .listName(listName.name())
+                .build();
+        UUID recipeId = UUID.randomUUID();
+        RecipeEntity recipeEntity = RecipeEntity.builder()
+                .recipeId(recipeId)
+                .recipeName("Test")
+                .category(Category.DESSERT)
+                .instructions("Mix")
+                .numberOfServings(2)
+                .ingredients(List.of())
+                .tags(List.of())
+                .build();
+        Recipe recipe = mock(Recipe.class);
+        Mockito.when(recipeMapper.toDomain(recipeEntity)).thenReturn(recipe);
+        Mockito.when(recipe.getRecipeName()).thenReturn("Pancakes");
+        RecipeListEntry entry = RecipeListEntry.builder()
+                .recipe(recipeEntity)
+                .savedList(savedList)
+                .portions(2)
+                .build();
+        Mockito.when(entryRepository.findBySavedList_ListName(listName.name()))
+                .thenReturn(List.of(entry));
+        List<Recipe> result = service.getRecipesList(listName);
 
         assertEquals(1, result.size());
         assertEquals("Pancakes", result.getFirst().getRecipeName());
     }
 
     @Test
-    void getRecipesListWhenRecipeListDoesNotExist() {
-        List<Recipe> result = recipeManagementService.getRecipesList(new ListName("NonExistingList"));
+    void returnEmptyListWhenRecipeListDoesNotExist() {
+        ListName listName = new ListName("NonExistingList");
+        Mockito.when(entryRepository.findBySavedList_ListName(listName.name()))
+                .thenReturn(List.of());
+        List<Recipe> result = service.getRecipesList(listName);
+
         assertNotNull(result);
         assertTrue(result.isEmpty());
     }
 
     @Test
     void removeRecipeFromList() {
-        CreateRecipe createRequest = new CreateRecipe("Pancakes", Category.DESSERT,
-                List.of(ingredientService.createIngredient(new ProductName("Flour"), 10, Unit.DAG)),
-                "Mix and cook", 2, List.of("Easy", "Breakfast"));
-        Recipe recipe = recipeService.createRecipe(createRequest);
+        UUID recipeId = UUID.randomUUID();
         ListName listName = new ListName("Desserts");
-        recipeManagementService.createRecipeList(listName);
-        UUID recipeId = recipe.getRecipeId();
-        recipeManagementService.addRecipeToList(recipeId, listName);
-        recipeManagementService.saveRecipesList(listName);
+        SavedRecipeList savedList = SavedRecipeList.builder().listName(listName.name()).build();
+        RecipeEntity recipeEntity = RecipeEntity.builder()
+                .recipeId(recipeId)
+                .recipeName("Test")
+                .category(Category.DESSERT)
+                .instructions("Mix")
+                .numberOfServings(2)
+                .ingredients(List.of())
+                .tags(List.of())
+                .build();
+        RecipeListEntry entry = RecipeListEntry.builder()
+                .recipe(recipeEntity)
+                .savedList(savedList)
+                .portions(2)
+                .build();
+        Mockito.when(savedListRepository.findByListName(listName.name()))
+                .thenReturn(Optional.of(savedList));
+        Mockito.when(entryRepository.findBySavedList_ListName(listName.name()))
+                .thenReturn(List.of(entry));
+        service.removeRecipeFromList(recipeId, listName);
 
-        recipeManagementService.removeRecipeFromList(recipeId,listName);
-        List<Recipe> recipeList = recipeManagementService.getRecipesList(listName);
-
-        assertFalse(recipeList.contains(recipe));
-        assertEquals(0, recipeList.size());
+        Mockito.verify(entryRepository).delete(entry);
     }
 
     @Test
-    void removeRecipeFromListWhenListNameIsBlank() {
-        Exception exception = assertThrows(ListValidationException.class, () -> recipeManagementService.removeRecipeFromList(UUID.randomUUID(), new ListName("")));
-        assertEquals("List name cannot be null or empty.", exception.getMessage());
-    }
+        void throwExceptionWhenListNameIsBlank() {
+            Exception exception = assertThrows(ListValidationException.class, () ->
+                    new ListName("")
+            );
+
+            assertEquals("List name cannot be null or empty.", exception.getMessage());
+        }
 
     @Test
-    void removeRecipeFromListWhenRecipeListDoesNotExist() {
-        Exception exception = assertThrows(ListNotFoundException.class, () -> recipeManagementService.removeRecipeFromList(UUID.randomUUID(), new ListName("NonExistingList")));
+    void throwExceptionWhenRecipeListDoesNotExist() {
+        ListName listName = new ListName("NonExistingList");
+        UUID recipeId = UUID.randomUUID();
+        Mockito.when(savedListRepository.findByListName(listName.name()))
+                .thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(ListNotFoundException.class, () ->
+                service.removeRecipeFromList(recipeId, listName)
+        );
         assertEquals("Recipe list with the given name does not exist.", exception.getMessage());
     }
 
     @Test
-    void removeRecipeFromListWhenRecipeIdIsNull() {
+    void throwExceptionWhenRecipeIdIsNull() {
         ListName listName = new ListName("ExistingList");
-        recipeManagementService.createRecipeList(listName);
 
-        Exception exception = assertThrows(RecipeValidationException.class, () -> recipeManagementService.removeRecipeFromList(null, listName));
+        Exception exception = assertThrows(RecipeValidationException.class, () ->
+                service.removeRecipeFromList(null, listName)
+        );
         assertEquals("Recipe ID cannot be null.", exception.getMessage());
     }
 
     @Test
-    void removeRecipeFromListWhenRecipeListIsEmpty() {
+    void throwExceptionWhenRecipeListIsEmpty() {
         ListName listName = new ListName("EmptyList");
-        recipeManagementService.createRecipeList(listName);
+        SavedRecipeList savedList = SavedRecipeList.builder()
+                .listName(listName.name())
+                .build();
+        Mockito.when(savedListRepository.findByListName(listName.name()))
+                .thenReturn(Optional.of(savedList));
+        Mockito.when(entryRepository.findBySavedList_ListName(listName.name()))
+                .thenReturn(List.of());
 
-        Exception exception = assertThrows(RecipeNotFoundException.class, () -> recipeManagementService.removeRecipeFromList(UUID.randomUUID(), listName));
-        assertEquals("No recipes found in the list.", exception.getMessage());
+        Exception exception = assertThrows(RecipeNotFoundException.class, () ->
+                service.removeRecipeFromList(UUID.randomUUID(), listName)
+        );
+        assertEquals("Recipe not found in list.", exception.getMessage());
     }
 
     @Test
-    void removeRecipeFromListWhenRecipeDoesNotExistInList() {
+    void throwExceptionWhenRecipeDoesNotExistInList() {
         ListName listName = new ListName("Desserts");
-        recipeManagementService.createRecipeList(listName);
-        CreateRecipe createRequest = new CreateRecipe("Pancakes", Category.DESSERT,
-                List.of(ingredientService.createIngredient(new ProductName("Flour"), 10, Unit.DAG)),
-                "Mix and cook", 2, List.of("Easy", "Breakfast"));
-        Recipe recipe = recipeService.createRecipe(createRequest);
-        recipeManagementService.addRecipeToList(recipe.getRecipeId(), listName);
+        UUID existingRecipeId = UUID.randomUUID();
+        UUID missingRecipeId = UUID.randomUUID();
+        SavedRecipeList savedList = SavedRecipeList.builder().listName(listName.name()).build();
+        RecipeEntity recipeEntity = mock(RecipeEntity.class);
+        Mockito.when(recipeEntity.getRecipeId()).thenReturn(existingRecipeId);
+        RecipeListEntry entry = RecipeListEntry.builder()
+                .recipe(recipeEntity)
+                .savedList(savedList)
+                .portions(2)
+                .build();
+        Mockito.when(savedListRepository.findByListName(listName.name()))
+                .thenReturn(Optional.of(savedList));
+        Mockito.when(entryRepository.findBySavedList_ListName(listName.name()))
+                .thenReturn(List.of(entry));
 
-        UUID recipeId = UUID.randomUUID();
-
-        Exception exception = assertThrows(RecipeNotFoundException.class, () -> recipeManagementService.removeRecipeFromList(recipeId, listName));
-        assertEquals("Recipe with given ID does not exist in the list.", exception.getMessage());
+        Exception exception = assertThrows(RecipeNotFoundException.class, () ->
+                service.removeRecipeFromList(missingRecipeId, listName)
+        );
+        assertEquals("Recipe not found in list.", exception.getMessage());
     }
 
     @Test
     void clearRecipeList() {
-        CreateRecipe createRequest = new CreateRecipe("Pancakes", Category.DESSERT,
-                List.of(ingredientService.createIngredient(new ProductName("Flour"), 10, Unit.DAG)),
-                "Mix and cook", 2, List.of("Easy", "Breakfast"));
-        Recipe recipe = recipeService.createRecipe(createRequest);
         ListName listName = new ListName("Desserts");
-        recipeManagementService.createRecipeList(listName);
-        UUID recipeId = recipe.getRecipeId();
-        recipeManagementService.addRecipeToList(recipeId, listName);
-        recipeManagementService.saveRecipesList(listName);
-
-        boolean result = recipeManagementService.clearRecipeList(listName, true);
+        SavedRecipeList savedList = SavedRecipeList.builder().listName(listName.name()).build();
+        RecipeEntity recipeEntity = mock(RecipeEntity.class);
+        RecipeListEntry entry = RecipeListEntry.builder()
+                .recipe(recipeEntity)
+                .savedList(savedList)
+                .portions(2)
+                .build();
+        Mockito.when(entryRepository.findBySavedList_ListName(listName.name()))
+                .thenReturn(List.of(entry));
+        boolean result = service.clearRecipeList(listName, true);
 
         assertTrue(result);
-        assertTrue(recipeManagementService.getRecipesList(listName).isEmpty());
+        Mockito.verify(entryRepository).deleteAll(List.of(entry));
     }
 
     @Test
-    void clearRecipeListWhenConfirmationIsFalse() {
-        CreateRecipe createRequest = new CreateRecipe("Pancakes", Category.DESSERT,
-                List.of(ingredientService.createIngredient(new ProductName("Flour"), 10, Unit.DAG)),
-                "Mix and cook", 2, List.of("Easy", "Breakfast"));
-        Recipe recipe = recipeService.createRecipe(createRequest);
+    void notClearRecipeListWhenConfirmationIsFalse() {
         ListName listName = new ListName("Desserts");
-        recipeManagementService.createRecipeList(listName);
-        UUID recipeId = recipe.getRecipeId();
-        recipeManagementService.addRecipeToList(recipeId, listName);
-        recipeManagementService.saveRecipesList(listName);
-
-        boolean result = recipeManagementService.clearRecipeList(listName, false);
+        boolean result = service.clearRecipeList(listName, false);
 
         assertFalse(result);
-        assertFalse(recipeManagementService.getRecipesList(listName).isEmpty());
+        Mockito.verify(entryRepository, Mockito.never()).deleteAll(Mockito.any());
     }
 
     @Test
-    void clearRecipeListWhenListNameIsBlank() {
-        Exception exception = assertThrows(ListValidationException.class, () -> recipeManagementService.clearRecipeList(new ListName(""), true));
+    void throwExceptionWhenListNameIsBlankDuringClear() {
+        Exception exception = assertThrows(ListValidationException.class, () ->
+                new ListName("")
+        );
         assertEquals("List name cannot be null or empty.", exception.getMessage());
     }
 
     @Test
-    void clearRecipeListWhenRecipeListDoesNotExist() {
-        Exception exception = assertThrows(ListNotFoundException.class, () -> recipeManagementService.clearRecipeList(new ListName("NonExistingList"), true));
-        assertEquals("Recipe list with the given name does not exist.", exception.getMessage());
+    void throwExceptionWhenClearingNonExistingList() {
+        ListName listName = new ListName("NonExistingList");
+        Mockito.when(entryRepository.findBySavedList_ListName(listName.name()))
+                .thenReturn(List.of());
+
+        Exception exception = assertThrows(ListNotFoundException.class, () ->
+                service.clearRecipeList(listName, true)
+        );
+        assertEquals("List is empty or not found.", exception.getMessage());
     }
 
     @Test
-    void deleteRecipeList() {
+    void deleteRecipeListSuccessfully() {
         ListName listName = new ListName("Desserts");
-        recipeManagementService.createRecipeList(listName);
+        SavedRecipeList savedList = SavedRecipeList.builder()
+                .listName(listName.name())
+                .build();
+        Mockito.when(savedListRepository.findByListName(listName.name()))
+                .thenReturn(Optional.of(savedList));
+        service.deleteRecipeList(listName);
 
-        recipeManagementService.deleteRecipeList(listName);
-
-        assertTrue(recipeManagementService.getRecipesList(listName).isEmpty());
+        Mockito.verify(savedListRepository).delete(savedList);
     }
 
     @Test
-    void deleteRecipeListWhenListNameIsBlank() {
-        Exception exception = assertThrows(ListValidationException.class, () -> recipeManagementService.deleteRecipeList(new ListName("")));
+    void throwExceptionWhenDeletingListWithBlankName() {
+        Exception exception = assertThrows(ListValidationException.class, () ->
+                new ListName("")
+        );
         assertEquals("List name cannot be null or empty.", exception.getMessage());
     }
 
     @Test
-    void deleteRecipeListWhenRecipeListDoesNotExist() {
-        Exception exception = assertThrows(ListNotFoundException.class, () -> recipeManagementService.deleteRecipeList(new ListName("NonExistingList")));
-        assertEquals("Recipe list with the given name does not exist.", exception.getMessage());
+    void shouldThrowExceptionWhenDeletingNonExistingList() {
+        ListName listName = new ListName("NonExistingList");
+        Mockito.when(savedListRepository.findByListName(listName.name()))
+                .thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(ListNotFoundException.class, () ->
+                service.deleteRecipeList(listName)
+        );
+        assertEquals("List not found.", exception.getMessage());
     }
 
     @Test
-    void generateShoppingListAggregateIngredientsFromSingleRecipe() {
-        Product product1 = Product.newProduct(UUID.randomUUID(), new ProductName("Flour"));
-        Product product2 = Product.newProduct(UUID.randomUUID(), new ProductName("Sugar"));
+    void generateShoppingListWithScaledIngredients() {
+        ListName listName = new ListName("Dinner");
+        UUID productId = UUID.randomUUID();
+        IngredientJson ingJson = new IngredientJson(productId, "Flour", 200F, Unit.G);
 
-        Ingredient ingredient1 = Ingredient.newIngredient(product1, 20, Unit.DAG);
-        Ingredient ingredient2 = Ingredient.newIngredient(product1, 300, Unit.G);
-        Ingredient ingredient3 = new Ingredient(product2, 10, Unit.DAG);
-        CreateRecipe createRequest = new CreateRecipe("Pancakes", Category.DESSERT,
-                List.of(ingredient1, ingredient2, ingredient3), "Mix and cook", 2, List.of("Easy", "Breakfast"));
-        Recipe recipe = recipeService.createRecipe(createRequest);
+        RecipeEntity recipeEntity = RecipeEntity.newRecipeEntity(
+                UUID.randomUUID(), "Pancakes", Category.MAIN_COURSE,
+                List.of(ingJson), "Fry", 2, List.of()
+        );
+        Product product = Product.newProduct(productId, new ProductName("Flour"));
+        Ingredient ing = Ingredient.newIngredient(product, 200F, Unit.G);
+        Recipe recipe = Recipe.newRecipe(
+                recipeEntity.getRecipeId(),
+                recipeEntity.getRecipeName(),
+                recipeEntity.getCategory(),
+                List.of(ing),
+                recipeEntity.getInstructions(),
+                recipeEntity.getNumberOfServings(),
+                List.of()
+        );
+        Mockito.when(recipeMapper.toDomain(recipeEntity)).thenReturn(recipe);
+        RecipeListEntry entry = RecipeListEntry.builder()
+                .recipe(recipeEntity)
+                .savedList(SavedRecipeList.builder().listName(listName.name()).build())
+                .portions(4)
+                .build();
+        Mockito.when(entryRepository.findBySavedList_ListName(listName.name()))
+                .thenReturn(List.of(entry));
+        Map<String, Float> result = service.generateShoppingList(listName);
+
+        assertEquals(1, result.size());
+        assertEquals(400F, result.get("Flour"));
+    }
+
+    @Test
+    void shouldMergeIngredientsAcrossMultipleRecipes() {
         ListName listName = new ListName("Desserts");
-        recipeManagementService.createRecipeList(listName);
-        recipeManagementService.addRecipeToList(recipe.getRecipeId(), listName);
+        Ingredient butter100 = Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),new ProductName("Butter")), 100, Unit.G);
+        Ingredient butter250 = Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),new ProductName("Butter")), 250, Unit.G);
+        Ingredient sugar250 = Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),new ProductName("Sugar")), 250, Unit.G);
+        List<Ingredient> ingredients = List.of(butter100, butter250, sugar250);
+        RecipeEntity recipeEntity1 = mock(RecipeEntity.class);
+        RecipeEntity recipeEntity2 = mock(RecipeEntity.class);
+        Recipe recipe1 = mock(Recipe.class);
+        Recipe recipe2 = mock(Recipe.class);
+        SavedRecipeList savedList = SavedRecipeList.builder().listName(listName.name()).build();
+        Mockito.when(recipeMapper.toDomain(recipeEntity1)).thenReturn(recipe1);
+        Mockito.when(recipeMapper.toDomain(recipeEntity2)).thenReturn(recipe2);
+        Mockito.when(recipe1.getIngredients()).thenReturn(ingredients);
+        Mockito.when(recipe2.getIngredients()).thenReturn(ingredients);
+        Mockito.when(recipe1.getNumberOfServings()).thenReturn(2);
+        Mockito.when(recipe2.getNumberOfServings()).thenReturn(2);
+        RecipeListEntry entry1 = RecipeListEntry.builder()
+                .recipe(recipeEntity1)
+                .savedList(savedList)
+                .portions(2)
+                .build();
+        RecipeListEntry entry2 = RecipeListEntry.builder()
+                .recipe(recipeEntity2)
+                .savedList(savedList)
+                .portions(2)
+                .build();
+        Mockito.when(entryRepository.findBySavedList_ListName(listName.name()))
+                .thenReturn(List.of(entry1, entry2));
+        Map<String, Float> shoppingList = service.generateShoppingList(listName);
 
-        Map<String, Float> shoppingList = recipeManagementService.generateShoppingList(listName);
-
-        assertEquals(500, shoppingList.get("Flour"));
-        assertEquals(100, shoppingList.get("Sugar"));
+        assertEquals(700F, shoppingList.get("Butter"));
+        assertEquals(500F, shoppingList.get("Sugar"));
     }
 
     @Test
-    void generateShoppingListMergeIngredientsAcrossMultipleRecipes() {
-        Product product = Product.newProduct(UUID.randomUUID(), new ProductName("Butter"));
-        Product product2 = Product.newProduct(UUID.randomUUID(), new ProductName("Sugar"));
+    void shouldReturnEmptyShoppingListForNonExistingList() {
+        ListName listName = new ListName("NonExistingList");
+        Mockito.when(entryRepository.findBySavedList_ListName(listName.name()))
+                .thenReturn(List.of());
+        Map<String, Float> shoppingList = service.generateShoppingList(listName);
 
-        Ingredient ingredient1 = Ingredient.newIngredient(product, 100, Unit.G);
-        Ingredient ingredient2 = Ingredient.newIngredient(product, 250, Unit.G);
-        Ingredient ingredient3 = Ingredient.newIngredient(product2, 250, Unit.G);
-        ListName listName = new ListName("Desserts");
-        recipeManagementService.createRecipeList(listName);
-        CreateRecipe createRequest1 = new CreateRecipe("Pancakes", Category.DESSERT,
-                List.of(ingredient1, ingredient2,ingredient3), "Mix and cook", 2, List.of("Easy", "Breakfast"));
-        Recipe recipe1 = recipeService.createRecipe(createRequest1);
-        recipeManagementService.addRecipeToList(recipe1.getRecipeId(), listName);
-        CreateRecipe createRequest2 = new CreateRecipe("Chocolate cake", Category.DESSERT,
-                List.of(ingredient1, ingredient2,ingredient3), "Mix and cook", 6, List.of("Easy"));
-        Recipe recipe2 = recipeService.createRecipe(createRequest2);
-        recipeManagementService.addRecipeToList(recipe2.getRecipeId(), listName);
-
-        Map<String, Float> shoppingList = recipeManagementService.generateShoppingList(listName);
-
-        assertEquals(700, shoppingList.get("Butter"));
-        assertEquals(500, shoppingList.get("Sugar"));
-    }
-
-    @Test
-    void generateShoppingListWhenListDoesNotExist() {
-        Exception exception = assertThrows(ListNotFoundException.class, () -> recipeManagementService.generateShoppingList(new ListName("NonExistingList")));
-        assertEquals("Recipe list with the given name does not exist.", exception.getMessage());
-    }
-
-    @Test
-    void generateShoppingListWhenRecipeListIsEmpty() {
-        ListName listName = new ListName("Desserts");
-        recipeManagementService.createRecipeList(listName);
-
-        Map<String, Float> shoppingList = recipeManagementService.generateShoppingList(listName);
-
+        assertNotNull(shoppingList);
         assertTrue(shoppingList.isEmpty());
+    }
+
+    @Test
+    void shouldReturnEmptyShoppingListWhenRecipeListIsEmpty() {
+        ListName listName = new ListName("Desserts");
+        Mockito.when(entryRepository.findBySavedList_ListName(listName.name()))
+                .thenReturn(List.of());
+        Map<String, Float> shoppingList = service.generateShoppingList(listName);
+        assertNotNull(shoppingList);
+        assertTrue(shoppingList.isEmpty());
+
     }
 }
 
