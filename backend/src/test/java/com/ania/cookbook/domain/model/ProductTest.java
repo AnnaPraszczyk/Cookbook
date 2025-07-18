@@ -8,10 +8,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ProductTest {
     @Test
-    void testNewProductValidData() {
+    void newProductValidData() {
         UUID id = UUID.randomUUID();
         String name = "test product";
-
         Product product = Product.newProduct(id, new ProductName(name));
 
         assertNotNull(product);
@@ -20,27 +19,29 @@ class ProductTest {
     }
 
     @Test
-    void testNewProductNullId() {
+    void newProductNullId() {
         String name = "test product";
-
         Exception exception = assertThrows(ProductValidationException.class, () ->
                 Product.newProduct(null, new ProductName(name)));
+
         assertEquals("Product id cannot be null", exception.getMessage());
     }
 
     @Test
-    void testNewProductNullName() {
+    void newProductNullName() {
         UUID id = UUID.randomUUID();
         ProductValidationException exception = assertThrows(ProductValidationException.class, () ->
                 Product.newProduct(id, ProductName.from(null)));
+
         assertEquals("Product name cannot be null or empty.", exception.getMessage());
     }
 
     @Test
-    void testNewProductBlankName() {
+    void newProductBlankName() {
         UUID id = UUID.randomUUID();
         ProductValidationException exception = assertThrows(ProductValidationException.class, () ->
                 Product.newProduct(id,ProductName.from("")));
+
         assertEquals("Product name cannot be null or empty.", exception.getMessage());
     }
 }

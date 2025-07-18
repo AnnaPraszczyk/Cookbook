@@ -15,7 +15,6 @@ public class SaveProductAdapter implements SaveProduct {
     private final SpringDataProductRepository jpaRepository;
     private final ProductMapper productMapper;
 
-
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public Product saveProduct(Product product) {

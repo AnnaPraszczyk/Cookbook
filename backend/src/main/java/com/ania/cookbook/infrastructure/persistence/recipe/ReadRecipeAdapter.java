@@ -72,11 +72,4 @@ public class ReadRecipeAdapter implements ReadRecipe {
                 .map(recipeMapper::toDomain)
                 .toList();
     }
-
-    public List<Recipe> findLatestRecipes(int limit) {
-        return jpaRepository.findAllByOrderByCreatedDesc(PageRequest.of(0, limit))
-                .stream()
-                .map(recipeMapper::toDomain)
-                .toList();
-    }
 }

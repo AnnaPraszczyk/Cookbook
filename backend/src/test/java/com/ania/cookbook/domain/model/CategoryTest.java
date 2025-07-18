@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class CategoryTest {
 
     @Test
-    void CategoryValuesExistence() {
+    void categoryValuesExistence() {
         Category[] categories = Category.values();
         assertEquals(12, categories.length);
     }

@@ -6,7 +6,6 @@ const RecipeDetailsPage = () => {
     const [recipe, setRecipe] = useState(null);
     const [loading, setLoading] = useState(true);
     const [newServings, setNewServings] = useState("");
-    const [scaledRecipe, setScaledRecipe] = useState(null);
     const location = useLocation();
 
 

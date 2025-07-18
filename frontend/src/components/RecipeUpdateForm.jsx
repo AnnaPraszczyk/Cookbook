@@ -25,7 +25,7 @@ const RecipeUpdateForm = () => {
             .then(res => res.json())
             .then(data => {
                 console.log("✅ Products:", data);
-                setProductOptions(data.map(p => p.productName));
+                setProductOptions(data);
             })
             .catch(err => console.error("❌ Failed to load products", err));
     }, []);
@@ -42,7 +42,13 @@ const RecipeUpdateForm = () => {
 
                 setName(data.name || "");
                 setCategory(data.category || categoryOptions[0]);
-                setIngredients(data.ingredients || []);
+                setIngredients(
+                    (data.ingredients || []).map(i => ({
+                        productName: i.productName?.name || i.productName,
+                        amount: i.amount,
+                        unit: i.unit
+                    }))
+                );
                 setInstructions(data.instructions || "");
                 setNumberOfServings(data.numberOfServings?.toString() || "");
                 setTags((data.tags || []).join(", "));
@@ -73,7 +79,7 @@ const RecipeUpdateForm = () => {
             name,
             category,
             ingredients: ingredients.map(i => ({
-                productName: i.product?.productName?.name || i.productName?.name,
+                productName: i.productName,
                 amount: i.amount,
                 unit: i.unit
             })),

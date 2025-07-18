@@ -16,6 +16,4 @@ public class DeleteRecipeAdapter implements DeleteRecipe {
     public void deleteRecipeById(UUID id) {
         jpaRepository.deleteById(id);
     }
-
-
 }

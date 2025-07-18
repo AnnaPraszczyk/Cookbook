@@ -6,7 +6,7 @@ const IngredientForm = () => {
     const [unit, setUnit] = useState("G");
     const [message, setMessage] = useState(null);
 
-    const unitOptions = ["g", "dag", "kg", "oz", "lb","st",];
+    const unitOptions = ["g","dag","kg","oz","lb","st","ml","cl","dl","l","tsp","tbsp","cup","pt","qt","gal","pc","sl","pn"];
 
     const handleSubmit = async (e) => {
         e.preventDefault();

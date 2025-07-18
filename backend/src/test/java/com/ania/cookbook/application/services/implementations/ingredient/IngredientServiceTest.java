@@ -52,7 +52,7 @@ class IngredientServiceTest {
         assertEquals(unit, ingredient.getUnit());
     }
     @Test
-    void testCreateIngredient() {
+    void createIngredient() {
         Ingredient ingredient = ingredientService.createIngredient(ProductName.from("Sugar"), 500, Unit.G);
         assertNotNull(ingredient);
         assertEquals("Sugar", ingredient.getProduct().getProductName().name());

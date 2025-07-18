@@ -10,7 +10,11 @@ import java.util.Arrays;
 @Getter
 public enum Unit {
     G("g",1f), DAG("dag",10f), KG("kg",1000f),
-    OZ("oz",28f), LB("lb",454f), ST("st",6350f);
+    OZ("oz",28f), LB("lb",454f), ST("st",6350f),
+    ML("ml",1f),CL("cl",10f), DL("dl",100f), L("l",1000f),
+    TSP("tsp",5f), TBSP("tbsp",15f), CUP("cup", 250f),
+    PT("pt",473f), QT("qt",946f), GAL("gal",3785f),
+    PC("pc",150f), SL("sl",25f), PN("pn",1f);
 
     private final String displayName;
     private final float grams;
@@ -26,7 +30,7 @@ public enum Unit {
 
     @JsonValue
     public String toValue() {
-        return name();
+        return displayName;
     }
 
     public float toGrams(float amount) {

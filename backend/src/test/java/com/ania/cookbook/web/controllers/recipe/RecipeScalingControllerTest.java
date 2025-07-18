@@ -32,21 +32,17 @@ class RecipeScalingControllerTest {
     private RecipeScalingService recipeScalingService;
 
     @Test
-    public void scaleRecipe() throws Exception {
+    void scaleRecipe() throws Exception {
         UUID recipeId = UUID.randomUUID();
         int newServings = 4;
-
         RecipeScalingRequest request = RecipeScalingRequest.builder()
                 .recipeId(recipeId)
                 .servings(newServings)
                 .build();
         String requestJson = objectMapper.writeValueAsString(request);
-
         Category category = Category.MAIN_COURSE;
-
         Product product = Product.newProduct(UUID.randomUUID(), new ProductName("Flour"));
         Ingredient ingredient = Ingredient.newIngredient(product, 200.0f, Unit.G);
-
         Recipe newRecipe = Recipe.newRecipe(
                 recipeId,
                 "Test Recipe (4 servings)",
@@ -56,7 +52,6 @@ class RecipeScalingControllerTest {
                 newServings,
                 Arrays.asList("tag1", "tag2")
         );
-
         when(recipeScalingService.adjustRecipeByServings(any(AdjustRecipe.class)))
                 .thenReturn(newRecipe);
 

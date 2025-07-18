@@ -9,13 +9,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class IngredientTest {
 
     @Test
-    void testNewIngredient() {
+    void newIngredient() {
         UUID productId = UUID.randomUUID();
         String productName = "test product";
         Product product =Product.newProduct(productId, new ProductName(productName));
         float amount = 10.0f;
         Unit unit = Unit.KG;
-
         Ingredient ingredient = Ingredient.newIngredient(product, amount, unit);
 
         assertNotNull(ingredient);
@@ -26,7 +25,7 @@ class IngredientTest {
     }
 
     @Test
-    void testNewIngredientNullProduct() {
+    void newIngredientNullProduct() {
         float amount = 5.0f;
         Unit unit = Unit.G;
 
@@ -36,7 +35,7 @@ class IngredientTest {
     }
 
     @Test
-    void testNewIngredientNegativeAmount() {
+    void newIngredientNegativeAmount() {
         UUID productId = UUID.randomUUID();
         Product product = Product.newProduct(productId ,new ProductName("test product"));
         float amount = -2.0f;
@@ -48,7 +47,7 @@ class IngredientTest {
     }
 
     @Test
-    void testNewIngredientNullUnit() {
+    void newIngredientNullUnit() {
         UUID productId = UUID.randomUUID();
         Product product = Product.newProduct(productId, new ProductName("test product"));
         float amount = 2.0f;

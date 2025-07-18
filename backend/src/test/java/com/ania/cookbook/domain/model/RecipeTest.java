@@ -11,7 +11,7 @@ import java.util.UUID;
 
 class RecipeTest {
     @Test
-    void testNewRecipe() {
+    void newRecipe() {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
         Category category = Category.DESSERT;
@@ -34,7 +34,7 @@ class RecipeTest {
     }
 
     @Test
-    void testNewRecipeNullId() {
+    void newRecipeNullId() {
         String recipeName = "Test Recipe";
         Category category = Category.DESSERT;
         List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), new ProductName("Sugar")),15.0f, Unit.G));
@@ -48,7 +48,7 @@ class RecipeTest {
     }
 
     @Test
-    void testNewRecipeNullName() {
+    void newRecipeNullName() {
         UUID recipeId = UUID.randomUUID();
         Category category = Category.DESSERT;
         List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), new ProductName("Sugar")),15.0f, Unit.G));
@@ -62,7 +62,7 @@ class RecipeTest {
     }
 
     @Test
-    void testNewRecipeEmptyName() {
+    void newRecipeEmptyName() {
         UUID recipeId = UUID.randomUUID();
         Category category = Category.DESSERT;
         List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), new ProductName("Sugar")),15.0f, Unit.G));
@@ -76,7 +76,7 @@ class RecipeTest {
     }
 
     @Test
-    void testNewRecipeNullCategory() {
+    void newRecipeNullCategory() {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
         List<Ingredient> ingredients = List.of(newIngredient(Product.newProduct(UUID.randomUUID(), new ProductName("Sugar")),15.0f, Unit.G));
@@ -90,7 +90,7 @@ class RecipeTest {
     }
 
     @Test
-    void testNewRecipeEmptyIngredients() {
+    void newRecipeEmptyIngredients() {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
         String instructions = "Mix everything and bake";
@@ -103,7 +103,7 @@ class RecipeTest {
     }
 
     @Test
-    void testSingleIngredient() {
+    void singleIngredient() {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
         Ingredient ingredient = newIngredient(newProduct(UUID.randomUUID(), new ProductName("Butter")),15.0f, Unit.G);
@@ -118,7 +118,7 @@ class RecipeTest {
     }
 
     @Test
-    void testNewRecipeNullInstruction() {
+    void newRecipeNullInstruction() {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
         Category category = Category.DESSERT;
@@ -132,7 +132,7 @@ class RecipeTest {
     }
 
     @Test
-    void testNewRecipeEmptyInstruction() {
+    void newRecipeEmptyInstruction() {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
         Category category = Category.DESSERT;
@@ -146,7 +146,7 @@ class RecipeTest {
     }
 
     @Test
-    void testCreateDateNotNull() {
+    void createDateNotNull() {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
         Category category = Category.DESSERT;
@@ -161,7 +161,7 @@ class RecipeTest {
     }
 
     @Test
-    void testNewRecipeInvalidNumberOfServings() {
+    void newRecipeInvalidNumberOfServings() {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
         Category category = Category.DESSERT;
@@ -175,7 +175,7 @@ class RecipeTest {
     }
 
     @Test
-    void testNewRecipeEmptyTags() {
+    void newRecipeEmptyTags() {
         UUID recipeId = UUID.randomUUID();
         String recipeName = "Test Recipe";
         Category category = Category.DESSERT;
@@ -190,7 +190,7 @@ class RecipeTest {
     }
 
     @Test
-    void CalculateServingsBasedOnIngredientMass() {
+    void calculateServingsBasedOnIngredientMass() {
         List<Ingredient> ingredients = List.of(
                 Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),new ProductName("Flour")),500, Unit.G),  // 500g
                 Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),new ProductName("Milk")), 20, Unit.DAG),   // 20g
@@ -201,7 +201,7 @@ class RecipeTest {
     }
 
     @Test
-    void RoundDownServingsIfBelowThreshold() {
+    void roundDownServingsIfBelowThreshold() {
         List<Ingredient> ingredients = List.of(
                 Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),new ProductName("Butter")), 100, Unit.G),  // 100g
                 Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),new ProductName("Sugar")), 150, Unit.G)    // 150g
@@ -212,7 +212,7 @@ class RecipeTest {
     }
 
     @Test
-    void ConvertVariousUnitsBeforeCalculatingServings() {
+    void convertVariousUnitsBeforeCalculatingServings() {
         List<Ingredient> ingredients = List.of(
                 Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),new ProductName("Rice")), 0.5f, Unit.KG),
                 Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(),new ProductName("Chicken")), 1, Unit.LB),  // 453.592g

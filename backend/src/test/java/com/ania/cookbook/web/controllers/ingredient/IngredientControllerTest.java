@@ -44,7 +44,6 @@ class IngredientControllerTest {
 
         Mockito.when(ingredientService.createIngredient(Mockito.any(ProductName.class), Mockito.anyFloat(), Mockito.any(Unit.class)))
                 .thenReturn(ingredient);
-
         mockMvc.perform(post("/ingredients")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))

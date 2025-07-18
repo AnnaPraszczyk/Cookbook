@@ -4,9 +4,8 @@ const IngredientInput = ({ onAdd, productOptions = [], resetCount }) => {
     const [name, setName]   = useState("");
     const [amt, setAmt]     = useState("");
     const [unit, setUnit]   = useState("g");
-    const units = ["g","dag","kg","oz","lb","st"];
+    const units = ["g","dag","kg","oz","lb","st","ml","cl","dl","l","tsp","tbsp","cup","pt","qt","gal","pc","sl","pn"];
     const [customName, setCustomName] = useState("");
-    const productNames = productOptions.map(p => p.productName);
     useEffect(() => {
             setName("");
             setAmt("");
@@ -22,7 +21,7 @@ const IngredientInput = ({ onAdd, productOptions = [], resetCount }) => {
         const finalName = name === "__custom__" ? customName : name;
         if (!finalName.trim() || !amt.trim()) return;
         onAdd({
-            product: { productName: { name : finalName}},
+            productName: finalName,
             amount: +amt,
             unit });
         setName("");
@@ -44,7 +43,6 @@ const IngredientInput = ({ onAdd, productOptions = [], resetCount }) => {
                 className="p-2 w-64 h-12 border-2 text-lg border-gray-400 rounded bg-[#333] text-gray-400">
                 <option value="">Select product </option>
                 {productOptions
-                    .filter(p => p && p.productName)
                     .map((p, i) => (
                         <option key={i} value={p.productName}>{p.productName}</option>
                 ))}

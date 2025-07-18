@@ -7,6 +7,8 @@ import jakarta.persistence.Converter;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.micrometer.common.util.StringUtils.isBlank;
+
 @Converter
 public class TagsJsonConverter implements AttributeConverter<List<String>, String> {
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -23,9 +25,10 @@ public class TagsJsonConverter implements AttributeConverter<List<String>, Strin
     @Override
     public List<String> convertToEntityAttribute(String dbData) {
         try {
-            return dbData != null
-                    ? objectMapper.readValue(dbData, objectMapper.getTypeFactory().constructCollectionType(List.class, String.class))
-                    : new ArrayList<>();
+            if(isBlank(dbData)){
+                return new ArrayList<>();
+            }
+            return objectMapper.readValue(dbData, objectMapper.getTypeFactory().constructCollectionType(List.class, String.class));
         } catch (Exception e) {
             throw new IllegalArgumentException("Error reading tags from JSON", e);
         }

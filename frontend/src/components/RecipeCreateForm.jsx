@@ -19,8 +19,6 @@ const RecipeCreateForm = () => {
     const [message, setMessage] = useState({text: '', type: ''});
     const navigate = useNavigate();
     const [productOptions, setProductOptions] = useState([]);
-    const handleAddIngredient = ing =>
-        setIngredients(prev => [...prev, ing]);
     const [autoCalculate, setAutoCalculate] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [resetCount, setResetCount] = useState(0);
@@ -38,6 +36,9 @@ const RecipeCreateForm = () => {
         setResetCount(prev => prev + 1);
     };
 
+    const handleAddIngredient = ing =>
+        setIngredients(prev => [...prev, ing]);
+
         const handleRemoveIngredientAt = (indexToRemove) => {
             setIngredients((prev) =>
                 prev.filter((_, index) => index !== indexToRemove)
@@ -48,8 +49,7 @@ const RecipeCreateForm = () => {
                 .then(res => res.json())
                 .then(data => {
                     console.log("✅ Products from backend:", data);
-                    const validProducts = data.filter(p => p && p.productName);
-                    setProductOptions(validProducts);
+                    setProductOptions(data);
                 })
                 .catch(err => console.error("❌ Error loading products", err));
         }, []);
@@ -58,11 +58,10 @@ const RecipeCreateForm = () => {
             e.preventDefault();
 
             const ingredientsArray = ingredients.map(i => ({
-                productName: i.product.productName.name,
+                productName: i.productName,
                 amount: i.amount,
-                unit: i.unit.toUpperCase()
+                unit: i.unit
             }));
-
 
             const requestData = {
                 recipeName,
@@ -131,12 +130,11 @@ const RecipeCreateForm = () => {
 
                     <ul className="mt-2 list-disc list-inside space-y-1">
                         {ingredients
-                            .filter(i => i.product?.productName?.name)
                             .map((i, idx) => (
                                 <li key={idx}
                                     className="flex items-center justify-between bg-[#333] text-white px-3 py-1 rounded">
                             <span>
-                                {i.product.productName.name} - {i.amount} {i.unit}
+                                {i.productName} - {i.amount} {i.unit}
                             </span>
                                     <button
                                         type="button"

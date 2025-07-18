@@ -40,10 +40,8 @@ class RecipeServiceTest {
     void createRecipe() {
         IngredientRequest raw1 = new IngredientRequest("Flour", 20f, Unit.DAG);
         IngredientRequest raw2 = new IngredientRequest("Sugar", 10f, Unit.G);
-
         CreateRecipe request = new CreateRecipe("Pancakes", Category.DESSERT,
                 List.of(raw1,raw2), "Mix and fry", 2, List.of("Easy"));
-
         Recipe savedRecipe = recipeService.createRecipe(request);
 
         assertNotNull(savedRecipe);
@@ -76,7 +74,6 @@ class RecipeServiceTest {
 
         Exception exception = assertThrows(RecipeValidationException.class,
                 () -> recipeService.createRecipe(request));
-
         assertEquals("Recipe category cannot be null.", exception.getMessage());
     }
 
@@ -89,7 +86,6 @@ class RecipeServiceTest {
 
         Exception exception = assertThrows(RecipeValidationException.class,
                 () -> recipeService.createRecipe(recipe));
-
         assertEquals("Recipe instructions cannot be null or empty.", exception.getMessage());
     }
 
@@ -102,7 +98,6 @@ class RecipeServiceTest {
 
         Exception exception = assertThrows(RecipeValidationException.class,
                 () -> recipeService.createRecipe(request));
-
         assertEquals("Recipe number of servings cannot be negative.", exception.getMessage());
     }
 
@@ -111,16 +106,12 @@ class RecipeServiceTest {
         CreateRecipe createRecipe = new CreateRecipe("Pancakes", Category.DESSERT,
                 List.of(new IngredientRequest("Flour", 10, Unit.DAG)),
                 "Mix and cook", 2, List.of("Easy", "Breakfast"));
-
         Recipe originalRecipe = recipeService.createRecipe(createRecipe);
-
         UpdateRecipeCase updateRecipe = new UpdateRecipeCase("Updated Pancakes", null,null,
                 "Updated Instructions",5,null );
-
         List<Recipe> foundedRecipes =readRecipeService.findRecipeByName("Pancakes");
         Recipe recipeToUpdate = recipeService.selectRecipeFromList(foundedRecipes,originalRecipe.getRecipeId());
         Recipe updatedRecipe = recipeService.updateRecipe(recipeToUpdate.getRecipeId(),updateRecipe);
-
 
         assertEquals("Updated Pancakes", updatedRecipe.getRecipeName());
         assertEquals(originalRecipe.getCategory(), updatedRecipe.getCategory());
@@ -144,9 +135,7 @@ class RecipeServiceTest {
         CreateRecipe createRequest = new CreateRecipe("Pancakes", Category.DESSERT,
                 List.of(new IngredientRequest("Flour", 10, Unit.DAG)),
                 "Mix and cook", 2, List.of("Easy", "Breakfast"));
-
         Recipe originalRecipe = recipeService.createRecipe(createRequest);
-
         UpdateRecipeCase updateRequest = new UpdateRecipeCase(
                 "Pancakes", Category.DESSERT,
                 List.of(new IngredientRequest("Flour", 200, Unit.G)),
@@ -164,9 +153,7 @@ class RecipeServiceTest {
                 List.of(new IngredientRequest("Flour", 10, Unit.DAG),
                         new IngredientRequest("Eggs", 2, Unit.G)),
                 "Mix and cook", 2, List.of("Easy", "Breakfast"));
-
         Recipe originalRecipe = recipeService.createRecipe(createRequest);
-
         UpdateRecipeCase updateRequest = new UpdateRecipeCase("Pancakes", Category.DESSERT,
                 List.of(new IngredientRequest("Flour", 700, Unit.G)),
                 "Mix ingredients and fry.", 0, List.of("Easy"));
@@ -185,9 +172,7 @@ class RecipeServiceTest {
         Recipe originalRecipe = recipeService.createRecipe(createRecipe);
         List<Recipe> foundedRecipes =readRecipeService.findRecipeByName("Pancakes");
         Recipe recipeToDelete = recipeService.selectRecipeFromList(foundedRecipes,originalRecipe.getRecipeId());
-
         DeleteRecipeCase deleteRequest = new DeleteRecipeCase(recipeToDelete.getRecipeId(),recipeToDelete.getRecipeName());
-
         recipeService.deleteRecipe(deleteRequest);
 
         assertTrue(recipeRepository.findRecipeById(recipeToDelete.getRecipeId()).isEmpty());
@@ -199,7 +184,6 @@ class RecipeServiceTest {
 
         Exception exception = assertThrows(RecipeNotFoundException.class,
                 () -> recipeService.deleteRecipe(deleteRequest));
-
         assertEquals("Recipe with given name does not exist.", exception.getMessage());
     }
 }

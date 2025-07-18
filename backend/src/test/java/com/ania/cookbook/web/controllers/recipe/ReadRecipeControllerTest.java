@@ -57,7 +57,6 @@ class ReadRecipeControllerTest {
                 .build();
     }
 
-
     private final UUID recipeId = UUID.randomUUID();
     private final List<Ingredient> ingredients = List.of(
             Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(), new ProductName("flour")), 200f, Unit.G),
@@ -77,7 +76,7 @@ class ReadRecipeControllerTest {
     }
 
     @Test
-    public void getLatestRecipes() throws Exception {
+    void getLatestRecipes() throws Exception {
         List<Recipe> latestRecipes = IntStream.range(0, 12)
                 .mapToObj(i -> Recipe.builder()
                         .recipeId(UUID.randomUUID())
@@ -93,7 +92,6 @@ class ReadRecipeControllerTest {
                 .toList();
 
         when(finder.getLatestRecipes(12)).thenReturn(latestRecipes);
-
         mockMvc.perform(get("/api/recipes/latest"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(12))
@@ -104,10 +102,10 @@ class ReadRecipeControllerTest {
     }
 
     @Test
-    public void getRecipeById() throws Exception {
+    void getRecipeById() throws Exception {
         Recipe sampleRecipe = createSampleRecipe();
-        when(finder.findRecipeById(recipeId)).thenReturn(Optional.of(sampleRecipe));
 
+        when(finder.findRecipeById(recipeId)).thenReturn(Optional.of(sampleRecipe));
         mockMvc.perform(get("/api/recipes/{id}", recipeId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(recipeId.toString()))
@@ -119,29 +117,27 @@ class ReadRecipeControllerTest {
     }
 
     @Test
-    public void getRecipeById_NotFound() throws Exception {
+    void getRecipeById_NotFound() throws Exception {
         when(finder.findRecipeById(recipeId))
                 .thenThrow(new RecipeNotFoundException("Unable to find the recipe because it does not exist."));
-
         mockMvc.perform(get("/api/recipes/{id}", recipeId))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("\"Unable to find the recipe because it does not exist.\""));
     }
 
     @Test
-    public void existsRecipeById() throws Exception {
+    void existsRecipeById() throws Exception {
         when(finder.existsRecipeById(recipeId)).thenReturn(true);
-
         mockMvc.perform(get("/api/recipes/{id}/exists", recipeId))
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
     }
 
     @Test
-    public void getRecipesByName() throws Exception {
+    void getRecipesByName() throws Exception {
         Recipe sampleRecipe = createSampleRecipe();
-        when(finder.findRecipeByName("Pancakes")).thenReturn(Collections.singletonList(sampleRecipe));
 
+        when(finder.findRecipeByName("Pancakes")).thenReturn(Collections.singletonList(sampleRecipe));
         mockMvc.perform(get("/api/recipes/byName")
                         .param("name", "Pancakes"))
                 .andExpect(status().isOk())
@@ -149,9 +145,8 @@ class ReadRecipeControllerTest {
     }
 
     @Test
-    public void existsRecipeByName() throws Exception {
+    void existsRecipeByName() throws Exception {
         when(finder.existsRecipeByName("Pancakes")).thenReturn(true);
-
         mockMvc.perform(get("/api/recipes/byName/exists")
                         .param("name", "Pancakes"))
                 .andExpect(status().isOk())
@@ -159,10 +154,10 @@ class ReadRecipeControllerTest {
     }
 
     @Test
-    public void getRecipesByCategory() throws Exception {
+    void getRecipesByCategory() throws Exception {
         Recipe sampleRecipe = createSampleRecipe();
-        when(finder.findRecipeByCategory(Category.DESSERT)).thenReturn(Collections.singletonList(sampleRecipe));
 
+        when(finder.findRecipeByCategory(Category.DESSERT)).thenReturn(Collections.singletonList(sampleRecipe));
         mockMvc.perform(get("/api/recipes/byCategory")
                         .param("category", "dessert"))
                 .andExpect(status().isOk())
@@ -170,11 +165,10 @@ class ReadRecipeControllerTest {
     }
 
     @Test
-    public void searchRecipeById() throws Exception {
+    void searchRecipeById() throws Exception {
         Recipe sampleRecipe = createSampleRecipe();
 
         when(finder.findRecipeById(recipeId)).thenReturn(Optional.of(sampleRecipe));
-
         mockMvc.perform(get("/api/recipes/{id}", recipeId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -190,9 +184,8 @@ class ReadRecipeControllerTest {
                 .andExpect(jsonPath("$.tags[1]").value("Sweet"));
     }
 
-
     @Test
-    public void searchRecipeByName(){
+    void searchRecipeByName(){
         Recipe sampleRecipe = createSampleRecipe();
         Page<Recipe> page = new PageImpl<>(List.of(sampleRecipe));
 
@@ -200,21 +193,19 @@ class ReadRecipeControllerTest {
                 .thenReturn(page);
         Pageable pageable = PageRequest.of(0, 10);
         Page<ReadRecipeResponse> result = controller.search("Pancakes", null, pageable);
-
         assertEquals(1, result.getContent().size());
         assertEquals("Pancakes", result.getContent().getFirst().getName());
     }
 
-
     @Test
-    public void searchRecipeByCategory() throws Exception {
+    void searchRecipeByCategory() throws Exception {
         Recipe sampleRecipe = createSampleRecipe();
         Pageable pageable = PageRequest.of(0, 10);
         PageImpl<Recipe> pageOfRecipes = new PageImpl<>(List.of(sampleRecipe), pageable, 1);
+
         when(finder.findRecipeByCategory(eq(Category.DESSERT), any(Pageable.class)))
                 .thenReturn(pageOfRecipes);
         ReadRecipeResponse expectedResponse = ReadRecipeResponse.from(sampleRecipe);
-
         mockMvc.perform(get("/api/recipes/search")
                         .param("category", "Dessert"))
                 .andExpect(status().isOk())
@@ -233,7 +224,7 @@ class ReadRecipeControllerTest {
     }
 
     @Test
-    public void searchRecipeWithoutParametersBadRequest() throws Exception {
+    void searchRecipeWithoutParametersBadRequest() throws Exception {
         mockMvc.perform(get("/api/recipes/search"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("\"Provide either name or category\""));

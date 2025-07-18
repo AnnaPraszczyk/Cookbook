@@ -5,7 +5,6 @@ import com.ania.cookbook.domain.repositories.product.ReadProduct;
 import com.ania.cookbook.infrastructure.mapper.ProductMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -45,5 +44,4 @@ public class ReadProductAdapter implements ReadProduct {
                 .map(productMapper::toDomain)
                 .toList();
     }
-
 }

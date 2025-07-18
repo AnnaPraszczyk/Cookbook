@@ -25,7 +25,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-
 class RecipeControllerTest {
 
     @Mock
@@ -41,7 +40,6 @@ class RecipeControllerTest {
     @Test
     void createRecipe() {
         UUID recipeId = UUID.randomUUID();
-
         RecipeRequest request = new RecipeRequest(
                 "Lasagna",
                 Category.MAIN_COURSE,
@@ -53,7 +51,6 @@ class RecipeControllerTest {
         Ingredient domainIngredient = Ingredient.newIngredient(Product.newProduct(UUID.randomUUID(), ProductName.from("Sugar")),
                 200, Unit.G
         );
-
         Recipe recipe = Recipe.newRecipe(
                 recipeId,
                 request.recipeName(),
@@ -63,9 +60,11 @@ class RecipeControllerTest {
                 request.numberOfServings(),
                 request.tags()
         );
+
         when(recipeService.createRecipe(any(CreateRecipe.class))).thenReturn(recipe);
         ResponseEntity<RecipeResponse> response = recipeController.createRecipe(request);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        Assertions.assertNotNull(response.getBody());
         assertEquals("Lasagna", response.getBody().recipeName());
         assertEquals(Category.MAIN_COURSE, response.getBody().category());
         assertEquals(4, response.getBody().numberOfServings());
@@ -88,6 +87,7 @@ class RecipeControllerTest {
                 2,
                 List.of("cheese")
         );
+
         when(recipeService.updateRecipe(eq(recipeId), any(UpdateRecipeCase.class))).thenReturn(updated);
         UpdateRecipeCase updateRequest = new UpdateRecipeCase(
                 updated.getRecipeName(),
@@ -113,13 +113,9 @@ class RecipeControllerTest {
         DeleteRecipeCase deleteCase = new DeleteRecipeCase(recipeId, recipeName);
 
         doNothing().when(recipeService).deleteRecipe(deleteCase);
-
         ResponseEntity<Void> response = recipeController.deleteRecipe(recipeId, deleteCase);
-
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         assertNull(response.getBody());
         verify(recipeService, times(1)).deleteRecipe(deleteCase);
     }
-
-
 }

@@ -46,11 +46,11 @@ class RecipeListControllerTest {
         RecipeListRequest request = buildListRequestWithName(LIST_NAME);
         String json = objectMapper.writeValueAsString(request);
         doNothing().when(recipeManagementService).createRecipeList(any(ListName.class));
+
         mockMvc.perform(post("/api/lists")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                         .andExpect(status().isCreated());
-
         verify(recipeManagementService, times(1))
                 .createRecipeList(eq(new ListName(LIST_NAME)));
     }
@@ -59,6 +59,7 @@ class RecipeListControllerTest {
     void createRecipeListWhenNameIsBlank() throws Exception {
         RecipeListRequest request = buildListRequestWithName("");
         String json = objectMapper.writeValueAsString(request);
+
         mockMvc.perform(post("/api/lists")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -72,11 +73,11 @@ class RecipeListControllerTest {
         String json = objectMapper.writeValueAsString(request);
         doNothing().when(recipeManagementService)
                 .addRecipeToList(any(UUID.class), any(ListName.class));
+
         mockMvc.perform(post("/api/lists/{listName}/recipes", LIST_NAME)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                         .andExpect(status().isCreated());
-
         verify(recipeManagementService).addRecipeToList(eq(RECIPE_ID), eq(new ListName(LIST_NAME)));
     }
 
@@ -84,6 +85,7 @@ class RecipeListControllerTest {
     void addRecipeToListWhenListNameIsBlank() throws Exception {
         RecipeListRequest request = buildAddRecipeRequest();
         String json = objectMapper.writeValueAsString(request);
+
         mockMvc.perform(post("/api/lists/{listName}/recipes", " ")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -96,20 +98,20 @@ class RecipeListControllerTest {
         Recipe recipe = Recipe.builder().recipeId(RECIPE_ID).recipeName("Recipe").build();
         when(recipeManagementService.getRecipesList(any()))
                 .thenReturn(List.of(recipe));
+
         mockMvc.perform(get("/api/lists/{listName}", LIST_NAME)
                         .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.listName.name", is(LIST_NAME)))
                         .andExpect(jsonPath("$.recipes", hasSize(1)));
-
         verify(recipeManagementService).getRecipesList(eq(new ListName(LIST_NAME)));
-
     }
 
     @Test
     void getRecipesListWhenNotFound() throws Exception {
         when(recipeManagementService.getRecipesList(any()))
                 .thenThrow(new ListNotFoundException("Recipe list with the given name does not exist."));
+
         mockMvc.perform(get("/api/lists/NonExistentList")
                         .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isNotFound())
@@ -137,20 +139,20 @@ class RecipeListControllerTest {
     @Test
     void clearRecipeList() throws Exception {
         when(recipeManagementService.clearRecipeList(any(ListName.class), eq(true))).thenReturn(true);
+
         mockMvc.perform(delete("/api/lists/{listName}/clear", LIST_NAME)
                         .param("confirm", "true"))
                         .andExpect(status().isOk())
                         .andExpect(content().string("true"));
-
         verify(recipeManagementService).clearRecipeList(eq(new ListName(LIST_NAME)), eq(true));
     }
 
     @Test
     void deleteRecipeList() throws Exception {
         doNothing().when(recipeManagementService).deleteRecipeList(any());
+
         mockMvc.perform(delete("/api/lists/{listName}", LIST_NAME))
                 .andExpect(status().isNoContent());
-
         verify(recipeManagementService).deleteRecipeList(eq(new ListName(LIST_NAME)));
     }
 
@@ -158,10 +160,10 @@ class RecipeListControllerTest {
     void generateShoppingList() throws Exception {
         Map<String, Float> shoppingList = Map.of("Milk", 500F);
         when(recipeManagementService.generateShoppingList(any())).thenReturn(shoppingList);
+
         mockMvc.perform(get("/api/lists/{listName}/shopping", LIST_NAME))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.Milk", is(500.0)));
-
         verify(recipeManagementService).generateShoppingList(eq(new ListName(LIST_NAME)));
     }
 
@@ -169,6 +171,7 @@ class RecipeListControllerTest {
     void getAllLists() throws Exception {
         List<ListName> mockLists = List.of(new ListName("Breakfast"), new ListName("Dinner"));
         when(recipeManagementService.getAllLists()).thenReturn(mockLists);
+
         mockMvc.perform(get("/api/lists"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))

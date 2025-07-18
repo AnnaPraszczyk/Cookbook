@@ -32,13 +32,12 @@ public class RecipeControllerIntegrationTest {
     private ObjectMapper objectMapper;
 
     @Test
-    public void createRecipe() throws Exception {
+    void createRecipe() throws Exception {
         List<IngredientRequest> ingredients = List.of(
                 new IngredientRequest("Sugar", 200, Unit.G)
         );
         RecipeRequest request = new RecipeRequest("Pasta", Category.MAIN_COURSE, ingredients, "Boil pasta and add sauce",
                 2, Collections.singletonList("Italian"));
-
         String jsonRequest = objectMapper.writeValueAsString(request);
 
         mockMvc.perform(post("/api/recipes")
@@ -53,7 +52,7 @@ public class RecipeControllerIntegrationTest {
     }
 
     @Test
-    public void updateRecipe() throws Exception {
+    void updateRecipe() throws Exception {
         List<IngredientRequest> ingredients = List.of(
                 new IngredientRequest("Sugar", 200, Unit.G)
         );
@@ -65,10 +64,8 @@ public class RecipeControllerIntegrationTest {
                         .content(createJson))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
-
         RecipeResponse createdRecipe = objectMapper.readValue(responseContent, RecipeResponse.class);
         UUID recipeId = createdRecipe.recipeId();
-
         UpdateRecipeCase updateRequest = new UpdateRecipeCase(
                 "Updated Salad",
                 Category.APPETIZER,
@@ -90,7 +87,7 @@ public class RecipeControllerIntegrationTest {
     }
 
     @Test
-    public void deleteRecipe() throws Exception {
+    void deleteRecipe() throws Exception {
         List<IngredientRequest> ingredients = List.of(new IngredientRequest("Sugar", 200, Unit.G));
         RecipeRequest createRequest = new RecipeRequest(
                 "Soup",
@@ -107,14 +104,11 @@ public class RecipeControllerIntegrationTest {
                         .content(createJson))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
-
         RecipeResponse createdRecipe = objectMapper.readValue(responseContent, RecipeResponse.class);
         UUID recipeId = createdRecipe.recipeId();
         String recipeName = createdRecipe.recipeName();
-
         DeleteRecipeCase deleteRequest = new DeleteRecipeCase(recipeId,recipeName);
         String deleteJson = objectMapper.writeValueAsString(deleteRequest);
-
         mockMvc.perform(delete("/api/recipes/" + recipeId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(deleteJson))
