@@ -14,6 +14,14 @@ const Navigation = () => {
                 </li>
                 <li>
                     <NavLink
+                        to="/products"
+                        className="text-[#c0a060] text-[1.2rem] px-5 py-2 rounded transition duration-200 hover:bg-[#333] hover:text-white"
+                    >
+                        Products
+                    </NavLink>
+                </li>
+                <li>
+                    <NavLink
                         to="/recipes"
                         className="text-[#c0a060] text-[1.2rem] px-5 py-2 rounded transition duration-200 hover:bg-[#333] hover:text-white"
                     >

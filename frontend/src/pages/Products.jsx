@@ -1,14 +1,10 @@
-import ProductForm from "../components/ProductForm";
-import ProductList from "../components/ProductList";
+import ProductManagement from "../pages/ProductManagement";
 
 const Products = () => {
     return (
-        <div style={{textAlign:"center"}}>
-            <h1>Product Management</h1>
-            <ProductForm />
-            <ProductList />
+        <div className="p-6 space-y-6 max-w-4xl mx-auto">
+            <ProductManagement />
         </div>
     );
 };
-
 export default Products;

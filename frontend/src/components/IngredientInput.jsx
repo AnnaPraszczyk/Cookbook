@@ -41,7 +41,7 @@ const IngredientInput = ({ onAdd, productOptions = [], resetCount }) => {
                     }
                 }}
                 className="p-2 w-64 h-12 border-2 text-lg border-gray-400 rounded bg-[#333] text-gray-400">
-                <option value="">Select product </option>
+                <option value="">Select product</option>
                 {productOptions
                     .map((p, i) => (
                         <option key={i} value={p.productName}>{p.productName}</option>

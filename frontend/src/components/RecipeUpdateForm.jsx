@@ -21,7 +21,7 @@ const RecipeUpdateForm = () => {
     const location = useLocation();
 
     useEffect(() => {
-        fetch("http://localhost:8080/products")
+        fetch("/api/products")
             .then(res => res.json())
             .then(data => {
                 console.log("✅ Products:", data);

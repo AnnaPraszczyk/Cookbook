@@ -67,6 +67,4 @@ class SaveRecipeAdapterTest {
 
         assertThrows(RecipeValidationException.class, () -> adapter.saveRecipe(broken));
     }
-
-
 }

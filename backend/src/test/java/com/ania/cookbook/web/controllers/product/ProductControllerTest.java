@@ -43,7 +43,7 @@ class ProductControllerTest {
         Product product = Product.newProduct(UUID.randomUUID(),productName);
 
         Mockito.when(productService.addProduct(Mockito.any(ProductName.class))).thenReturn(product);
-        mockMvc.perform(post("/products")
+        mockMvc.perform(post("/api/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
 
@@ -57,7 +57,7 @@ class ProductControllerTest {
                         Product product = Product.newProduct(UUID.randomUUID(), productName);
 
         Mockito.when(productService.findProductByName(Mockito.any(ProductName.class))).thenReturn(Optional.of(product));
-        mockMvc.perform(get("/products/{productName}", productName))
+        mockMvc.perform(get("/api/products/{productName}", productName))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.productName").value(productName.name()));
     }
@@ -67,7 +67,7 @@ class ProductControllerTest {
         Mockito.when(productService.findProductByName(Mockito.any(ProductName.class)))
                 .thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/products/UnknownProduct"))
+        mockMvc.perform(get("/api/products/UnknownProduct"))
                 .andExpect(status().isNotFound());
     }
 
@@ -79,7 +79,7 @@ class ProductControllerTest {
             Product updatedProduct = Product.newProduct(UUID.randomUUID(), newName);
 
             Mockito.when(productService.updateProductName(Mockito.any(ProductName.class), Mockito.any(ProductName.class))).thenReturn(updatedProduct);
-            mockMvc.perform(put("/products/{productName}", oldName)
+            mockMvc.perform(put("/api/products/{productName}", oldName)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
@@ -91,7 +91,7 @@ class ProductControllerTest {
         ProductName productName = new ProductName("To Be Deleted");
 
         Mockito.doNothing().when(productService).removeProduct(Mockito.any(ProductName.class));
-        mockMvc.perform(delete("/products/{productName}", productName))
+        mockMvc.perform(delete("/api/products/{productName}", productName))
                 .andExpect(status().isNoContent());
     }
 }

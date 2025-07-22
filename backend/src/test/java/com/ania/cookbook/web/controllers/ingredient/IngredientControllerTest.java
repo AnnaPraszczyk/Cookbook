@@ -44,13 +44,13 @@ class IngredientControllerTest {
 
         Mockito.when(ingredientService.createIngredient(Mockito.any(ProductName.class), Mockito.anyFloat(), Mockito.any(Unit.class)))
                 .thenReturn(ingredient);
-        mockMvc.perform(post("/ingredients")
+        mockMvc.perform(post("/api/ingredients")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.productName").value("Sugar"))
                 .andExpect(jsonPath("$.amount").value(500))
-                .andExpect(jsonPath("$.unit").value("G"));
+                .andExpect(jsonPath("$.unit").value("g"));
     }
 }

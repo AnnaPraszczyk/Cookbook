@@ -73,5 +73,4 @@ public class ProductService implements ProductUseCase {
                 .orElseThrow(() -> new ProductNotFoundException("Unable to delete the product because it does not exist."));
         deleteProductRepository.deleteProductById(foundProduct.getProductId());
     }
-
 }

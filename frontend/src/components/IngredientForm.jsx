@@ -18,7 +18,7 @@ const IngredientForm = () => {
         };
 
         try {
-            const response = await fetch("/ingredients", {
+            const response = await fetch("/api/ingredients", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

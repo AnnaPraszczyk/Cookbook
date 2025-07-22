@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 
 
 @RestController
-@RequestMapping("/ingredients")
+@RequestMapping("/api/ingredients")
 @RequiredArgsConstructor
 public class IngredientController {
     private final IngredientService ingredientService;

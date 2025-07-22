@@ -11,7 +11,7 @@ public interface ProductUseCase {
     boolean existsProductByName(ProductName productName);
     List<Product> findAll();
     Product updateProductName(ProductName productName, ProductName newName);
-    void removeProduct(ProductName productName);
+    void removeProduct(ProductName productName) ;
 }
 
 
