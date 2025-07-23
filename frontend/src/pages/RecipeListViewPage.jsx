@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getRecipesList } from "../api/recipeListApi";
+import RecipeListView from "../components/RecipeListView";
 
 export default function RecipeListViewPage() {
     const { listName } = useParams();
@@ -48,6 +49,9 @@ export default function RecipeListViewPage() {
                     ))}
                 </ul>
             )}
+            <div className="p-6 max-w-4xl mx-auto text-white space-y-6">
+                <RecipeListView listName={listName} />
+            </div>
         </div>
     );
 }

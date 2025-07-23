@@ -1,3 +1,5 @@
+import axios from "axios";
+
 const API_URL = "/api/products";
 
 export const addProduct = async (productName) => {
@@ -30,17 +32,4 @@ export const deleteProduct = async (productName) => {
     await fetch(`${API_URL}/${encodeURIComponent(productName)}`, {
         method: "DELETE"
     });
-};
-
-export const getAllProducts = async () => {
-    const response = await fetch(`${API_URL}`, {
-        method: "GET",
-        headers: {
-            "Accept": "application/json"
-        }
-    });
-    if (!response.ok) {
-        throw new Error("Failed to fetch products");
-    }
-    return await response.json();
 };

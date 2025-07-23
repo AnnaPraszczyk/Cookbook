@@ -58,11 +58,12 @@ class RecipeManagementServiceTest {
     @Test
     void createNewList() {
         Mockito.when(savedListRepository.existsByListName(listName.name())).thenReturn(false);
-        service.createRecipeList(listName);
+        String description = "list description";
+        service.createRecipeList(listName, description);
 
         Mockito.verify(savedListRepository).save(Mockito.argThat(list ->
                 list.getListName().equals(savedList.getListName()) &&
-                        list.getListDescription().equals(savedList.getListDescription()) &&
+                        list.getListDescription().equals(description) &&
                         list.getEntries().isEmpty()
         ));
     }
@@ -70,13 +71,13 @@ class RecipeManagementServiceTest {
     @Test
     void createRecipeListWhenNameIsBlank() {
         assertThrows(ListValidationException.class,
-                () -> service.createRecipeList(new ListName("")));
+                () -> service.createRecipeList(new ListName(""),"List description"));
     }
 
     @Test
     void createRecipeListWhenNameIsNull() {
         assertThrows(ListValidationException.class,
-                () -> service.createRecipeList(new ListName(null)));
+                () -> service.createRecipeList(new ListName(null),"List description"));
     }
 
     @Test
@@ -155,10 +156,8 @@ class RecipeManagementServiceTest {
     @Test
     void returnRecipesFromList() {
         ListName listName = new ListName("Desserts");
-        SavedRecipeList savedList = SavedRecipeList.builder()
-                .listName(listName.name())
-                .build();
         UUID recipeId = UUID.randomUUID();
+        Mockito.when(savedListRepository.existsById(listName.name())).thenReturn(true);
         RecipeEntity recipeEntity = RecipeEntity.builder()
                 .recipeId(recipeId)
                 .recipeName("Test")
@@ -171,6 +170,9 @@ class RecipeManagementServiceTest {
         Recipe recipe = mock(Recipe.class);
         Mockito.when(recipeMapper.toDomain(recipeEntity)).thenReturn(recipe);
         Mockito.when(recipe.getRecipeName()).thenReturn("Pancakes");
+        SavedRecipeList savedList = SavedRecipeList.builder()
+                .listName(listName.name())
+                .build();
         RecipeListEntry entry = RecipeListEntry.builder()
                 .recipe(recipeEntity)
                 .savedList(savedList)
@@ -185,10 +187,18 @@ class RecipeManagementServiceTest {
     }
 
     @Test
-    void returnEmptyListWhenRecipeListDoesNotExist() {
+    void throwsExceptionWhenRecipeListDoesNotExist() {
         ListName listName = new ListName("NonExistingList");
-        Mockito.when(entryRepository.findBySavedList_ListName(listName.name()))
-                .thenReturn(List.of());
+        Mockito.when(savedListRepository.existsById(listName.name())).thenReturn(false);
+
+        assertThrows(ListNotFoundException.class, () -> {service.getRecipesList(listName);});
+    }
+
+    @Test
+    void returnsEmptyListWhenNoEntriesFoundInExistingList() {
+        ListName listName = new ListName("EmptyList");
+        Mockito.when(savedListRepository.existsById(listName.name())).thenReturn(true);
+        Mockito.when(entryRepository.findBySavedList_ListName(listName.name())).thenReturn(List.of());
         List<Recipe> result = service.getRecipesList(listName);
 
         assertNotNull(result);

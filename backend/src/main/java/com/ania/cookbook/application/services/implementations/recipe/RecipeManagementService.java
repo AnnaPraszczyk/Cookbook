@@ -33,7 +33,7 @@ public class RecipeManagementService implements ListManagementUseCase {
     private final RecipeMapper recipeMapper;
 
     @Override
-    public void createRecipeList(ListName list) {
+    public void createRecipeList(ListName list, String description) {
         if (listRepository.existsByListName(list.name())) {
             throw new ListValidationException("Recipe list already exists.");
         }
@@ -41,7 +41,7 @@ public class RecipeManagementService implements ListManagementUseCase {
                 .listName(list.name())
                 .createdAt(Instant.now())
                 .expectedPortions(0)
-                .listDescription("")
+                .listDescription(description != null ? description.trim() : "")
                 .entries(new ArrayList<>())
                 .build();
         listRepository.save(savedList);
@@ -118,6 +118,9 @@ public class RecipeManagementService implements ListManagementUseCase {
     @Override
     public Map<String, Float> generateShoppingList(ListName list) {
         List<RecipeListEntry> entries = entryRepository.findBySavedList_ListName(list.name());
+        if (!listRepository.existsByListName(list.name())) {
+            throw new ListNotFoundException("List not found.");
+        }
         if (entries.isEmpty()) {
             return Map.of();
         }
@@ -126,6 +129,7 @@ public class RecipeManagementService implements ListManagementUseCase {
             Recipe recipe = recipeMapper.toDomain(entry.getRecipe());
             float scale = entry.getPortions() / (float) recipe.getNumberOfServings();
             for (Ingredient ingredient : recipe.getIngredients()) {
+                if (ingredient == null || ingredient.getProduct() == null || ingredient.getUnit() == null) continue;
                 String name = ingredient.getProduct().getProductName().name();
                 float amount = scale * ingredient.getUnit().toGrams(ingredient.getAmount());
                 shoppingList.merge(name, amount, Float::sum);

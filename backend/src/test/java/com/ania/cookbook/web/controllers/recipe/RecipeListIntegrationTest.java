@@ -322,7 +322,7 @@ public class RecipeListIntegrationTest {
         assertNotNull(createdRecipeResponse.getBody());
         UUID recipeId = createdRecipeResponse.getBody().recipeId();
         restTemplate.postForEntity("/api/lists/" + listName + "/recipes",
-                new RecipeListRequest(recipeId,null,null,null), Void.class);
+                new RecipeListRequest(recipeId,null,null,null,null), Void.class);
         ResponseEntity<Map<String, Float>> shoppingResponse =
                 restTemplate.exchange("/api/lists/" + listName + "/shopping", HttpMethod.GET,
                         null,
@@ -359,9 +359,9 @@ public class RecipeListIntegrationTest {
         assertNotNull(response2.getBody());
         UUID recipeId2 = response2.getBody().recipeId();
         restTemplate.postForEntity("/api/lists/" + listName + "/recipes",
-                new RecipeListRequest(recipeId1, null, null,null), Void.class);
+                new RecipeListRequest(recipeId1, null, null,null,null), Void.class);
         restTemplate.postForEntity("/api/lists/" + listName + "/recipes",
-                new RecipeListRequest(recipeId2, null, null,null), Void.class);
+                new RecipeListRequest(recipeId2, null, null,null,null), Void.class);
         ResponseEntity<Map<String, Float>> shoppingResponse = restTemplate.exchange(
                 "/api/lists/" + listName + "/shopping",
                 HttpMethod.GET,
@@ -427,9 +427,9 @@ public class RecipeListIntegrationTest {
         assertNotNull(response2.getBody());
         UUID recipeId2 = response2.getBody().recipeId();
         restTemplate.postForEntity("/api/lists/" + listName + "/recipes",
-                new RecipeListRequest(recipeId1, listName, null,2), Void.class);
+                new RecipeListRequest(recipeId1, listName, null,2,null), Void.class);
         restTemplate.postForEntity("/api/lists/" + listName + "/recipes",
-                new RecipeListRequest(recipeId2, listName, null,4), Void.class);
+                new RecipeListRequest(recipeId2, listName, null,4,null), Void.class);
         ResponseEntity<Map<String, Float>> shoppingResponse = restTemplate.exchange(
                 "/api/lists/" + listName + "/shopping",
                 HttpMethod.GET,

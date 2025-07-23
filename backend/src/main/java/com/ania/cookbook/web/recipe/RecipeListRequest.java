@@ -6,6 +6,7 @@ import java.util.UUID;
 @Data
 @Builder
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class RecipeListRequest {
@@ -13,4 +14,5 @@ public class RecipeListRequest {
     private String listName;
     private Boolean confirm;
     private Integer portions;
+    private String listDescription;
 }

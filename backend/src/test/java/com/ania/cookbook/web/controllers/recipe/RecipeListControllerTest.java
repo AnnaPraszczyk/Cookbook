@@ -43,16 +43,20 @@ class RecipeListControllerTest {
 
     @Test
     void createRecipeList() throws Exception {
-        RecipeListRequest request = buildListRequestWithName(LIST_NAME);
+        String description = "Weekend shopping";
+        RecipeListRequest request = RecipeListRequest.builder()
+                .listName(LIST_NAME)
+                .listDescription(description)
+                .build();
         String json = objectMapper.writeValueAsString(request);
-        doNothing().when(recipeManagementService).createRecipeList(any(ListName.class));
+        doNothing().when(recipeManagementService).createRecipeList(any(ListName.class), eq(description));
 
         mockMvc.perform(post("/api/lists")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                         .andExpect(status().isCreated());
         verify(recipeManagementService, times(1))
-                .createRecipeList(eq(new ListName(LIST_NAME)));
+                .createRecipeList(eq(new ListName(LIST_NAME)),eq(description));
     }
 
     @Test
@@ -109,13 +113,15 @@ class RecipeListControllerTest {
 
     @Test
     void getRecipesListWhenNotFound() throws Exception {
+        String errorMessage = "Recipe list with the given name does not exist.";
+
         when(recipeManagementService.getRecipesList(any()))
-                .thenThrow(new ListNotFoundException("Recipe list with the given name does not exist."));
+                .thenThrow(new ListNotFoundException(errorMessage));
 
         mockMvc.perform(get("/api/lists/NonExistentList")
                         .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isNotFound())
-                        .andExpect(content().string("Recipe list with the given name does not exist."));
+                        .andExpect(content().string(errorMessage));
     }
 
     @Test

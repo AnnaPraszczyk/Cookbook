@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {getShoppingList, clearList, createRecipeList, getAllLists} from "../api/recipeListApi";
+import RecipeListView from "../components/RecipeListView";
+import ShoppingListView from "../components/ShoppingListView.jsx";
 
 export default function ShoppingListPage() {
     const { listName } = useParams();
@@ -10,9 +12,11 @@ export default function ShoppingListPage() {
     const [inputName, setInputName] = useState("");
     const [recentLists, setRecentLists] = useState([]);
     const [listsError, setListsError] = useState(null);
-
+    const [inputDescription, setInputDescription] = useState("");
+    const [portionCount, setPortionCount] = useState(1);
 
     useEffect(() => {
+        if (!listName || listName === "undefined") return;
         const load = async () => {
             setLoading(true);
             try {
@@ -50,8 +54,12 @@ export default function ShoppingListPage() {
             return;
         }
         try {
-            await createRecipeList(trimmedName);
+            await createRecipeList({ listName: trimmedName, listDescription: inputDescription });
             setInputName("");
+            console.log("Creating list:", {
+                listName: trimmedName,
+                listDescription: inputDescription
+            });
             const updatedLists = await getAllLists();
             setRecentLists(updatedLists.slice().reverse());
             alert("List created successfully!");
@@ -74,6 +82,11 @@ export default function ShoppingListPage() {
             .map(([item, qty]) => `${item}: ${qty}`)
             .join("\n");
 
+    const handlePortionChange = (e) => {
+        const value = parseInt(e.target.value);
+        setPortionCount(isNaN(value) ? 1 : value);
+    };
+
     return (
         <div className="p-6 space-y-6 max-w-4xl mx-auto text-white">
             <h1 className="text-3xl font-bold">Shopping List</h1>
@@ -85,6 +98,21 @@ export default function ShoppingListPage() {
                     onChange={(e) => setInputName(e.target.value)}
                     placeholder="Enter list name"
                     className="p-2 text-lg w-[400px] border border-gray-400 bg-[#333] rounded focus:outline-none focus:ring-2 focus:ring-[#c0a060]"
+                />
+                <input
+                    type="text"
+                    value={inputDescription}
+                    onChange={(e) => setInputDescription(e.target.value)}
+                    placeholder="List description"
+                    className="p-2 text-lg w-[400px] border border-gray-400 bg-[#333] rounded focus:outline-none focus:ring-2 focus:ring-[#c0a060]"
+                />
+                <input
+                    type="number"
+                    min="1"
+                    value={portionCount}
+                    onChange={(e) => setPortionCount(parseInt(e.target.value))}
+                    placeholder="Portions"
+                    className="p-2 text-lg w-[100px] border border-gray-400 bg-[#333] rounded focus:outline-none focus:ring-2 focus:ring-[#c0a060]"
                 />
                 <button
                     onClick={handleCreate}
@@ -137,6 +165,9 @@ export default function ShoppingListPage() {
                     ))}
                 </ul>
             )}
+            <ShoppingListView listName={listName} />
+
+            <RecipeListView listName={listName} />
 
             {Object.keys(items).length > 0 && (
                 <div className="flex flex-wrap gap-4 pt-6">
@@ -152,6 +183,8 @@ export default function ShoppingListPage() {
                     >
                         Clear List
                     </button>
+                    <h2>Shopping List for: {listName}</h2>
+
                 </div>
             )}
         </div>

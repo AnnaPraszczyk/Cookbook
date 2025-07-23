@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link, useLocation } from "react-router-dom";
+import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
+import {addRecipeToList} from "../api/recipeListApi.js";
 
 const RecipeDetailsPage = () => {
     const { id } = useParams();
@@ -7,7 +8,8 @@ const RecipeDetailsPage = () => {
     const [loading, setLoading] = useState(true);
     const [newServings, setNewServings] = useState("");
     const location = useLocation();
-
+    const navigate = useNavigate();
+    const listName = new URLSearchParams(location.search).get("listName");
 
     const handleScale = async () => {
         if (!newServings || isNaN(newServings) || newServings <= 0) return;
@@ -38,6 +40,18 @@ const RecipeDetailsPage = () => {
             setNewServings("");
         } catch (e) {
             console.error("Scaling failed:", e);
+        }
+    };
+
+    const handleAddToList = async () => {
+        try {
+            const portions = parseInt(newServings, 10) || recipe.numberOfServings;
+            await addRecipeToList({ listName, recipeId: recipe.id, portions });
+            alert(`Recipe added to "${listName}" with ${portions} portions!`);
+            navigate(`/lists/${listName}/view`);
+        } catch (err) {
+            console.error("Add to list failed:", err);
+            alert("Failed to add recipe to list.");
         }
     };
 
@@ -101,6 +115,16 @@ const RecipeDetailsPage = () => {
                         Scale
                     </button>
                 </div>
+                {listName && (
+                <div className="mt-4">
+                    <button
+                        onClick={handleAddToList}
+                        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition duration-200">
+                        Add to list
+                    </button>
+                </div>
+                )}
+
             </div>
             <div className="mt-6">
                 <Link to={`/recipes${location.search}`} className="text-[#c0a060] hover:underline">

@@ -9,5 +9,4 @@ import java.util.UUID;
 public interface RecipeListEntryRepository extends JpaRepository<RecipeListEntry, UUID> {
     List<RecipeListEntry> findBySavedList_ListName(String listName);
     void deleteBySavedList_ListName(String listName);
-
 }

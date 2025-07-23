@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { getRecipesList, removeRecipe, clearList, deleteList, saveRecipeList } from '../api/recipeListApi';
-import AddRecipeForm from './AddRecipeToListForm.jsx';
+import AddRecipeForm from './AddRecipeForm.jsx';
+import SearchAndAddRecipe from "./SearchAndAddRecipe";
 
 export default function RecipeListView({ listName }) {
     const [recipes, setRecipes] = useState([]);
-
     const load = async () => {
         const data = await getRecipesList(listName);
         setRecipes(data.recipes || []);
@@ -39,18 +39,12 @@ export default function RecipeListView({ listName }) {
 
     return (
         <div>
-            <h3>List: {listName}</h3>
-            <AddRecipeForm listName={listName} />
-            <ul>
-                {recipes.map(r => (
-                    <li key={r.id}>
-                        {r.name} <button onClick={() => handleRemove(r.id)}>Usuń</button>
-                    </li>
-                ))}
-            </ul>
-            <button onClick={handleClear}>Clear</button>
-            <button onClick={handleSave}>Save</button>
-            <button onClick={handleDelete}>Delete</button>
+            <SearchAndAddRecipe listName={listName} />
+            <div className="mt-6 flex gap-4">
+                <button onClick={handleClear} className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition duration-200">Clear</button>
+                <button onClick= {handleSave} className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition duration-200">Save</button>
+                <button onClick={handleDelete} className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition duration-200">Delete</button>
+            </div>
         </div>
     );
 }

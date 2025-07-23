@@ -22,7 +22,8 @@ public class RecipeListController {
 
     @PostMapping
     public ResponseEntity<Void> createRecipeList(@RequestBody RecipeListRequest request) {
-            recipeManagementService.createRecipeList(new ListName(request.getListName()));
+            recipeManagementService.createRecipeList(new ListName(request.getListName()),request.getListDescription()
+            );
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

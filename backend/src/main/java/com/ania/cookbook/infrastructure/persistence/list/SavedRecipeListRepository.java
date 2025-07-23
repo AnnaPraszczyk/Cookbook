@@ -8,5 +8,4 @@ import java.util.Optional;
 public interface SavedRecipeListRepository extends JpaRepository<SavedRecipeList, String> {
     Optional<SavedRecipeList> findByListName(String listName);
     boolean existsByListName(String listName);
-
 }

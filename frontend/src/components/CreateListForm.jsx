@@ -5,7 +5,7 @@ export default function CreateListForm() {
     const [listName, setListName] = useState('');
 
     const handleCreate = async () => {
-        await createRecipeList(listName);
+        await createRecipeList({ listName, listDescription: "" });
         alert('The list has been created!');
     };
 

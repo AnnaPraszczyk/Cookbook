@@ -1,13 +1,12 @@
 import axios from 'axios';
-
 const API = '/api/lists';
 
-export const createRecipeList = async (listName) => {
-    await axios.post(API, { listName });
+export const createRecipeList = async ({ listName, listDescription }) => {
+    await axios.post("/api/lists", { listName, listDescription});
 };
 
-export const addRecipeToList = async (listName, recipeId) => {
-    await axios.post(`${API}/${listName}/recipes`, { recipeId });
+export const addRecipeToList = async ({ listName, recipeId, portions }) => {
+    await axios.post(`/api/lists/${listName}/recipes`, { recipeId, portions });
 };
 
 export const getRecipesList = async (listName) => {
@@ -47,4 +46,21 @@ export const getAllLists = async () => {
     const res = await fetch(`${API}`);
     if (!res.ok) throw new Error("Failed to load recipe lists");
     return await res.json();
+};
+
+export const searchRecipes = async ({ name, category }) => {
+    const params = new URLSearchParams();
+    if (name && !category) {
+        params.append("name", name);
+    } else if (category && !name) {
+        params.append("category", category);
+    } else {
+        throw new Error("Provide either name or category");
+    }
+    const res = await axios.get(`/api/recipes/search?${params.toString()}`);
+    return res.data;
+};
+
+export const saveRecipeList = async (listName) => {
+    return axios.post(`/api/lists/${listName}/save`);
 };
