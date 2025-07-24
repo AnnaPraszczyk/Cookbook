@@ -33,7 +33,7 @@ const Navigation = () => {
                         to="/shoppingList"
                         className="text-[#c0a060] text-[1.2rem] px-5 py-2 rounded transition duration-200 hover:bg-[#333] hover:text-white"
                     >
-                        Shopping List
+                        Shopping Lists
                     </NavLink>
                 </li>
             </ul>

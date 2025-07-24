@@ -9,12 +9,16 @@ import com.ania.cookbook.domain.model.Ingredient;
 import com.ania.cookbook.domain.model.Recipe;
 import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
 import com.ania.cookbook.domain.repositories.recipe.SaveRecipe;
+import com.ania.cookbook.infrastructure.mapper.RecipeListEntryMapper;
 import com.ania.cookbook.infrastructure.mapper.RecipeMapper;
 import com.ania.cookbook.infrastructure.persistence.entity.RecipeEntity;
 import com.ania.cookbook.infrastructure.persistence.entity.RecipeListEntry;
 import com.ania.cookbook.infrastructure.persistence.entity.SavedRecipeList;
 import com.ania.cookbook.infrastructure.persistence.list.RecipeListEntryRepository;
 import com.ania.cookbook.infrastructure.persistence.list.SavedRecipeListRepository;
+import com.ania.cookbook.web.recipe.ReadRecipeResponse;
+import com.ania.cookbook.web.recipe.RecipeListEntryResponse;
+import com.ania.cookbook.web.recipe.RecipeListResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,6 +35,7 @@ public class RecipeManagementService implements ListManagementUseCase {
     private final RecipeListEntryRepository entryRepository;
     private final SavedRecipeListRepository listRepository;
     private final RecipeMapper recipeMapper;
+    private final RecipeListEntryMapper entryMapper;
 
     @Override
     public void createRecipeList(ListName list, String description) {
@@ -48,21 +53,24 @@ public class RecipeManagementService implements ListManagementUseCase {
     }
 
     @Override
-    public void addRecipeToList(UUID recipeId, ListName list) {
+    public RecipeListEntry addRecipeToList(UUID recipeId, ListName list) {
         Recipe recipe = readRecipeRepository.findRecipeById(recipeId)
                 .orElseThrow(() -> new RecipeNotFoundException("Recipe not found."));
         SavedRecipeList savedList = listRepository.findByListName(list.name())
                 .orElseThrow(() -> new ListNotFoundException("List not found."));
-        boolean alreadyExists = entryRepository.findBySavedList_ListName(list.name()).stream()
-                .anyMatch(entry -> entry.getRecipe().getRecipeId().equals(recipeId));
-        if (alreadyExists) return;
+        Optional<RecipeListEntry> existing = entryRepository.findBySavedList_ListName(list.name()).stream()
+                .filter(entry -> entry.getRecipe().getRecipeId().equals(recipeId))
+                .findFirst();
+        if (existing.isPresent()) {
+            return existing.get();
+        }
         RecipeEntity entity = recipeMapper.toEntity(recipe);
         RecipeListEntry entry = RecipeListEntry.builder()
                 .recipe(entity)
                 .savedList(savedList)
                 .portions(recipe.getNumberOfServings())
                 .build();
-        entryRepository.save(entry);
+        return entryRepository.save(entry);
     }
 
     @Override
@@ -77,19 +85,37 @@ public class RecipeManagementService implements ListManagementUseCase {
     }
 
     @Override
-    public void removeRecipeFromList(UUID recipeId, ListName list) {
-        if (recipeId == null) {
+    public List<RecipeListEntry> getRecipesListEntries(ListName list) {
+        boolean exists = listRepository.existsByListName(list.name());
+        if (!exists) {
+            throw new ListNotFoundException("Recipe list with the given name does not exist.");
+        }
+        return entryRepository.findBySavedList_ListName(list.name());
+    }
+    @Override
+    public RecipeListResponse getRecipeListResponse(ListName listName) {
+        List<RecipeListEntry> entries = getRecipesListEntries(listName);
+        List<RecipeListEntryResponse> responses = entries.stream()
+                .map(entryMapper::toResponse)
+                .toList();
+        return RecipeListResponse.builder()
+                .listName(listName)
+                .recipes(responses)
+                .build();
+    }
+
+    @Override
+    public void removeRecipeFromList(UUID entryId, ListName list) {
+        if (entryId == null) {
             throw new RecipeValidationException("Recipe ID cannot be null.");
         }
-        listRepository.findByListName(list.name())
+        SavedRecipeList savedList = listRepository.findByListName(list.name())
                 .orElseThrow(() -> new ListNotFoundException("Recipe list with the given name does not exist."));
-        List<RecipeListEntry> entries = entryRepository.findBySavedList_ListName(list.name());
-
-        RecipeListEntry entryToRemove = entries.stream()
-                .filter(e -> e.getRecipe().getRecipeId().equals(recipeId))
-                .findFirst()
+        RecipeListEntry entryToRemove = entryRepository.findById(entryId)
                 .orElseThrow(() -> new RecipeNotFoundException("Recipe not found in list."));
-
+        if (!entryToRemove.getSavedList().equals(savedList)) {
+            throw new RecipeValidationException("Recipe entry does not belong to the specified list.");
+        }
         entryRepository.delete(entryToRemove);
     }
 

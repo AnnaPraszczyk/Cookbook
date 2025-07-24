@@ -64,3 +64,16 @@ export const searchRecipes = async ({ name, category }) => {
 export const saveRecipeList = async (listName) => {
     return axios.post(`/api/lists/${listName}/save`);
 };
+export async function deleteRecipeFromList({ listName, entryId }) {
+    try {
+        const response = await fetch(`/api/recipe-lists/${listName}/entries/${entryId}`, {
+            method: "DELETE"
+        });
+        if (!response.ok) {
+            throw new Error("Failed to delete recipe from list");
+        }
+    } catch (err) {
+        console.error("API deleteRecipeFromList error:", err);
+        throw err;
+    }
+}

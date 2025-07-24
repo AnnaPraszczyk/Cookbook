@@ -2,8 +2,10 @@ package com.ania.cookbook.web.controllers.recipe;
 
 import com.ania.cookbook.application.services.implementations.recipe.RecipeManagementService;
 import com.ania.cookbook.application.services.interfaces.recipe.ListManagementUseCase.ListName;
-import com.ania.cookbook.domain.model.Recipe;
-import com.ania.cookbook.web.recipe.ReadRecipeResponse;
+import com.ania.cookbook.infrastructure.mapper.RecipeListEntryMapper;
+import com.ania.cookbook.infrastructure.mapper.RecipeMapper;
+import com.ania.cookbook.infrastructure.persistence.entity.RecipeListEntry;
+import com.ania.cookbook.web.recipe.RecipeListEntryResponse;
 import com.ania.cookbook.web.recipe.RecipeListRequest;
 import com.ania.cookbook.web.recipe.RecipeListResponse;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RecipeListController {
     private final RecipeManagementService recipeManagementService;
+    private final RecipeMapper recipeMapper;
+    private final RecipeListEntryMapper entryMapper;
 
     @PostMapping
     public ResponseEntity<Void> createRecipeList(@RequestBody RecipeListRequest request) {
@@ -28,9 +32,10 @@ public class RecipeListController {
     }
 
     @PostMapping("/{listName}/recipes")
-    public ResponseEntity<Void> addRecipeToList(@PathVariable String listName, @RequestBody RecipeListRequest request) {
-        recipeManagementService.addRecipeToList(request.getRecipeId(), new ListName(listName));
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<RecipeListEntryResponse> addRecipeToList(@PathVariable String listName, @RequestBody RecipeListRequest request) {
+        RecipeListEntry entry = recipeManagementService.addRecipeToList(request.getRecipeId(), new ListName(listName));
+        RecipeListEntryResponse response = entryMapper.toResponse(entry);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("")
@@ -43,20 +48,13 @@ public class RecipeListController {
 
     @GetMapping("/{listName}")
     public ResponseEntity<RecipeListResponse> getRecipesList(@PathVariable String listName) {
-        List<Recipe> recipes = recipeManagementService.getRecipesList(new ListName(listName));
-        List<ReadRecipeResponse> recipeResponses = recipes.stream()
-                .map(ReadRecipeResponse::from)
-                .toList();
-        RecipeListResponse response = RecipeListResponse.builder()
-                .listName(new ListName(listName))
-                .recipes(recipeResponses)
-                .build();
+        RecipeListResponse response = recipeManagementService.getRecipeListResponse(new ListName(listName));
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{listName}/recipes/{recipeId}")
-    public ResponseEntity<Void> removeRecipeFromList(@PathVariable String listName, @PathVariable UUID recipeId) {
-        recipeManagementService.removeRecipeFromList(recipeId, new ListName(listName));
+    @DeleteMapping("/{listName}/entries/{entryId}")
+    public ResponseEntity<Void> removeRecipeFromList(@PathVariable String listName, @PathVariable UUID entryId) {
+        recipeManagementService.removeRecipeFromList(entryId, new ListName(listName));
         return ResponseEntity.noContent().build();
     }
 

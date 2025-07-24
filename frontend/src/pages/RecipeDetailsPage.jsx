@@ -91,7 +91,7 @@ const RecipeDetailsPage = () => {
             <ul className="list-disc list-inside space-y-1">
                 {recipe.ingredients.map((i, index) => (
                     <li key={index}>
-                        {i.productName} — {i.amount} {i.unit}
+                        {i.productName} — {Math.round(i.amount)} {i.unit}
                     </li>
                 ))}
             </ul>
@@ -126,10 +126,20 @@ const RecipeDetailsPage = () => {
                 )}
 
             </div>
-            <div className="mt-6">
+            <div className="mt-6 space-y-2">
+                {!listName && (
                 <Link to={`/recipes${location.search}`} className="text-[#c0a060] hover:underline">
                     ← Back to recipe list
                 </Link>
+                    )}
+                {listName && (
+                    <Link
+                        to={`/lists/${listName}/view`}
+                        className="text-[#c0a060] hover:underline ml-4 block"
+                    >
+                        ← Back to list "{listName}"
+                    </Link>
+                )}
             </div>
         </div>
     );

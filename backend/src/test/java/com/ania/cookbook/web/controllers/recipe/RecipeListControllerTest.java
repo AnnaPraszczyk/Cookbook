@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class RecipeListControllerTest {
     private static final String LIST_NAME = "MyList";
     private static final UUID RECIPE_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+    private static final UUID ENTRY_ID = UUID.randomUUID();
     @Autowired
     private MockMvc mockMvc;
 
@@ -133,13 +134,14 @@ class RecipeListControllerTest {
     }
 
     @Test
-    void removeRecipeFromList() throws Exception {
+    void removeRecipeEntryFromList() throws Exception {
         doNothing().when(recipeManagementService)
-                .removeRecipeFromList(any(), any());
-        mockMvc.perform(delete("/api/lists/{listName}/recipes/{recipeId}", LIST_NAME, RECIPE_ID))
+                .removeRecipeFromList(eq(ENTRY_ID), eq(new ListName(LIST_NAME)));
+
+        mockMvc.perform(delete("/api/lists/{listName}/entries/{entryId}", LIST_NAME, ENTRY_ID))
                 .andExpect(status().isNoContent());
 
-        verify(recipeManagementService).removeRecipeFromList(eq(RECIPE_ID), eq(new ListName(LIST_NAME)));
+        verify(recipeManagementService).removeRecipeFromList(eq(ENTRY_ID), eq(new ListName(LIST_NAME)));
     }
 
     @Test

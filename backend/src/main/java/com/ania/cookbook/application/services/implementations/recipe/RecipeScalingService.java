@@ -23,7 +23,7 @@ public class RecipeScalingService implements ScaleIngredientsUseCase {
         List<Ingredient> adjustedIngredients = selectedRecipe.getIngredients().stream()
                 .map(ingredient -> Ingredient.newIngredient(
                         ingredient.getProduct(),
-                        ingredient.getAmount() * recipe.servings() / selectedRecipe.getNumberOfServings(),
+                        Math.round(ingredient.getAmount() * recipe.servings() / selectedRecipe.getNumberOfServings()),
                         ingredient.getUnit()))
                 .toList();
 

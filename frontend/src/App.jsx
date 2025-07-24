@@ -13,6 +13,7 @@ import ShoppingListPage from "./pages/ShoppingListPage";
 import RecipeDetailsPage from "./pages/RecipeDetailsPage.jsx";
 import RecipeSelectorPage from "./pages/RecipeSelectorPage.jsx";
 import RecipeListViewPage from "./pages/RecipeListViewPage.jsx";
+import CreateListForm from "./components/CreateListForm";
 
 
 const App = () => {
@@ -35,6 +36,7 @@ const App = () => {
                     <Route path="/shoppingList/:listName" element={<ShoppingListPage />} />
                     <Route path="/lists/:listName/select-recipes" element={<RecipeSelectorPage />} />
                     <Route path="/lists/:listName/view" element={<RecipeListViewPage />}/>
+                    <Route path="/lists/create" element={<CreateListForm />} />
                 </Routes>
             </main>
         </>
