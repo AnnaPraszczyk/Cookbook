@@ -4,13 +4,19 @@ import com.ania.cookbook.application.services.implementations.recipe.RecipeManag
 import com.ania.cookbook.application.services.interfaces.recipe.ListManagementUseCase.ListName;
 import com.ania.cookbook.domain.exceptions.ListNotFoundException;
 import com.ania.cookbook.domain.model.Recipe;
+import com.ania.cookbook.infrastructure.mapper.RecipeListEntryMapper;
+import com.ania.cookbook.infrastructure.persistence.entity.RecipeListEntry;
+import com.ania.cookbook.web.recipe.ReadRecipeResponse;
+import com.ania.cookbook.web.recipe.RecipeListEntryResponse;
 import com.ania.cookbook.web.recipe.RecipeListRequest;
+import com.ania.cookbook.web.recipe.RecipeListResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import java.util.*;
 import static org.hamcrest.Matchers.*;
@@ -21,25 +27,30 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(RecipeListController.class)
+@Import(RecipeListTestConfig.class)
 class RecipeListControllerTest {
     private static final String LIST_NAME = "MyList";
     private static final UUID RECIPE_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
     private static final UUID ENTRY_ID = UUID.randomUUID();
+    private static final int PORTIONS = 6;
     @Autowired
     private MockMvc mockMvc;
-
-    @MockitoBean
-    private RecipeManagementService recipeManagementService;
 
     @Autowired
     private ObjectMapper objectMapper;
 
-    private RecipeListRequest buildListRequestWithName(String name) {
-        return RecipeListRequest.builder().listName(name).build();
+    @Autowired
+    private RecipeManagementService recipeManagementService;
+
+    @Autowired
+    private RecipeListEntryMapper entryMapper;
+
+    private RecipeListRequest buildListRequestWithName() {
+        return RecipeListRequest.builder().listName("").build();
     }
 
     private RecipeListRequest buildAddRecipeRequest() {
-        return RecipeListRequest.builder().recipeId(RECIPE_ID).build();
+        return RecipeListRequest.builder().recipeId(RECIPE_ID).portions(PORTIONS).build();
     }
 
     @Test
@@ -62,7 +73,7 @@ class RecipeListControllerTest {
 
     @Test
     void createRecipeListWhenNameIsBlank() throws Exception {
-        RecipeListRequest request = buildListRequestWithName("");
+        RecipeListRequest request = buildListRequestWithName();
         String json = objectMapper.writeValueAsString(request);
 
         mockMvc.perform(post("/api/lists")
@@ -76,14 +87,29 @@ class RecipeListControllerTest {
     void addRecipeToList() throws Exception {
         RecipeListRequest request = buildAddRecipeRequest();
         String json = objectMapper.writeValueAsString(request);
-        doNothing().when(recipeManagementService)
-                .addRecipeToList(any(UUID.class), any(ListName.class));
+        RecipeListEntry entry = mock(RecipeListEntry.class);
+        Recipe recipe = Recipe.builder()
+                .recipeId(RECIPE_ID)
+                .recipeName("Test Recipe")
+                .build();
+        ReadRecipeResponse readRecipeResponse = ReadRecipeResponse.from(recipe);
+        RecipeListEntryResponse response = RecipeListEntryResponse.builder()
+                .entryId(ENTRY_ID)
+                .portions(PORTIONS)
+                .recipe(readRecipeResponse)
+                .build();
+        when(recipeManagementService.addRecipeToList(eq(RECIPE_ID), eq(new ListName(LIST_NAME)), eq(PORTIONS)))
+                .thenReturn(entry);
+        when(entryMapper.toResponse(entry)).thenReturn(response);
 
         mockMvc.perform(post("/api/lists/{listName}/recipes", LIST_NAME)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                        .andExpect(status().isCreated());
-        verify(recipeManagementService).addRecipeToList(eq(RECIPE_ID), eq(new ListName(LIST_NAME)));
+                        .andExpect(status().isCreated())
+                        .andExpect(content().json(objectMapper.writeValueAsString(response)));
+
+        verify(recipeManagementService).addRecipeToList(eq(RECIPE_ID), eq(new ListName(LIST_NAME)), eq(PORTIONS));
+        verify(entryMapper).toResponse(entry);
     }
 
     @Test
@@ -101,28 +127,40 @@ class RecipeListControllerTest {
     @Test
     void getRecipesList() throws Exception {
         Recipe recipe = Recipe.builder().recipeId(RECIPE_ID).recipeName("Recipe").build();
-        when(recipeManagementService.getRecipesList(any()))
-                .thenReturn(List.of(recipe));
+        ReadRecipeResponse readRecipeResponse = ReadRecipeResponse.from(recipe);
+        RecipeListEntryResponse entryResponse = RecipeListEntryResponse.builder()
+                .entryId(ENTRY_ID)
+                .portions(PORTIONS)
+                .recipe(readRecipeResponse)
+                .build();
+        List<RecipeListEntryResponse> entryResponses = List.of(entryResponse);
+        RecipeListResponse response = RecipeListResponse.builder()
+                .listName(new ListName(LIST_NAME))
+                .recipes(entryResponses)
+                .build();
+        when(recipeManagementService.getRecipeListResponse(eq(new ListName(LIST_NAME))))
+                .thenReturn(response);
+        String expectedJson = objectMapper.writeValueAsString(response);
 
         mockMvc.perform(get("/api/lists/{listName}", LIST_NAME)
                         .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isOk())
-                        .andExpect(jsonPath("$.listName.name", is(LIST_NAME)))
-                        .andExpect(jsonPath("$.recipes", hasSize(1)));
-        verify(recipeManagementService).getRecipesList(eq(new ListName(LIST_NAME)));
+                        .andExpect(content().json(expectedJson));
+
+        verify(recipeManagementService).getRecipeListResponse(eq(new ListName(LIST_NAME)));
     }
 
     @Test
     void getRecipesListWhenNotFound() throws Exception {
         String errorMessage = "Recipe list with the given name does not exist.";
 
-        when(recipeManagementService.getRecipesList(any()))
+        when(recipeManagementService.getRecipeListResponse(any()))
                 .thenThrow(new ListNotFoundException(errorMessage));
 
         mockMvc.perform(get("/api/lists/NonExistentList")
                         .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isNotFound())
-                        .andExpect(content().string(errorMessage));
+                        .andExpect(content().string(Matchers.containsString(errorMessage)));
     }
 
     @Test

@@ -16,7 +16,6 @@ import com.ania.cookbook.infrastructure.persistence.entity.RecipeListEntry;
 import com.ania.cookbook.infrastructure.persistence.entity.SavedRecipeList;
 import com.ania.cookbook.infrastructure.persistence.list.RecipeListEntryRepository;
 import com.ania.cookbook.infrastructure.persistence.list.SavedRecipeListRepository;
-import com.ania.cookbook.web.recipe.ReadRecipeResponse;
 import com.ania.cookbook.web.recipe.RecipeListEntryResponse;
 import com.ania.cookbook.web.recipe.RecipeListResponse;
 import lombok.Getter;
@@ -53,23 +52,38 @@ public class RecipeManagementService implements ListManagementUseCase {
     }
 
     @Override
-    public RecipeListEntry addRecipeToList(UUID recipeId, ListName list) {
+    public RecipeListEntry addRecipeToList(UUID recipeId, ListName list, Integer portions) {
+        Optional<RecipeListEntry> existingEntry = entryRepository.findByRecipe_RecipeIdAndSavedList_ListName(recipeId, list.name());
+        if (existingEntry.isPresent()) {
+            return updateRecipeEntry(existingEntry.get(), portions);
+        } else {
+            return addNewRecipeEntry(recipeId, list, portions);
+        }
+    }
+
+    @Override
+    public RecipeListEntry updateRecipeEntry(RecipeListEntry entry, Integer portions) {
+        if (portions != null && entry.getPortions() != portions) {
+            entry.setPortions(portions);
+            entryRepository.save(entry);
+        }
+        return entry;
+    }
+
+    private RecipeListEntry addNewRecipeEntry(UUID recipeId, ListName list, Integer portions) {
         Recipe recipe = readRecipeRepository.findRecipeById(recipeId)
                 .orElseThrow(() -> new RecipeNotFoundException("Recipe not found."));
         SavedRecipeList savedList = listRepository.findByListName(list.name())
                 .orElseThrow(() -> new ListNotFoundException("List not found."));
-        Optional<RecipeListEntry> existing = entryRepository.findBySavedList_ListName(list.name()).stream()
-                .filter(entry -> entry.getRecipe().getRecipeId().equals(recipeId))
-                .findFirst();
-        if (existing.isPresent()) {
-            return existing.get();
-        }
         RecipeEntity entity = recipeMapper.toEntity(recipe);
+        int finalPortions = portions != null ? portions : recipe.getNumberOfServings();
+
         RecipeListEntry entry = RecipeListEntry.builder()
                 .recipe(entity)
                 .savedList(savedList)
-                .portions(recipe.getNumberOfServings())
+                .portions(finalPortions)
                 .build();
+
         return entryRepository.save(entry);
     }
 

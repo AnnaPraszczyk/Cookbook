@@ -33,7 +33,7 @@ public class RecipeListController {
 
     @PostMapping("/{listName}/recipes")
     public ResponseEntity<RecipeListEntryResponse> addRecipeToList(@PathVariable String listName, @RequestBody RecipeListRequest request) {
-        RecipeListEntry entry = recipeManagementService.addRecipeToList(request.getRecipeId(), new ListName(listName));
+        RecipeListEntry entry = recipeManagementService.addRecipeToList(request.getRecipeId(), new ListName(listName), request.getPortions());
         RecipeListEntryResponse response = entryMapper.toResponse(entry);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

@@ -13,10 +13,11 @@ import static io.micrometer.common.util.StringUtils.isBlank;
 public interface ListManagementUseCase {
 
     void createRecipeList(ListName name, String description);
-    RecipeListEntry addRecipeToList(UUID recipeId, ListName listName);
+    RecipeListEntry addRecipeToList(UUID recipeId, ListName list, Integer portions);
     List<Recipe> getRecipesList(ListName list);
     List<RecipeListEntry> getRecipesListEntries(ListName list);
     RecipeListResponse getRecipeListResponse(ListName listName);
+    RecipeListEntry updateRecipeEntry(RecipeListEntry entry, Integer portions);
     void removeRecipeFromList(UUID entryId, ListName listName);
     boolean clearRecipeList(ListName listName, boolean confirm);
     void deleteRecipeList(ListName listName);
