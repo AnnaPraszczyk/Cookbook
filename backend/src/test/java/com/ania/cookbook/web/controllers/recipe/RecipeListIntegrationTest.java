@@ -60,6 +60,8 @@ public class RecipeListIntegrationTest {
         System.out.println("➡️ recipeId: " + recipeId);
         RecipeListRequest addRequest = RecipeListRequest.builder()
                 .listName(listName)
+                .listDescription("test")
+                .portions(2)
                 .build();
         String url = "http://localhost:" + port + "/api/lists";
         ResponseEntity<Void> addResponse = restTemplate.postForEntity(url, addRequest, Void.class);
@@ -85,6 +87,8 @@ public class RecipeListIntegrationTest {
     void createRecipeListWhenNameIsBlank() {
         RecipeListRequest request = RecipeListRequest.builder()
                 .listName(" ")
+                .listDescription("test")
+                .portions(2)
                 .build();
         ResponseEntity<String> response = restTemplate.postForEntity("/api/lists", request, String.class);
 
@@ -98,6 +102,8 @@ public class RecipeListIntegrationTest {
         String listName = generateUniqueListName();
         RecipeListRequest createRequest = RecipeListRequest.builder()
                 .listName(listName)
+                .listDescription("test")
+                .portions(2)
                 .build();
         ResponseEntity<Void> postResponse = restTemplate.postForEntity("/api/lists", createRequest, Void.class);
 
@@ -115,12 +121,16 @@ public class RecipeListIntegrationTest {
         String listName = generateUniqueListName();
         RecipeListRequest createRequest = RecipeListRequest.builder()
                 .listName(listName)
+                .listDescription("test")
+                .portions(2)
                 .build();
         restTemplate.postForEntity("/api/lists", createRequest, Void.class);
         UUID recipeId = insertTestRecipe();
         RecipeListRequest addRecipeRequest = RecipeListRequest.builder()
                 .recipeId(recipeId)
                 .listName(listName)
+                .listDescription("test")
+                .portions(2)
                 .build();
         restTemplate.postForEntity("/api/lists/" + listName + "/recipes", addRecipeRequest, Void.class);
         ResponseEntity<RecipeListResponse> getResponse = restTemplate.getForEntity("/api/lists/" + listName, RecipeListResponse.class);
@@ -139,8 +149,8 @@ public class RecipeListIntegrationTest {
         restTemplate.postForEntity("/api/lists", RecipeListRequest.builder().listName(listName).build(), Void.class);
         UUID fakeRecipeId = UUID.randomUUID();
         ResponseEntity<String> response = restTemplate.postForEntity("/api/lists/" + listName + "/recipes",
-                RecipeListRequest.builder().recipeId(fakeRecipeId).listName(listName).portions(4).build(),
-                String.class);
+                RecipeListRequest.builder().recipeId(fakeRecipeId).listName(listName).listDescription("new")
+                        .portions(4).build(), String.class);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -154,8 +164,8 @@ public class RecipeListIntegrationTest {
         restTemplate.exchange("/api/lists/" + listName, HttpMethod.DELETE, null, Void.class);
         UUID recipeId = insertTestRecipe();
         ResponseEntity<String> response = restTemplate.postForEntity("/api/lists/" + listName + "/recipes",
-                RecipeListRequest.builder().recipeId(recipeId).listName(listName).portions(4).build(),
-                String.class);
+                RecipeListRequest.builder().recipeId(recipeId).listName(listName).listDescription("New list")
+                        .portions(4).build(), String.class);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -165,7 +175,8 @@ public class RecipeListIntegrationTest {
     void getAllListsShouldIncludeCreatedList() {
         String listName = generateUniqueListName();
         restTemplate.postForEntity("/api/lists",
-                RecipeListRequest.builder().listName(listName).build(), Void.class);
+                RecipeListRequest.builder().listName(listName).listDescription("test")
+                .portions(2).build(), Void.class);
         ResponseEntity<String[]> response =
                 restTemplate.getForEntity("/api/lists", String[].class);
 
@@ -179,8 +190,10 @@ public class RecipeListIntegrationTest {
     void getAllListsShouldReturnCreatedListNames() {
         String listName1 = generateUniqueListName();
         String listName2 = generateUniqueListName();
-        restTemplate.postForEntity("/api/lists", RecipeListRequest.builder().listName(listName1).build(), Void.class);
-        restTemplate.postForEntity("/api/lists", RecipeListRequest.builder().listName(listName2).build(), Void.class);
+        restTemplate.postForEntity("/api/lists", RecipeListRequest.builder().listName(listName1)
+                        .listDescription("test").portions(2).build(), Void.class);
+        restTemplate.postForEntity("/api/lists", RecipeListRequest.builder().listName(listName2)
+                        .listDescription("test").portions(2).build(), Void.class);
         ResponseEntity<List<String>> response = restTemplate.exchange(
                 "/api/lists", HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
 
@@ -195,20 +208,19 @@ public class RecipeListIntegrationTest {
     void removeRecipeFromListShouldDeleteItFromListAndShoppingList() {
         String listName = generateUniqueListName();
         restTemplate.postForEntity("/api/lists",
-                RecipeListRequest.builder().listName(listName).build(), Void.class);
+                RecipeListRequest.builder().listName(listName).listDescription("test")
+                .portions(2).build(), Void.class);
         IngredientRequest flour = new IngredientRequest("Flour", 300F, Unit.G);
         RecipeRequest recipeRequest = new RecipeRequest(
                 "Cake", Category.DESSERT,
                 List.of(flour), "Bake", 4, List.of("sweet"));
         UUID recipeId = Objects.requireNonNull(restTemplate.postForEntity("/api/recipes", recipeRequest, RecipeResponse.class).getBody()).recipeId();
-//        restTemplate.postForEntity("/api/lists/" + listName + "/recipes",
-//                RecipeListRequest.builder().recipeId(recipeId).listName(listName).portions(4).build(), Void.class);
-//        restTemplate.exchange("/api/lists/" + listName + "/recipes/" + recipeId,
-//                HttpMethod.DELETE, null, Void.class);
+
         ResponseEntity<RecipeListEntryResponse> entryResponse = restTemplate.postForEntity("/api/lists/" + listName + "/recipes",
                 RecipeListRequest.builder()
                         .recipeId(recipeId)
                         .listName(listName)
+                        .listDescription("test")
                         .portions(4)
                         .build(),
                 RecipeListEntryResponse.class
@@ -240,11 +252,14 @@ public class RecipeListIntegrationTest {
     void clearRecipeListShouldReturnTrue() {
         String listName = generateUniqueListName();
         restTemplate.postForEntity("/api/lists",
-                RecipeListRequest.builder().listName(listName).build(), Void.class);
+                RecipeListRequest.builder().listName(listName).listDescription("test")
+                .portions(2).build(), Void.class);
         UUID recipeId = insertTestRecipe();
         RecipeListRequest addRecipeRequest = RecipeListRequest.builder()
                 .recipeId(recipeId)
                 .listName(listName)
+                .listDescription("test")
+                .portions(2)
                 .build();
         restTemplate.postForEntity("/api/lists/" + listName + "/recipes", addRecipeRequest, Void.class);
         ResponseEntity<Boolean> response = restTemplate.exchange(
@@ -259,7 +274,8 @@ public class RecipeListIntegrationTest {
     void clearRecipeListShouldRemoveAllRecipes() {
         String listName = generateUniqueListName();
         restTemplate.postForEntity("/api/lists",
-                RecipeListRequest.builder().listName(listName).build(), Void.class);
+                RecipeListRequest.builder().listName(listName).listDescription("test")
+                .portions(2).build(), Void.class);
         UUID recipeId = insertTestRecipe();
         RecipeListRequest addRecipeRequest = RecipeListRequest.builder()
                 .recipeId(recipeId)
@@ -284,10 +300,11 @@ public class RecipeListIntegrationTest {
     @Test
     void clearRecipeListWithoutConfirmationShouldNotClearList() {
         String listName = generateUniqueListName();
-        restTemplate.postForEntity("/api/lists", RecipeListRequest.builder().listName(listName).build(), Void.class);
+        restTemplate.postForEntity("/api/lists", RecipeListRequest.builder().listName(listName).listDescription("test")
+                .portions(2).build(), Void.class);
         UUID recipeId = insertTestRecipe();
         restTemplate.postForEntity("/api/lists/" + listName + "/recipes",
-                RecipeListRequest.builder().recipeId(recipeId).listName(listName).portions(4).build(), Void.class);
+                RecipeListRequest.builder().recipeId(recipeId).listName(listName).listDescription("new").portions(4).build(), Void.class);
         ResponseEntity<Boolean> response = restTemplate.exchange(
                 "/api/lists/" + listName + "/clear?confirm=false",
                 HttpMethod.DELETE, null, Boolean.class);
@@ -303,7 +320,7 @@ public class RecipeListIntegrationTest {
     void deleteRecipeList() {
         String listName = generateUniqueListName();
         restTemplate.postForEntity("/api/lists",
-                RecipeListRequest.builder().listName(listName).build(), Void.class);
+                RecipeListRequest.builder().listName(listName).listDescription("test").portions(2).build(), Void.class);
         ResponseEntity<Void> response = restTemplate.exchange(
                 "/api/lists/" + listName,
                 HttpMethod.DELETE, null, Void.class);
@@ -315,7 +332,8 @@ public class RecipeListIntegrationTest {
     void deletedListShouldReturnNotFound() {
         String listName = generateUniqueListName();
         restTemplate.postForEntity("/api/lists",
-                RecipeListRequest.builder().listName(listName).build(), Void.class);
+                RecipeListRequest.builder().listName(listName).listDescription("test")
+                .portions(2).build(), Void.class);
         restTemplate.exchange("/api/lists/" + listName,
                 HttpMethod.DELETE, null, Void.class);
         ResponseEntity<String> response = restTemplate.getForEntity("/api/lists/" + listName, String.class);
@@ -329,7 +347,8 @@ public class RecipeListIntegrationTest {
     void generateShoppingListShouldIncludeIngredients() {
         String listName = generateUniqueListName();
         restTemplate.postForEntity("/api/lists",
-                RecipeListRequest.builder().listName(listName).build(),Void.class);
+                RecipeListRequest.builder().listName(listName).listDescription("test")
+                .portions(2).build(),Void.class);
         IngredientRequest flour = new IngredientRequest("Flour", 300F, Unit.G);
         RecipeRequest recipeRequest = new RecipeRequest(
                 "Test Cake", Category.DESSERT,
@@ -359,7 +378,8 @@ public class RecipeListIntegrationTest {
     void generateShoppingListShouldSumDuplicateIngredients() {
         String listName = generateUniqueListName();
         restTemplate.postForEntity("/api/lists",
-                RecipeListRequest.builder().listName(listName).build(), Void.class);
+                RecipeListRequest.builder().listName(listName).listDescription("test")
+                .portions(2).build(), Void.class);
         IngredientRequest flour1 = new IngredientRequest("Flour", 300F, Unit.G);
         RecipeRequest recipe1 = new RecipeRequest(
                 "Cake One", Category.DESSERT,
@@ -399,7 +419,8 @@ public class RecipeListIntegrationTest {
     void addingSameRecipeTwiceShouldBeIgnoredSilently() {
         String listName = generateUniqueListName();
         restTemplate.postForEntity("/api/lists",
-                RecipeListRequest.builder().listName(listName).build(), Void.class);
+                RecipeListRequest.builder().listName(listName).listDescription("test")
+                .portions(2).build(), Void.class);
         UUID recipeId = insertTestRecipe();
         ResponseEntity<Void> firstResponse = restTemplate.postForEntity("/api/lists/" + listName + "/recipes",
                 RecipeListRequest.builder()
@@ -427,7 +448,8 @@ public class RecipeListIntegrationTest {
     void generateShoppingListShouldScaleIngredientsByPortions() {
         String listName = generateUniqueListName();
         restTemplate.postForEntity("/api/lists",
-                RecipeListRequest.builder().listName(listName).build(), Void.class);
+                RecipeListRequest.builder().listName(listName).listDescription("test")
+                .portions(2).build(), Void.class);
         IngredientRequest flour1 = new IngredientRequest("Flour", 400F, Unit.G);
         RecipeRequest recipe1 = new RecipeRequest(
                 "Cake One", Category.DESSERT,

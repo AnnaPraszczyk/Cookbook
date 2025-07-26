@@ -5,10 +5,26 @@ import SearchAndAddRecipe from "./SearchAndAddRecipe";
 
 export default function RecipeListView({ listName }) {
     const [recipes, setRecipes] = useState([]);
+    const [defaultPortions, setDefaultPortions] = useState(1);
+
+    useEffect(() => {
+        load().then(() => {
+            if (recipes.length > 0) {
+                setDefaultPortions(recipes[0].portions);
+            }
+        });
+    }, [listName]);
+
     const load = async () => {
         const data = await getRecipesList(listName);
-        setRecipes(data.recipes || []);
+        const loadedRecipes = data.recipes || [];
+        setRecipes(loadedRecipes);
+
+        if (loadedRecipes.length > 0) {
+            setDefaultPortions(loadedRecipes[0].portions);
+        }
     };
+
 
     useEffect(() => {
         load();
@@ -39,7 +55,7 @@ export default function RecipeListView({ listName }) {
 
     return (
         <div>
-            <SearchAndAddRecipe listName={listName} />
+            <SearchAndAddRecipe listName={listName} defaultPortions={defaultPortions}/>
             <div className="mt-6 flex gap-4">
                 <button onClick={handleClear} className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition duration-200">Clear</button>
                 <button onClick= {handleSave} className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition duration-200">Save</button>

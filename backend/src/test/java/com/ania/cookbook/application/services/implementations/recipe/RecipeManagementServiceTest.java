@@ -61,11 +61,13 @@ class RecipeManagementServiceTest {
     void createNewList() {
         when(savedListRepository.existsByListName(listName.name())).thenReturn(false);
         String description = "list description";
-        service.createRecipeList(listName, description);
+        int defaultPortions = 4;
+        service.createRecipeList(listName, description, defaultPortions);
 
         verify(savedListRepository).save(Mockito.argThat(list ->
                 list.getListName().equals(savedList.getListName()) &&
                         list.getListDescription().equals(description) &&
+                        list.getExpectedPortions() == defaultPortions &&
                         list.getEntries().isEmpty()
         ));
     }
@@ -73,13 +75,13 @@ class RecipeManagementServiceTest {
     @Test
     void createRecipeListWhenNameIsBlank() {
         assertThrows(ListValidationException.class,
-                () -> service.createRecipeList(new ListName(""),"List description"));
+                () -> service.createRecipeList(new ListName(""),"List description", 4));
     }
 
     @Test
     void createRecipeListWhenNameIsNull() {
         assertThrows(ListValidationException.class,
-                () -> service.createRecipeList(new ListName(null),"List description"));
+                () -> service.createRecipeList(new ListName(null),"List description", 2));
     }
 
     @Test

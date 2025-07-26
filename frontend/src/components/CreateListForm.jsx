@@ -2,40 +2,42 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from "react-router-dom";
 import { createRecipeList, getAllLists } from "../api/recipeListApi";
 
-
-
 export default function CreateListForm() {
     const navigate = useNavigate();
-    const [inputName, setInputName] = useState("");
-    const [inputDescription, setInputDescription] = useState("");
-    const [portionCount, setPortionCount] = useState(1);
-    const [recentLists, setRecentLists] = useState([]);
     const [error, setError] = useState("");
+    const [form, setForm] = useState({
+        listName: '',
+        listDescription: '',
+        portions: 1,
+    });
+
+    const handleChange = (e) => {
+        const { name, value, type } = e.target;
+
+        setForm((prevForm) => ({
+            ...prevForm,
+            [name]: type === 'number' ? parseInt(value) || 1 : value
+        }));
+    };
 
     const handleCreate = async () => {
-        const trimmedName = inputName.trim();
+        const trimmedName = form.listName.trim();
         if (!trimmedName) {
             setError("List name cannot be empty.");
             return;
         }
-
         try {
             const existing = await getAllLists();
             if (existing.includes(trimmedName)) {
                 setError("A list with this name already exists.");
                 return;
             }
-
-            await createRecipeList({
-                listName: trimmedName,
-                listDescription: inputDescription,
-                portions: portionCount
-            });
-
+            await createRecipeList(form);
             setError("");
             alert("List created successfully!");
-            navigate(`/lists/${trimmedName}/select-recipes`);
+            navigate(`/lists/${trimmedName}/select-recipes`, {state: {defaultPortions: form.portions, listName: form.listName }});
         } catch (err) {
+            console.log(form);
             console.error("List creation error:", err);
             setError("Failed to create list.");
         }
@@ -48,23 +50,26 @@ export default function CreateListForm() {
             <div className="space-y-4">
                 <input
                     type="text"
-                    value={inputName}
-                    onChange={(e) => setInputName(e.target.value)}
+                    name="listName"
+                    value={form.listName}
+                    onChange={handleChange}
                     placeholder="Enter list name"
                     className="p-2 text-lg w-full border border-gray-400 bg-[#333] rounded focus:outline-none focus:ring-2 focus:ring-[#c0a060]"
                 />
                 <input
                     type="text"
-                    value={inputDescription}
-                    onChange={(e) => setInputDescription(e.target.value)}
+                    name="listDescription"
+                    value={form.listDescription}
+                    onChange={handleChange}
                     placeholder="List description"
                     className="p-2 text-lg w-full h-20 border border-gray-400 bg-[#333] rounded focus:outline-none focus:ring-2 focus:ring-[#c0a060]"
                 />
                 <input
                     type="number"
                     min="1"
-                    value={portionCount}
-                    onChange={(e) => setPortionCount(parseInt(e.target.value) || 1)}
+                    name="portions"
+                    value={form.portions}
+                    onChange={handleChange}
                     placeholder="Portions"
                     className="p-2 text-lg w-[150px] border border-gray-400 bg-[#333] rounded focus:outline-none focus:ring-2 focus:ring-[#c0a060]"
                 />

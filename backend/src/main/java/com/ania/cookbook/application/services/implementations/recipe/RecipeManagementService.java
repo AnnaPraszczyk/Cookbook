@@ -16,6 +16,7 @@ import com.ania.cookbook.infrastructure.persistence.entity.RecipeListEntry;
 import com.ania.cookbook.infrastructure.persistence.entity.SavedRecipeList;
 import com.ania.cookbook.infrastructure.persistence.list.RecipeListEntryRepository;
 import com.ania.cookbook.infrastructure.persistence.list.SavedRecipeListRepository;
+import com.ania.cookbook.web.recipe.ReadRecipeResponse;
 import com.ania.cookbook.web.recipe.RecipeListEntryResponse;
 import com.ania.cookbook.web.recipe.RecipeListResponse;
 import lombok.Getter;
@@ -37,18 +38,41 @@ public class RecipeManagementService implements ListManagementUseCase {
     private final RecipeListEntryMapper entryMapper;
 
     @Override
-    public void createRecipeList(ListName list, String description) {
+    public void createRecipeList(ListName list, String description, Integer defaultPortions) {
         if (listRepository.existsByListName(list.name())) {
             throw new ListValidationException("Recipe list already exists.");
         }
+        int safePortions = defaultPortions != null ? defaultPortions : 1;
         SavedRecipeList savedList = SavedRecipeList.builder()
                 .listName(list.name())
                 .createdAt(Instant.now())
-                .expectedPortions(0)
+                .expectedPortions(safePortions)
                 .listDescription(description != null ? description.trim() : "")
                 .entries(new ArrayList<>())
                 .build();
         listRepository.save(savedList);
+    }
+
+    public static RecipeListResponse from(SavedRecipeList list, RecipeMapper recipeMapper) {
+        List<RecipeListEntryResponse> entryResponses = list.getEntries().stream()
+                .map(entry -> {
+                    Recipe domainRecipe = recipeMapper.toDomain(entry.getRecipe());
+                    ReadRecipeResponse recipeResponse = ReadRecipeResponse.from(domainRecipe);
+
+                    return RecipeListEntryResponse.builder()
+                            .entryId(entry.getEntryId())
+                            .portions(entry.getPortions())
+                            .recipe(recipeResponse)
+                            .build();
+                })
+                .toList();
+
+        return RecipeListResponse.builder()
+                .listName(new ListName(list.getListName()))
+                .listDescription(list.getListDescription())
+                .expectedPortions(list.getExpectedPortions())
+                .recipes(entryResponses)
+                .build();
     }
 
     @Override

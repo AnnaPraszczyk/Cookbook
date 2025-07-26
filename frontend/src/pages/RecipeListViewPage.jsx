@@ -9,7 +9,7 @@ export default function RecipeListViewPage() {
     const [recipes, setRecipes] = useState([]);
 
     useEffect(() => {
-        const load = async () => {
+        const loadList = async () => {
             try {
                 const res = await getRecipesList(listName);
                 setRecipes(res.recipes || []);
@@ -17,19 +17,43 @@ export default function RecipeListViewPage() {
                 console.error("Failed to load recipe list", e);
             }
         };
-        load();
+        loadList();
     }, [listName]);
+
+    function formatPortions(p) {
+        return `${p} ${p === 1 ? "portion" : "portions"}`;
+    }
 
     const handleDelete = async (entryId) => {
         const confirmed = window.confirm("Are you sure you want to remove this recipe from the list?");
         if (!confirmed) return;
         try {
             await deleteRecipeFromList({ listName, entryId });
-            setRecipes(prev => prev.filter(r => r.id !== entryId));
+            setRecipes(prev => prev.filter(r => r.entryId !== entryId));
         } catch (e) {
             console.error("Failed to delete recipe", e);
         }
     };
+
+    const handleView = (recipe) => {
+        navigate(`/recipes/${recipe.id}`, {
+            state: {
+                listName,
+                defaultPortions: recipe.portions,
+                fromList: true
+            }
+        });
+    };
+
+    const handleUpdate = (recipe) => {
+        navigate(`/recipes/update/${recipe.id}`, {
+            state: {
+                listName,
+                entryId: recipe.entryId
+            }
+        });
+    };
+
 
     return (
         <div className="p-6 max-w-4xl mx-auto text-white space-y-6">
@@ -43,20 +67,25 @@ export default function RecipeListViewPage() {
                 <ul className="space-y-4">
                     {recipes.map((r) => (
                         <li
-                            key={r.id}
-                            className="p-4 border border-gray-600 rounded flex justify-between items-center"
-                        >
+                            key={r.entryId}
+                            className="p-4 border border-gray-600 rounded flex justify-between items-center">
                             <div>
-                                <h3 className="text-xl font-semibold">{r.name}</h3>
-                                <p className="text-gray-400 text-sm">{r.category} • {r.portions} portion {r.portions > 1 ? "s" : ""}</p>
+                                {r.recipe && (
+                                    <>
+                                <h3 className="text-xl font-semibold">{r.recipe.name}</h3>
+                                <p className="text-gray-400 text-sm">{r.recipe.category} • {formatPortions(r.portions)}
+                                </p>
+                                    </>
+                                    )}
+
                             </div>
                             <button
-                                onClick={() => navigate(`/recipes/${r.id}?listName=${listName}`)}
+                                onClick={() => handleView(r)}
                                 className="text-[#c0a060] hover:underline">
                                 View
                             </button>
                             <button
-                                onClick={() => navigate(`/recipes/update/${r.id}?listName=${listName}`)}
+                                onClick={() => handleUpdate(r)}
                                 className="text-[#c0a060] hover:underline">
                                 Update
                             </button>

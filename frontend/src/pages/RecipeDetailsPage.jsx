@@ -8,46 +8,59 @@ const RecipeDetailsPage = () => {
     const [loading, setLoading] = useState(true);
     const [newServings, setNewServings] = useState("");
     const location = useLocation();
+    const { listName, portions, defaultPortions } = location.state || {};
     const navigate = useNavigate();
-    const listName = new URLSearchParams(location.search).get("listName");
+
 
     const handleScale = async () => {
-        if (!newServings || isNaN(newServings) || newServings <= 0) return;
-
+        const servingsValue = parseInt(newServings, 10);
+        if (!servingsValue || servingsValue <= 0) return;
         try {
             const res = await fetch("/api/recipes/scaling", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     recipeId: recipe.id,
-                    servings: parseInt(newServings, 10),
+                    servings: servingsValue,
                 }),
             });
             if (!res.ok) throw new Error("Failed to scale recipe");
             const data = await res.json();
-            const adjustedIngredients = data.ingredients.map((scaledIng, i) => ({
-                ...recipe.ingredients[i],
-                amount: scaledIng.amount}));
-            setRecipe({
-                ...recipe,
-                numberOfServings: data.numberOfServings || data.servings,
-                ingredients: data.ingredients.map((scaledIng, i) => ({
-                    ...recipe.ingredients[i],
-                    amount: scaledIng.amount
-                }))
-            });
-
-            setNewServings("");
+            setRecipe(prev => ({
+                ...prev,
+                numberOfServings: data.numberOfServings || servingsValue,
+                ingredients: data.ingredients,
+            }));
+            setNewServings(
+                (data.numberOfServings && data.numberOfServings > 0
+                        ? data.numberOfServings
+                        : servingsValue
+                ).toString()
+            );
         } catch (e) {
             console.error("Scaling failed:", e);
         }
     };
 
+    useEffect(() => {
+        if (recipe && !newServings)  {
+            const initialPortions =
+                portions || defaultPortions || recipe.numberOfServings || recipe.servings || "";
+
+            setNewServings(initialPortions.toString());
+        }
+    }, [recipe, portions, defaultPortions]);
+
     const handleAddToList = async () => {
         try {
-            const portions = parseInt(newServings, 10) || recipe.numberOfServings;
-            await addRecipeToList({ listName, recipeId: recipe.id, portions });
-            alert(`Recipe added to "${listName}" with ${portions} portions!`);
+            const parsed = parseInt(newServings, 10);
+            const portionsToAdd =
+                Number.isFinite(parsed) && parsed > 0
+                    ? parsed
+                    : defaultPortions || portions || recipe.numberOfServings || 1;
+            console.log("🔍 newServings before adding:", newServings);
+            await addRecipeToList({ listName, recipeId: recipe.id, portions: portionsToAdd });
+            alert(`Recipe added to "${listName}" with ${portionsToAdd} portions!`);
             navigate(`/lists/${listName}/view`);
         } catch (err) {
             console.error("Add to list failed:", err);
@@ -119,6 +132,7 @@ const RecipeDetailsPage = () => {
                 <div className="mt-4">
                     <button
                         onClick={handleAddToList}
+                        disabled={!newServings || parseInt(newServings) <= 0}
                         className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition duration-200">
                         Add to list
                     </button>
@@ -127,17 +141,24 @@ const RecipeDetailsPage = () => {
 
             </div>
             <div className="mt-6 space-y-2">
-                {!listName && (
-                <Link to={`/recipes${location.search}`} className="text-[#c0a060] hover:underline">
-                    ← Back to recipe list
-                </Link>
-                    )}
-                {listName && (
+                {listName ? (
                     <Link
                         to={`/lists/${listName}/view`}
-                        className="text-[#c0a060] hover:underline ml-4 block"
-                    >
+                        className="text-[#c0a060] hover:underline block">
                         ← Back to list "{listName}"
+                    </Link>
+                ) : location.state?.fromSearch ? (
+                    <Link
+                        to={"/recipes/search"}
+                            state={ location.state.fromSearch}
+                        className="text-[#c0a060] hover:underline block">
+                        ← Back to recipe search
+                    </Link>
+                ) : (
+                    <Link
+                        to="/recipes"
+                        className="text-[#c0a060] hover:underline block">
+                        ← Back to all recipes
                     </Link>
                 )}
             </div>

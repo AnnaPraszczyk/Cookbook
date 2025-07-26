@@ -12,7 +12,7 @@ import static io.micrometer.common.util.StringUtils.isBlank;
 
 public interface ListManagementUseCase {
 
-    void createRecipeList(ListName name, String description);
+    void createRecipeList(ListName list, String description, Integer defaultPortions);
     RecipeListEntry addRecipeToList(UUID recipeId, ListName list, Integer portions);
     List<Recipe> getRecipesList(ListName list);
     List<RecipeListEntry> getRecipesListEntries(ListName list);

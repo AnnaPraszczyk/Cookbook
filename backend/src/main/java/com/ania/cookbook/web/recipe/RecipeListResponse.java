@@ -11,5 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 public class RecipeListResponse {
     private ListName listName;
+    private String listDescription;
+    private Integer expectedPortions;
     private List<RecipeListEntryResponse> recipes;
 }

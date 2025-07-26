@@ -56,19 +56,21 @@ class RecipeListControllerTest {
     @Test
     void createRecipeList() throws Exception {
         String description = "Weekend shopping";
+        int expectingPortions = 4;
         RecipeListRequest request = RecipeListRequest.builder()
                 .listName(LIST_NAME)
                 .listDescription(description)
+                .portions(expectingPortions)
                 .build();
         String json = objectMapper.writeValueAsString(request);
-        doNothing().when(recipeManagementService).createRecipeList(any(ListName.class), eq(description));
+        doNothing().when(recipeManagementService).createRecipeList(any(ListName.class), eq(description),eq(expectingPortions));
 
         mockMvc.perform(post("/api/lists")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                         .andExpect(status().isCreated());
         verify(recipeManagementService, times(1))
-                .createRecipeList(eq(new ListName(LIST_NAME)),eq(description));
+                .createRecipeList(eq(new ListName(LIST_NAME)),eq(description),eq(expectingPortions));
     }
 
     @Test
