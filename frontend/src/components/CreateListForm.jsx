@@ -86,7 +86,7 @@ export default function CreateListForm() {
                 </button>
 
                 <Link
-                    to="/lists"
+                    to="/shoppingList"
                     className="px-4 py-2 text-white rounded hover:bg-gray-700 transition-colors"
                 >
                     ← Back to List Manager

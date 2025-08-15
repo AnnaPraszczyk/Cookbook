@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { getRecipesList, removeRecipe, clearList, deleteList, saveRecipeList } from '../api/recipeListApi';
-import AddRecipeForm from './AddRecipeForm.jsx';
+import { useNavigate } from 'react-router-dom';
+import { getRecipesList, removeRecipe, clearList, deleteList, getShoppingList } from '../api/recipeListApi';
+import { jsPDF } from "jspdf";
 import SearchAndAddRecipe from "./SearchAndAddRecipe";
 
-export default function RecipeListView({ listName }) {
+export default function RecipeListView({ listName, onListUpdated }) {
     const [recipes, setRecipes] = useState([]);
     const [defaultPortions, setDefaultPortions] = useState(1);
+    const navigate = useNavigate();
 
     useEffect(() => {
         load().then(() => {
@@ -16,12 +18,13 @@ export default function RecipeListView({ listName }) {
     }, [listName]);
 
     const load = async () => {
-        const data = await getRecipesList(listName);
-        const loadedRecipes = data.recipes || [];
-        setRecipes(loadedRecipes);
-
-        if (loadedRecipes.length > 0) {
-            setDefaultPortions(loadedRecipes[0].portions);
+        try {
+            const data = await getRecipesList(listName);
+            const loadedRecipes = data.recipes || [];
+            setRecipes(loadedRecipes);
+            setDefaultPortions(loadedRecipes.length > 0 ? loadedRecipes[0].portions : 1);
+        } catch (e) {
+            console.error("Failed to load recipe list", e);
         }
     };
 
@@ -37,29 +40,61 @@ export default function RecipeListView({ listName }) {
 
     const handleClear = async () => {
         const confirmed = window.confirm('Are you sure you want to clear the list?');
-        if (confirmed) {
+        if (!confirmed) return;
+        try {
             await clearList(listName);
-            await load();
+            if (onListUpdated) {
+                await onListUpdated();
+            }
+        } catch (e) {
+            console.error("Failed to clear list", e);
         }
     };
 
     const handleDelete = async () => {
-        await deleteList(listName);
-        alert('List deleted!');
+        const confirmed = window.confirm(`Are you sure you want to permanently delete the list "${listName}"?`);
+        if (!confirmed) return;
+        try {
+            await deleteList(listName);
+            alert('List deleted!');
+            navigate("/shoppingList");
+        } catch (e) {
+            console.error("Failed to delete list", e);
+            alert("Something went wrong while deleting the list.");
+        }
     };
+    const handleGenerateShoppingList = async () => {
+        try {
+            const shoppingList = await getShoppingList(listName);
+            if (!shoppingList || Object.keys(shoppingList).length === 0) {
+                alert("Shopping list is empty. Please add some recipes to the list before generating the shopping list.");
+                return;
+            }
 
-    const handleSave = async () => {
-        await saveRecipeList(listName);
-        alert('List saved!');
+            const doc = new jsPDF();
+            doc.setFontSize(16);
+            doc.text("Shopping list", 20, 20);
+
+            let y = 30;
+            Object.entries(shoppingList).forEach(([product, amount]) => {
+                doc.text(`${product}: ${amount.toFixed(2)} g`, 20, y);
+                y += 10;
+            });
+
+            doc.save(`shopping_list_${listName}.pdf`);
+        } catch (error) {
+            console.error("An error occurred while generating the shopping list", error);
+            alert("Failed to generate the shopping list.");
+        }
     };
 
     return (
         <div>
             <SearchAndAddRecipe listName={listName} defaultPortions={defaultPortions}/>
             <div className="mt-6 flex gap-4">
-                <button onClick={handleClear} className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition duration-200">Clear</button>
-                <button onClick= {handleSave} className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition duration-200">Save</button>
-                <button onClick={handleDelete} className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition duration-200">Delete</button>
+                <button onClick={handleGenerateShoppingList} className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition duration-200">Shopping list</button>
+                <button onClick={handleClear} className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition duration-200">Clear List</button>
+                <button onClick={handleDelete} className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition duration-200">Delete List</button>
             </div>
         </div>
     );

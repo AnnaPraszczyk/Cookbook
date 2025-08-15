@@ -6,6 +6,7 @@ import com.ania.cookbook.application.services.interfaces.recipe.CreateRecipeUseC
 import com.ania.cookbook.application.services.interfaces.recipe.DeleteRecipeUseCase;
 import com.ania.cookbook.application.services.interfaces.recipe.UpdateRecipeUseCase;
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
+import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.domain.model.Ingredient;
 import com.ania.cookbook.domain.model.Product;
@@ -14,6 +15,7 @@ import com.ania.cookbook.domain.repositories.recipe.DeleteRecipe;
 import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
 import com.ania.cookbook.domain.repositories.recipe.SaveRecipe;
 import com.ania.cookbook.domain.repositories.recipe.UpdateRecipe;
+import com.ania.cookbook.infrastructure.persistence.list.RecipeListEntryRepository;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
     private final UpdateRecipe updateRecipeRepository;
     private final DeleteRecipe deleteRecipeRepository;
     private final ProductUseCase productUseCase;
+    private final RecipeListEntryRepository recipeListEntryRepository;
 
     @Override
     public Recipe createRecipe(CreateRecipe recipe) {
@@ -98,6 +101,10 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
                 matchingRecipes.getFirst();
         readRecipeRepository.findRecipeById(recipeToDelete.getRecipeId()).orElseThrow(()
                 -> new RecipeNotFoundException("Recipe with given Id not found"));
+        boolean isReferenced = recipeListEntryRepository.existsByRecipe_RecipeId(recipe.recipeId());
+        if (isReferenced) {
+            throw new RecipeValidationException("Cannot delete recipe — it is used in a recipe list.");
+        }
         deleteRecipeRepository.deleteRecipeById(recipeToDelete.getRecipeId());
     }
 }

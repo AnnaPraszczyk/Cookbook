@@ -55,6 +55,17 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
         try {
             await addRecipeToList({ listName, recipeId: recipe.id, portions });
             setSuccess(`Recipe "${recipe.name}" added to list!`);
+            setTimeout(() => {
+                navigate(`/lists/${listName}/view`, {
+                    state:{
+                        message: {
+                            text: `Recipe "${recipe.name}" added to list!`,
+                            type: "success"
+                        },
+                        refresh: true
+                    }
+                });
+            }, 1000);
         } catch (err) {
             console.error(err);
             setError("Failed to add recipe.");

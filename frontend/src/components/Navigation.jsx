@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 
 const Navigation = () => {
     return (
-        <nav className="fixed top-[100px] left-1/2 transform -translate-x-1/2 text-center py-2 border-b-2 border-black w-full z-[1000] bg-transparent">
+        <nav className="fixed top-[100px] left-1/2 transform -translate-x-1/2 text-center py-2 border-b-2 border-black w-full z-[1000] bg-transparent bg-opacity-100">
             <ul className="flex justify-center gap-4">
                 <li>
                     <NavLink

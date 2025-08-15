@@ -37,7 +37,10 @@ const RecipeDeleteForm = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ recipeId: id, recipeName: recipe.name })
             });
-            if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+            if (!res.ok){
+                const errorText = await res.text();
+                throw new Error(errorText);
+            }
             setMessage({ text: "✅ Recipe deleted successfully!", type: "success" });
             setTimeout(() => navigate(`/recipes${location.search}`), 1500);
         } catch (error) {

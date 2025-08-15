@@ -20,6 +20,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
+    @ExceptionHandler(RecipeDeleteException.class)
+    public ResponseEntity<String> handleDeletionError(RecipeDeleteException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
     @ExceptionHandler(RecipeNotFoundException.class)
     public ResponseEntity<String> handleRecipeNotFoundException(RecipeNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());

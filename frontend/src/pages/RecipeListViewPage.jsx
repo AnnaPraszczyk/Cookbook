@@ -1,57 +1,89 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getRecipesList, deleteRecipeFromList  } from "../api/recipeListApi";
 import RecipeListView from "../components/RecipeListView";
 
 export default function RecipeListViewPage() {
     const { listName } = useParams();
+    const location = useLocation();
     const navigate = useNavigate();
     const [recipes, setRecipes] = useState([]);
+    const [message, setMessage] = useState("");
+    const [showMessage, setShowMessage] = useState(false);
+
+    const loadList = async () => {
+        try {
+            const res = await getRecipesList(listName);
+            setRecipes(res.recipes || []);
+        } catch (e) {
+            console.error("Failed to load recipe list", e);
+        }
+    };
 
     useEffect(() => {
-        const loadList = async () => {
-            try {
-                const res = await getRecipesList(listName);
-                setRecipes(res.recipes || []);
-            } catch (e) {
-                console.error("Failed to load recipe list", e);
-            }
-        };
+
         loadList();
-    }, [listName]);
+        if (location.state?.message) {
+            setMessage(location.state.message);
+            setShowMessage(true);
+            setTimeout(() => setShowMessage(false), 3000);
+            window.history.replaceState({}, document.title);
+        }
+        }, [listName]);
 
     function formatPortions(p) {
         return `${p} ${p === 1 ? "portion" : "portions"}`;
     }
 
-    const handleDelete = async (entryId) => {
-        const confirmed = window.confirm("Are you sure you want to remove this recipe from the list?");
+    useEffect(() => {
+        if (location.state?.refresh) {
+            loadList();
+        }
+    }, [location.state]);
+
+    const handleDelete = async (entry) => {
+        const confirmed = window.confirm(`Are you sure you want to remove "${entry.recipe?.name}" from the list?`);
         if (!confirmed) return;
         try {
-            await deleteRecipeFromList({ listName, entryId });
-            setRecipes(prev => prev.filter(r => r.entryId !== entryId));
+            await deleteRecipeFromList({ listName, entryId: entry.entryId });
+            setRecipes(prev => prev.filter(r => r.entryId !== entry.entryId));
+            setMessage({text:`"${entry.recipe?.name}" has been removed from the list.`, type: "success"});
+            setShowMessage(true);
+            setTimeout(() => setShowMessage(false), 3000);
         } catch (e) {
             console.error("Failed to delete recipe", e);
+            setMessage({text: "Something went wrong while deleting the recipe.", type: "error" });
+            setShowMessage(true);
+            setTimeout(() => setShowMessage(false), 3000);
         }
     };
 
-    const handleView = (recipe) => {
-        navigate(`/recipes/${recipe.id}`, {
+    const handleView = (entry) => {
+        navigate(`/recipes/${entry.recipe.id}`, {
             state: {
                 listName,
-                defaultPortions: recipe.portions,
+                defaultPortions: entry.portions,
                 fromList: true
             }
         });
     };
 
-    const handleUpdate = (recipe) => {
-        navigate(`/recipes/update/${recipe.id}`, {
+    const handleUpdate = (entry) => {
+        navigate(`/recipes/update/${entry.recipe.id}`, {
             state: {
                 listName,
-                entryId: recipe.entryId
+                entryId: entry.entryId
             }
         });
+    };
+
+    const refreshList = async () => {
+        try {
+            const res = await getRecipesList(listName);
+            setRecipes(res.recipes || []);
+        } catch (e) {
+            console.error("Failed to refresh recipe list", e);
+        }
     };
 
 
@@ -90,7 +122,7 @@ export default function RecipeListViewPage() {
                                 Update
                             </button>
                             <button
-                                onClick={() => handleDelete(r.entryId)}
+                                onClick={() => handleDelete(r)}
                                 className="text-[#c0a060] hover:underline">
                                 Delete
                             </button>
@@ -98,8 +130,14 @@ export default function RecipeListViewPage() {
                     ))}
                 </ul>
             )}
+            {showMessage && (
+                <div className={`fixed bottom-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded shadow-lg transition-opacity duration-300
+                ${message.type === "success" ? "mt-2 text-green-500 italic" : "text-red-600"}`}>
+                    {message.text}
+                </div>
+            )}
             <div className="p-6 max-w-4xl mx-auto text-white space-y-6">
-                <RecipeListView listName={listName} />
+                <RecipeListView listName={listName} onListUpdated={refreshList} />
             </div>
         </div>
     );

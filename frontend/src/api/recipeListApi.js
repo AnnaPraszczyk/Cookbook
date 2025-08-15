@@ -23,11 +23,12 @@ export const deleteList = async (listName) => {
 };
 
 export const getShoppingList = async(listName) =>{
-    const res = await axios.get(`${API}/${listName}/shopping`);
-    if (!res.ok) {
+    try {
+        const res = await axios.get(`${API}/${listName}/shopping`);
+        return res.data;
+    } catch (err) {
         throw new Error("Failed to fetch shopping list");
     }
-    return res.data;
 }
 export const clearList = async (listName, confirm = true) => {
     const res = await axios.delete(`${API}/${listName}/clear?confirm=${confirm}`);
@@ -66,7 +67,7 @@ export const saveRecipeList = async (listName) => {
 };
 export async function deleteRecipeFromList({ listName, entryId }) {
     try {
-        const response = await fetch(`/api/recipe-lists/${listName}/entries/${entryId}`, {
+        const response = await fetch(`/api/lists/${listName}/entries/${entryId}`, {
             method: "DELETE"
         });
         if (!response.ok) {

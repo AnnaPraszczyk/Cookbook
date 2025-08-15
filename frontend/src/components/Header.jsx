@@ -3,7 +3,7 @@ import { MdMenuBook } from "react-icons/md";
 
 const Header = () => {
     return (
-        <header className="fixed top-0 left-0 w-full h-24 px-6 flex items-center justify-between z-50">
+        <header className="fixed top-0 left-0 w-full h-24 px-6 flex items-center justify-between z-50 bg-[#292F33]">
 
             <div className="text-left">
                 <h1 className="text-5xl font-bold leading-none">Cookbook</h1>
