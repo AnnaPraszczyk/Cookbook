@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
 import IngredientInput from "./IngredientInput";
 import { HiX } from "react-icons/hi";
-import { useNavigate } from "react-router-dom";
 import NavigationButtons from "./NavigationButtons";
+import axios from "axios";
 
 const categoryOptions = [
     "Appetizer","Soup","Main Course","Sauce","Salad","Pasta","Snack","Beverage","Dessert","Cake","Pie","Bakery"
@@ -17,7 +17,6 @@ const RecipeCreateForm = () => {
     const [numberOfServings, setNumberOfServings] = useState("");
     const [tags, setTags] = useState("");
     const [message, setMessage] = useState({text: '', type: ''});
-    const navigate = useNavigate();
     const [productOptions, setProductOptions] = useState([]);
     const [autoCalculate, setAutoCalculate] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
@@ -45,11 +44,10 @@ const RecipeCreateForm = () => {
             );
         };
         useEffect(() => {
-            fetch("/api/products")
-                .then(res => res.json())
-                .then(data => {
-                    console.log("✅ Products from backend:", data);
-                    setProductOptions(data);
+            axios.get("/api/products")
+                .then(res  => {
+                    console.log("✅ Products from backend:", res.data);
+                    setProductOptions(res.data);
                 })
                 .catch(err => console.error("❌ Error loading products", err));
         }, []);
@@ -73,28 +71,20 @@ const RecipeCreateForm = () => {
             };
 
             try {
-                const response = await fetch('http://localhost:8080/api/recipes', {
-                    method: "POST",
+                const response = await axios.post('http://localhost:8080/api/recipes', requestData,{
                     headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify(requestData),
                 });
-                if (!response.ok) {
-                    const text = await response.text();
-                    let errorPayload
-                    try {
-                        errorPayload = JSON.parse(text)
-                    } catch {
-                        errorPayload = text;
-                    }
-                    throw new Error(`Server ${response.status}: ${JSON.stringify(errorPayload)}`)
-                }
-                const created = await response.json();
+                const created = response.data;
                 setMessage({text: "✅ Recipe created!", type: "success"});
                 setRecipeId(created.recipeId);
                 setFormSubmitted(true);
             } catch (error) {
                 console.error(error);
-                setMessage({text: error.message, type: "error"});
+                const message =
+                    error.response?.data?.message ||
+                    error.response?.data ||
+                    error.message;
+                setMessage({text: message, type: "error"});
             }
 
         };
@@ -108,7 +98,7 @@ const RecipeCreateForm = () => {
                         value={recipeName}
                         onChange={(e) => setRecipeName(e.target.value)}
                         required
-                        className="p-2 text-lg border-2 border-gray-400 bg-[#333] text-whiteborder-gray-400 rounded text-gray-400 focus:outline-none focus:ring-2 w-[450px] focus:ring-white"
+                        className="p-2 text-lg border-2 border-gray-400 bg-[#292F33] text-whiteborder-gray-400 rounded text-gray-400 focus:outline-none focus:ring-2 w-112 focus:ring-white"
                     />
                 </div>
                 <div>
@@ -116,7 +106,7 @@ const RecipeCreateForm = () => {
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
                         required
-                        className="p-2 flex-1 text-lg border-2 border-gray-400 rounded-md bg-[#333] text-gray-400 my-3 mr-2.5 w-[450px] h-13 focus:outline-none focus:ring-2 focus:ring-white"
+                        className="p-2 flex-1 text-lg border-2 border-gray-400 rounded-md bg-[#292F33] text-gray-400 my-3 mr-2.5 w-112 h-13 focus:outline-none focus:ring-2 focus:ring-white"
                     >
                         {categoryOptions.map((option) => (
                             <option key={option} value={option}>
@@ -132,14 +122,14 @@ const RecipeCreateForm = () => {
                         {ingredients
                             .map((i, idx) => (
                                 <li key={idx}
-                                    className="flex items-center justify-between bg-[#333] text-white px-3 py-1 rounded">
+                                    className="flex items-center justify-between bg-[#292F33] text-white px-3 py-1 rounded">
                             <span>
                                 {i.productName} - {i.amount} {i.unit}
                             </span>
                                     <button
                                         type="button"
                                         onClick={() => handleRemoveIngredientAt(idx)}
-                                        className="p-0 m-0 bg-[#333] border-none ml-2 text-black-400 leading-none hover:text-red-600 text-sm font-bold"
+                                        className="p-0 m-0 bg-[#292F33] border-none ml-2 text-black-400 leading-none hover:text-red-600 text-sm font-bold"
                                     >
                                         <HiX/>
                                     </button>
@@ -154,7 +144,7 @@ const RecipeCreateForm = () => {
                     value={instructions}
                     onChange={(e) => setInstructions(e.target.value)}
                     required
-                    className="p-3 flex-1 border-2 border-gray-400 text-lg text-gray-400 bg-[#333] w-[450px] mr-2.5 my-3 rounded-md h-32 resize-y focus:outline-none focus:ring-2 focus:ring-white"
+                    className="p-3 flex-1 border-2 border-gray-400 text-lg text-gray-400 bg-[#292F33] w-112 mr-2.5 my-3 rounded-md h-32 resize-y focus:outline-none focus:ring-2 focus:ring-white"
                 />
                 </div>
                 <div>
@@ -178,7 +168,7 @@ const RecipeCreateForm = () => {
                             value={numberOfServings}
                             onChange={(e) => setNumberOfServings(e.target.value)}
                             required
-                            className="p-2 text-lg border-2 border-gray-400 bg-[#333] text-gray-400 rounded w-[450px] focus:outline-none focus:ring-2 focus:ring-white"
+                            className="p-2 text-lg border-2 border-gray-400 bg-[#292F33] text-gray-400 rounded w-112 focus:outline-none focus:ring-2 focus:ring-white"
                         />
                     )}
                 </div>
@@ -188,7 +178,7 @@ const RecipeCreateForm = () => {
                         placeholder="Tags (comma separated)"
                         value={tags}
                         onChange={(e) => setTags(e.target.value)}
-                        className="p-2 text-lg border-2 border-gray-400 bg-[#333] text-whiteborder-gray-400 rounded text-gray-400 focus:outline-none focus:ring-2 w-[450px] focus:ring-white"
+                        className="p-2 text-lg border-2 border-gray-400 bg-[#292F33] text-whiteborder-gray-400 rounded text-gray-400 focus:outline-none focus:ring-2 w-112 focus:ring-white"
                     />
                 </div>
                 <div>

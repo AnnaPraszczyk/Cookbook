@@ -31,7 +31,7 @@ const Home = () => {
     }, []);
 
     return (
-        <div className="flex flex-col min-h-screen pt-8">
+        <div className="flex flex-col min-h-screen pt-8 mt-2">
             <div className="w-full px-4 mx-auto flex flex-wrap lg:flex-nowrap gap-6">
                  <aside className="w-full text-left text-lg sm:w-1/3 md:w-1/5 lg:w-1/5 xl:w-1/6 2xl:w-1/6">
                     <h2 className="text-xl font-semibold mb-2">Categories</h2>
@@ -90,5 +90,4 @@ const Home = () => {
         </div>
     );
 };
-
 export default Home;

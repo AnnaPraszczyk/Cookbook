@@ -2,12 +2,12 @@ import { NavLink } from "react-router-dom";
 
 const Navigation = () => {
     return (
-        <nav className="fixed top-[100px] left-1/2 transform -translate-x-1/2 text-center py-2 border-b-2 border-black w-full z-[1000] bg-transparent bg-opacity-100">
+        <nav className="fixed top-[112px] left-1/2 transform -translate-x-1/2 text-center py-2 border-b-2 border-black w-full z-40 bg-[#292F33] bg-opacity-100">
             <ul className="flex justify-center gap-4">
                 <li>
                     <NavLink
                         to="/"
-                        className="text-[#c0a060] text-[1.2rem] px-5 py-2 rounded transition duration-200 hover:bg-[#333] hover:text-white"
+                        className="text-[#c0a060] text-[1.2rem] px-5 py-2 rounded transition duration-200 hover:text-white"
                     >
                         Home Page
                     </NavLink>
@@ -15,7 +15,7 @@ const Navigation = () => {
                 <li>
                     <NavLink
                         to="/products"
-                        className="text-[#c0a060] text-[1.2rem] px-5 py-2 rounded transition duration-200 hover:bg-[#333] hover:text-white"
+                        className="text-[#c0a060] text-[1.2rem] px-5 py-2 rounded transition duration-200 hover:text-white"
                     >
                         Products
                     </NavLink>
@@ -23,7 +23,7 @@ const Navigation = () => {
                 <li>
                     <NavLink
                         to="/recipes"
-                        className="text-[#c0a060] text-[1.2rem] px-5 py-2 rounded transition duration-200 hover:bg-[#333] hover:text-white"
+                        className="text-[#c0a060] text-[1.2rem] px-5 py-2 rounded transition duration-200 hover:text-white"
                     >
                         Recipes
                     </NavLink>
@@ -31,7 +31,7 @@ const Navigation = () => {
                 <li>
                     <NavLink
                         to="/shoppingList"
-                        className="text-[#c0a060] text-[1.2rem] px-5 py-2 rounded transition duration-200 hover:bg-[#333] hover:text-white"
+                        className="text-[#c0a060] text-[1.2rem] px-5 py-2 rounded transition duration-200 hover:text-white"
                     >
                         Shopping Lists
                     </NavLink>

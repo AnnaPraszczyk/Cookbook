@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getRecipesList, removeRecipe, clearList, deleteList, getShoppingList } from '../api/recipeListApi';
+import { getRecipesList, clearList, deleteList, getShoppingList } from '../api/recipeListApi';
 import { jsPDF } from "jspdf";
 import SearchAndAddRecipe from "./SearchAndAddRecipe";
 
@@ -8,14 +8,7 @@ export default function RecipeListView({ listName, onListUpdated }) {
     const [recipes, setRecipes] = useState([]);
     const [defaultPortions, setDefaultPortions] = useState(1);
     const navigate = useNavigate();
-
-    useEffect(() => {
-        load().then(() => {
-            if (recipes.length > 0) {
-                setDefaultPortions(recipes[0].portions);
-            }
-        });
-    }, [listName]);
+    const [message, setMessage] = useState({ text: "", type: "" });
 
     const load = async () => {
         try {
@@ -28,15 +21,14 @@ export default function RecipeListView({ listName, onListUpdated }) {
         }
     };
 
-
     useEffect(() => {
-        load();
+        const fetchData = async () => {
+            await load();
+        };
+        fetchData().catch((err) => {
+            console.error("Unhandled fetchData error:", err);
+        });
     }, [listName]);
-
-    const handleRemove = async (id) => {
-        await removeRecipe(listName, id);
-        await load();
-    };
 
     const handleClear = async () => {
         const confirmed = window.confirm('Are you sure you want to clear the list?');
@@ -56,11 +48,11 @@ export default function RecipeListView({ listName, onListUpdated }) {
         if (!confirmed) return;
         try {
             await deleteList(listName);
-            alert('List deleted!');
-            navigate("/shoppingList");
+            setMessage({ text: "✅ List deleted successfully!", type: "success" });
+            setTimeout(() => navigate("/shoppingList"), 3000);
         } catch (e) {
             console.error("Failed to delete list", e);
-            alert("Something went wrong while deleting the list.");
+            setMessage({ text: "❌ Something went wrong while deleting the list.", type: "error" });
         }
     };
     const handleGenerateShoppingList = async () => {
@@ -89,13 +81,18 @@ export default function RecipeListView({ listName, onListUpdated }) {
     };
 
     return (
-        <div>
+        <div className="max-w-4xl mx-auto">
             <SearchAndAddRecipe listName={listName} defaultPortions={defaultPortions}/>
-            <div className="mt-6 flex gap-4">
-                <button onClick={handleGenerateShoppingList} className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition duration-200">Shopping list</button>
-                <button onClick={handleClear} className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition duration-200">Clear List</button>
-                <button onClick={handleDelete} className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition duration-200">Delete List</button>
+            <div className="mt-6 flex gap-4 sm:flex-row">
+                <button onClick={handleGenerateShoppingList} className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition duration-200 sm:text-base">Shopping list</button>
+                <button onClick={handleClear} className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition duration-200 sm:text-base">Clear List</button>
+                <button onClick={handleDelete} className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition duration-200 sm:text-base">Delete List</button>
             </div>
+            {message.text && (
+                <p className={`mt-4 text-sm ${message.type === "success" ? "text-green-500" : "text-red-500"}`}>
+                    {message.text}
+                </p>
+            )}
         </div>
     );
 }

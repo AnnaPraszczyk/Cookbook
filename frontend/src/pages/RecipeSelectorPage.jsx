@@ -1,4 +1,4 @@
-import {Link, useParams, useLocation } from "react-router-dom";
+import {Link, useLocation } from "react-router-dom";
 import SearchAndAddRecipe from "../components/SearchAndAddRecipe.jsx";
 import React from "react";
 

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { getProductByName, deleteProduct, updateProduct, addProduct} from "../api";
-import { useNavigate } from "react-router-dom";
 
 const ProductManagement = () => {
     const [newProductName, setNewProductName] = useState("");
@@ -9,9 +8,7 @@ const ProductManagement = () => {
     const [editedName, setEditedName] = useState("");
     const [loading, setLoading] = useState(false);
     const [searchInitiated, setSearchInitiated] = useState(false);
-    const navigate = useNavigate();
     const [message, setMessage] = useState(null);
-    const [products, setProducts] = useState([]);
 
     useEffect(() => {
         if (message) {
@@ -23,8 +20,7 @@ const ProductManagement = () => {
     const handleAdd = async () => {
         if (newProductName.trim() === "") return;
         try {
-            const response = await addProduct(newProductName);
-            const created = await response;
+            await addProduct(newProductName);
             setMessage({ text: "Product created!", type: "success" });
             setNewProductName("");
         } catch (err) {
@@ -73,32 +69,32 @@ const ProductManagement = () => {
 
     return (
         <div className="p-6 mt-0 space-y-6 max-w-4xl mx-auto">
-            <h1 className="text-3xl font-bold">Products Management</h1>
+            <h1 className="text-3xl font-bold sm:text-left">Products Management</h1>
 
-            <div className="flex gap-4 items-center">
+            <div className="flex gap-4 items-center sm:flex-row">
                 <input
                     type="text"
                     placeholder="Product Name"
                     value={newProductName}
                     onChange={(e) => setNewProductName(e.target.value)}
-                    className="p-2 text-lg border-2 border-gray-400 bg-[#333] rounded text-gray-400 focus:outline-none focus:ring-2 w-[450px] focus:ring-white"/>
+                    className="p-2 text-lg border-2 border-gray-400 bg-[#292F33] rounded text-gray-400 focus:outline-none focus:ring-2 sm:w-auto w-112 focus:ring-white"/>
                 <button
                     onClick={handleAdd}
-                    className="text-lg px-4 py-2 w-[150px] bg-[#c0a060] text-white rounded hover:bg-gray-600 transition-colors duration-200">
+                    className="text-lg px-4 py-2 w-38 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition-colors duration-200">
                     Add Product
                 </button>
             </div>
 
-            <div className="flex gap-4 items-center">
+            <div className="flex gap-4 items-center sm:flex-row">
                 <input
                     type="text"
                     placeholder="Search Product"
                     value={searchProductName}
                     onChange={(e) => setSearchProductName(e.target.value)}
-                    className="p-2 text-lg border-2 border-gray-400 bg-[#333] rounded text-gray-400 focus:outline-none focus:ring-2 w-[450px] focus:ring-white"/>
+                    className="p-2 text-lg border-2 border-gray-400 bg-[#292F33] rounded text-gray-400 focus:outline-none focus:ring-2 w-112 focus:ring-white"/>
                 <button
                     onClick={handleSearch}
-                    className="text-lg px-4 py-2 w-[150px] bg-[#c0a060] text-white rounded hover:bg-gray-600 transition-colors duration-200">
+                    className="text-lg px-4 py-2 w-38 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition-colors duration-200">
                     Search
                 </button>
             </div>
@@ -115,7 +111,7 @@ const ProductManagement = () => {
             {loading && <p>Loading…</p>}
             {searchInitiated && !loading && !product && <p>No product found.</p>}
             {product && (
-                <div className="bg-[#333] text-white p-4 rounded border-2 border-gray-400">
+                <div className="bg-[#292F33] text-white p-4 rounded border-2 border-gray-400">
                     <p><strong>Product:</strong> {product.productName}</p>
                     <input
                         type="text"
@@ -126,21 +122,19 @@ const ProductManagement = () => {
                     <div className="flex gap-4 mt-4">
                         <button
                             onClick={handleUpdate}
-                            className="text-lg px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition-colors duration-200">
+                            className="text-lg px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition-colors duration-200 sm:w-auto">
 
                         Update
                         </button>
                         <button
                             onClick={handleDelete}
-                            className="text-lg px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition-colors duration-200">
+                            className="text-lg px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition-colors duration-200 sm:w-auto">
                         Delete
                         </button>
                     </div>
                 </div>
             )}
-
         </div>
     );
 };
-
 export default ProductManagement;

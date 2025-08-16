@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import {addRecipeToList} from "../api/recipeListApi.js";
+import axios from "axios";
 
 const RecipeDetailsPage = () => {
     const { id } = useParams();
@@ -16,16 +17,10 @@ const RecipeDetailsPage = () => {
         const servingsValue = parseInt(newServings, 10);
         if (!servingsValue || servingsValue <= 0) return;
         try {
-            const res = await fetch("/api/recipes/scaling", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
+            const { data } = await axios.post("/api/recipes/scaling", {
                     recipeId: recipe.id,
                     servings: servingsValue,
-                }),
             });
-            if (!res.ok) throw new Error("Failed to scale recipe");
-            const data = await res.json();
             setRecipe(prev => ({
                 ...prev,
                 numberOfServings: data.numberOfServings || servingsValue,
@@ -71,9 +66,7 @@ const RecipeDetailsPage = () => {
     useEffect(() => {
         const fetchRecipe = async () => {
             try {
-                const res = await fetch(`/api/recipes/${id}`);
-                if (!res.ok) throw new Error("Failed to fetch recipe");
-                const data = await res.json();
+                const { data }  = await axios.get(`/api/recipes/${id}`);
                 setRecipe(data);
             } catch (e) {
                 console.error("Error loading recipe:", e);
@@ -81,8 +74,9 @@ const RecipeDetailsPage = () => {
                 setLoading(false);
             }
         };
-
-        fetchRecipe();
+        fetchRecipe().catch(err => {
+            console.error("Unhandled fetchRecipe error:", err);
+        });
     }, [id]);
 
     useEffect(() => {
@@ -92,7 +86,7 @@ const RecipeDetailsPage = () => {
     if (!recipe) return <p className="text-center text-white">Recipe not found.</p>;
 
     return (
-        <div className="w-full-max-5xl mx-auto p-6 bg-[#333] text-gray-300 rounded shadow">
+        <div className="w-full-max-5xl mx-auto p-6 text-gray-300 rounded shadow mt-6">
             <h1 className="text-3xl font-bold mb-4">{recipe.name}</h1>
             <p className="mb-2"><strong>Category:</strong> {recipe.category}</p>
             <p className="mb-2"><strong>Servings:</strong> {recipe.numberOfServings || recipe.servings || "-"}</p>
@@ -120,11 +114,11 @@ const RecipeDetailsPage = () => {
                         value={newServings}
                         onChange={(e) => setNewServings(e.target.value)}
                         placeholder="New number of servings"
-                        className="p-2 w-56 border-2 rounded bg-[#333] text-gray-300 border-gray-500"
+                        className="p-2 w-56 border-2 rounded bg-[#292F33] text-gray-300 border-gray-500"
                     />
                     <button
                         onClick={handleScale}
-                        className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition duration-200">
+                        className="px-4 py-2 bg-[#c0a060] sm:w-auto text-white rounded hover:bg-gray-600 transition duration-200">
                         Scale
                     </button>
                 </div>
@@ -140,7 +134,7 @@ const RecipeDetailsPage = () => {
                 )}
 
             </div>
-            <div className="mt-6 space-y-2">
+            <div className="mt-6 space-y-2 sm:text-left">
                 {listName ? (
                     <Link
                         to={`/lists/${listName}/view`}

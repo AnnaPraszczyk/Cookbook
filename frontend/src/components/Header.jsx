@@ -3,14 +3,14 @@ import { MdMenuBook } from "react-icons/md";
 
 const Header = () => {
     return (
-        <header className="fixed top-0 left-0 w-full h-24 px-6 flex items-center justify-between z-50 bg-[#292F33]">
+        <header className="fixed top-0 left-0 w-full h-28 px-6 sm:px-6 flex items-center justify-between z-50 bg-[#292F33]">
 
             <div className="text-left">
                 <h1 className="text-5xl font-bold leading-none">Cookbook</h1>
-                <h2 className="text-xl absolute left-32 top-18 sm:left-40 md:left-44">Application</h2>
+                <h2 className="text-xl absolute left-32 top-20 sm:left-40 md:left-44">Application</h2>
             </div>
 
-            <div className="absolute left-1/2 transform -translate-x-1/2 font-serif text-3xl text-center whitespace-nowrap hidden sm:block">
+            <div className="absolute left-1/2 transform -translate-x-1/2 font-serif text-3xl sm:text-3xl text-center whitespace-nowrap hidden sm:block">
                 My favorite recipes
             </div>
             <div className="text-[#c0a060] text-7xl mr-4 relative top-5 -left-14">

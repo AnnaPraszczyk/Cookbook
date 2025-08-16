@@ -72,7 +72,7 @@ nav a {
 
   nav a:hover, link {
     border-color: #c0a060;
-    background-color: #333;
+    background-color: #292F33;
     color: white;
   }
   @media (prefers-color-scheme: light) {

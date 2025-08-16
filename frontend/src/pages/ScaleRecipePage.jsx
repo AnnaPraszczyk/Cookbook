@@ -9,5 +9,4 @@ const ScaleRecipePage = () => {
         </div>
     );
 };
-
 export default ScaleRecipePage;

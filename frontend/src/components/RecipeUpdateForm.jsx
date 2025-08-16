@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {useParams, useLocation, Link} from "react-router-dom";
 import IngredientInput from "./IngredientInput.jsx";
+import axios from "axios";
 
 const categoryOptions = [
     "Appetizer", "Soup", "Main Course", "Sauce", "Salad",
@@ -9,6 +10,7 @@ const categoryOptions = [
 
 const RecipeUpdateForm = () => {
     const { id } = useParams();
+    const location = useLocation();
     const [name, setName] = useState("");
     const [category, setCategory] = useState(categoryOptions[0]);
     const [ingredients, setIngredients] = useState([]);
@@ -18,14 +20,12 @@ const RecipeUpdateForm = () => {
     const [message, setMessage] = useState({ text: "", type: "" });
     const [productOptions, setProductOptions] = useState([]);
     const [autoCalculate, setAutoCalculate] = useState(false);
-    const location = useLocation();
 
     useEffect(() => {
-        fetch("/api/products")
-            .then(res => res.json())
-            .then(data => {
-                console.log("✅ Products:", data);
-                setProductOptions(data);
+        axios.get("/api/products")
+            .then(res => {
+                console.log("✅ Products:", res.data);
+                setProductOptions(res.data);
             })
             .catch(err => console.error("❌ Failed to load products", err));
     }, []);
@@ -35,10 +35,7 @@ const RecipeUpdateForm = () => {
 
         const fetchRecipe = async () => {
             try {
-                const response = await fetch(`/api/recipes/${id}`);
-                if (!response.ok) throw new Error("Recipe not found");
-
-                const data = await response.json();
+                const { data } = await axios.get(`/api/recipes/${id}`);
 
                 setName(data.name || "");
                 setCategory(data.category || categoryOptions[0]);
@@ -56,8 +53,9 @@ const RecipeUpdateForm = () => {
                 setMessage({ text: `Error fetching recipe: ${error.message}`, type: "error" });
             }
         };
-
-        fetchRecipe();
+        fetchRecipe().catch(err => {
+            console.error("Unhandled fetchRecipe error:", err);
+        });
     }, [id]);
 
     const handleAddIngredient = (ingredient) => {
@@ -89,12 +87,7 @@ const RecipeUpdateForm = () => {
         };
 
         try {
-            const response = await fetch(`/api/recipes/${id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(requestData),
-            });
-            const data = await response.json();
+            await axios.put(`/api/recipes/${id}`, requestData);
             setMessage({ text: "✅ Recipe updated!", type: "success" });
         } catch (error) {
             setMessage({text: "❌ Error updating recipe", type: error.message});
@@ -110,7 +103,7 @@ const RecipeUpdateForm = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    className="p-2 text-lg border-2 border-gray-400 bg-[#333] text-gray-400 rounded w-[450px] focus:outline-none focus:ring-2 focus:ring-white"
+                    className="p-2 text-lg border-2 border-gray-400 bg-[#292F33] text-gray-400 rounded w-112 focus:outline-none focus:ring-2 focus:ring-white"
                 />
             </div>
 
@@ -119,7 +112,7 @@ const RecipeUpdateForm = () => {
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     required
-                    className="p-2 text-lg border-2 border-gray-400 bg-[#333] text-gray-400 rounded w-[450px] h-13 focus:outline-none focus:ring-2 focus:ring-white"
+                    className="p-2 text-lg border-2 border-gray-400 bg-[#292F33] text-gray-400 rounded w-112 h-13 focus:outline-none focus:ring-2 focus:ring-white"
                 >
                     {categoryOptions.map((option) => (
                         <option key={option} value={option}>{option}</option>
@@ -134,7 +127,7 @@ const RecipeUpdateForm = () => {
                     {ingredients.map((ing, idx) => (
                         <li
                             key={idx}
-                            className="flex items-center justify-between bg-[#333] text-white px-3 py-1 rounded"
+                            className="flex items-center justify-between bg-[#292F33] text-white px-3 py-1 rounded"
                         >
       <span>
         {ing.productName} - {ing.amount} {ing.unit}
@@ -157,7 +150,7 @@ const RecipeUpdateForm = () => {
             value={instructions}
             onChange={(e) => setInstructions(e.target.value)}
             required
-            className="p-3 border-2 border-gray-400 text-lg text-gray-400 bg-[#333] w-[450px] rounded-md h-32 resize-y focus:outline-none focus:ring-2 focus:ring-white"
+            className="p-3 border-2 border-gray-400 text-lg text-gray-400 bg-[#292F33] w-112 rounded-md h-32 resize-y focus:outline-none focus:ring-2 focus:ring-white"
         />
             </div>
 
@@ -182,7 +175,7 @@ const RecipeUpdateForm = () => {
                         value={numberOfServings}
                         onChange={(e) => setNumberOfServings(e.target.value)}
                         required
-                        className="p-2 text-lg border-2 border-gray-400 bg-[#333] text-gray-400 rounded w-[450px] focus:outline-none focus:ring-2 focus:ring-white"
+                        className="p-2 text-lg border-2 border-gray-400 bg-[#292F33] text-gray-400 rounded w-112 focus:outline-none focus:ring-2 focus:ring-white"
                     />
                 )}
             </div>
@@ -193,7 +186,7 @@ const RecipeUpdateForm = () => {
                     placeholder="Tags (comma separated)"
                     value={tags}
                     onChange={(e) => setTags(e.target.value)}
-                    className="p-2 text-lg border-2 border-gray-400 bg-[#333] text-gray-400 rounded w-[450px] focus:outline-none focus:ring-2 focus:ring-white"
+                    className="p-2 text-lg border-2 border-gray-400 bg-[#292F33] text-gray-400 rounded w-112 focus:outline-none focus:ring-2 focus:ring-white"
                 />
             </div>
 

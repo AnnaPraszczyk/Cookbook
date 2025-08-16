@@ -11,7 +11,7 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
     const [searchInitiated, setSearchInitiated] = useState(false);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(0);
-    const [totalPages, setTotalPages] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
     const navigate = useNavigate();
 
 
@@ -22,7 +22,7 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
         try {
             const data = await searchRecipes({ name: searchTerm, page });
             setResults(data.content || []);
-            setTotalPages(data.totalPages || 1);
+            setTotalPages(Number.isInteger(data.totalPages) ? data.totalPages : 0);
             setError(null);
             setSuccess("");
         } catch (err) {
@@ -39,7 +39,7 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
         try {
             const data = await searchRecipes({category, page});
             setResults(data.content || []);
-            setTotalPages(data.totalPages || 1);
+            setTotalPages(Number.isInteger(data.totalPages) ? data.totalPages : 0);
             setError(null);
             setSuccess("");
         } catch (err) {
@@ -101,7 +101,7 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder="Recipe name"
-                        className="p-2 w-80 bg-[#333] border border-gray-400 rounded"
+                        className="p-2 w-80 bg-[#292F33] border border-gray-400 rounded"
                     />
                     <button
                         onClick={searchByName}
@@ -116,7 +116,7 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
                     <select
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
-                        className="p-2 w-80 bg-[#333] border border-gray-400 rounded text-gray-300">
+                        className="p-2 w-80 bg-[#292F33] border border-gray-400 rounded text-gray-300">
                         <option value="">Select category</option>
                         <option value="APPETIZER">Appetizer</option>
                         <option value="SOUP">Soup</option>
@@ -145,9 +145,9 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
 
             {searchInitiated && !loading && results.length > 0 && (
                 <>
-                    <table className="table-fixed w-full shadow rounded overflow-hidden bg-[#333] text-white border-2 border-gray-400">
+                    <table className="table-fixed w-full shadow rounded overflow-hidden bg-[#292F33] text-white border-2 border-gray-400">
                         <thead className="bg-[#222] text-gray-300">
-                        <tr className="text-left text-gray-400 bg-[#333]">
+                        <tr className="text-left text-gray-400 bg-[#292F33]">
                             <th className="px-4 py-2 text-center border-2 border-gray-400">Name</th>
                             <th className="px-4 py-2 text-center border-2 border-gray-400">Category</th>
                             <th className="px-4 py-2 text-center border-2 border-gray-400">Actions</th>
@@ -157,7 +157,7 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
                         {results.map((r) => (
                             <tr
                                 key={r.id}
-                                className="border-t cursor-pointer bg-[#333] border-2 border-gray-400 hover:bg-[#444]">
+                                className="border-t cursor-pointer bg-[#292F33] border-2 border-gray-400 hover:bg-[#444]">
                                 <td className="px-4 py-2 border-2 border-gray-400 text-center">{r.name}</td>
                                 <td className="px-4 py-2 border-2 border-gray-400 text-center">{r.category}</td>
                                 <td className="px-4 py-2 border-2 border-gray-400 text-center">
@@ -192,11 +192,11 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
                             Previous
                         </button>
                         <span className="text-white text-lg">
-                Page {page + 1} / {totalPages}
+                {totalPages > 0 ? `Page ${page + 1} / ${totalPages}` : "No pages"}
             </span>
                         <button
                             onClick={goToNextPage}
-                            disabled={page + 1 >= totalPages}
+                            disabled={totalPages === 0 || page + 1 >= totalPages}
                             className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
                             Next
                         </button>

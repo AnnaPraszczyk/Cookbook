@@ -8,21 +8,23 @@ export default function RecipeListViewPage() {
     const location = useLocation();
     const navigate = useNavigate();
     const [recipes, setRecipes] = useState([]);
-    const [message, setMessage] = useState("");
+    const [message, setMessage] = useState({ text: "", type: "" });
     const [showMessage, setShowMessage] = useState(false);
 
     const loadList = async () => {
         try {
             const res = await getRecipesList(listName);
-            setRecipes(res.recipes || []);
+            console.log("📦 getRecipesList response:", res);
+            setRecipes(Array.isArray(res.recipes) ? res.recipes : []);
         } catch (e) {
             console.error("Failed to load recipe list", e);
         }
     };
 
     useEffect(() => {
-
-        loadList();
+        loadList().catch((err) => {
+            console.error("Unhandled loadList error:", err);
+        });
         if (location.state?.message) {
             setMessage(location.state.message);
             setShowMessage(true);
@@ -37,7 +39,9 @@ export default function RecipeListViewPage() {
 
     useEffect(() => {
         if (location.state?.refresh) {
-            loadList();
+            loadList().catch((err) => {
+                console.error("Unhandled loadList error:", err);
+            });
         }
     }, [location.state]);
 
@@ -68,7 +72,12 @@ export default function RecipeListViewPage() {
         });
     };
 
+    /**
+     * @param {{ entryId: string, portions: number, recipe?: { id: string } }} entry
+     */
     const handleUpdate = (entry) => {
+        const recipeId = entry.recipe?.id;
+        if (!recipeId) return;
         navigate(`/recipes/update/${entry.recipe.id}`, {
             state: {
                 listName,
@@ -80,7 +89,7 @@ export default function RecipeListViewPage() {
     const refreshList = async () => {
         try {
             const res = await getRecipesList(listName);
-            setRecipes(res.recipes || []);
+            setRecipes(Array.isArray(res.recipes) ? res.recipes : []);
         } catch (e) {
             console.error("Failed to refresh recipe list", e);
         }
@@ -89,7 +98,7 @@ export default function RecipeListViewPage() {
 
     return (
         <div className="p-6 max-w-4xl mx-auto text-white space-y-6">
-            <h2 className="text-3xl font-bold mb-4">
+            <h2 className="text-3xl font-bold mb-4 mt-6">
                 <span>{listName}</span>
             </h2>
 

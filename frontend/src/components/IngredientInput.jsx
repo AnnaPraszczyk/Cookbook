@@ -30,7 +30,7 @@ const IngredientInput = ({ onAdd, productOptions = [], resetCount }) => {
     };
 
     return (
-        <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-wrap sm:flex-row items-end gap-3">
             <select
                 value={name}
                 onChange={e => {
@@ -40,7 +40,7 @@ const IngredientInput = ({ onAdd, productOptions = [], resetCount }) => {
                         setCustomName("");
                     }
                 }}
-                className="p-2 w-64 h-12 border-2 text-lg border-gray-400 rounded bg-[#333] text-gray-400">
+                className="p-2 w-64 h-12 border-2 text-lg border-gray-400 rounded bg-[#292F33] text-gray-400">
                 <option value="">Select product</option>
                 {productOptions
                     .map((p, i) => (
@@ -53,7 +53,7 @@ const IngredientInput = ({ onAdd, productOptions = [], resetCount }) => {
                     value={customName}
                     onChange={e => setCustomName(e.target.value)}
                     placeholder="Enter new product name"
-                    className="mt-2 p-2 w-64 border-2 text-lg border-gray-400 rounded bg-[#333] text-gray-400"
+                    className="mt-2 p-2 w-64 border-2 text-lg border-gray-400 rounded bg-[#292F33] text-gray-400"
                 />
             )}
             <input
@@ -62,12 +62,12 @@ const IngredientInput = ({ onAdd, productOptions = [], resetCount }) => {
                 value={amt}
                 onChange={e=>setAmt(e.target.value)}
                 placeholder="Amount"
-                className="w-24 p-2 border-2 rounded text-lg bg-[#333]  text-gray-400 border-gray-400"
+                className="w-24 p-2 border-2 rounded text-lg bg-[#292F33]  text-gray-400 border-gray-400"
             />
             <select
                 value={unit}
                 onChange={e=>setUnit(e.target.value)}
-                className="w-16 p-2 border-2 border-gray-400 rounded text-lg bg-[#333] text-gray-400 h-12 ">
+                className="w-16 p-2 border-2 border-gray-400 rounded text-lg bg-[#292F33] text-gray-400 h-12 ">
                 {units.map(u=> <option key={u} value={u}>{u}</option>)}
             </select>
             <button

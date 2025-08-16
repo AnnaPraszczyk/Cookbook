@@ -2,11 +2,11 @@ import axios from 'axios';
 const API = '/api/lists';
 
 export const createRecipeList = async ({ listName, listDescription }) => {
-    await axios.post("/api/lists", { listName, listDescription});
+    await axios.post(`${API}`, { listName, listDescription});
 };
 
 export const addRecipeToList = async ({ listName, recipeId, portions }) => {
-    await axios.post(`/api/lists/${listName}/recipes`, { recipeId, portions });
+    await axios.post(`${API}/${listName}/recipes`, { recipeId, portions });
 };
 
 export const getRecipesList = async (listName) => {
@@ -35,18 +35,13 @@ export const clearList = async (listName, confirm = true) => {
     return res.data;
 };
 
-export const getRecipesByQuery = async (name, category) => {
-    const params = new URLSearchParams();
-    if (name) params.append("name", name);
-    if (category) params.append("category", category);
-    const res = await fetch(`/api/recipes/search?${params}`);
-    return res.ok ? res.json().then((r) => r.content) : [];
-};
-
 export const getAllLists = async () => {
-    const res = await fetch(`${API}`);
-    if (!res.ok) throw new Error("Failed to load recipe lists");
-    return await res.json();
+    try {
+        const res = await axios.get(`${API}`);
+        return res.data;
+    } catch (err) {
+        throw new Error("Failed to fetch lists");
+    }
 };
 
 export const searchRecipes = async ({ name, category }) => {
@@ -62,19 +57,11 @@ export const searchRecipes = async ({ name, category }) => {
     return res.data;
 };
 
-export const saveRecipeList = async (listName) => {
-    return axios.post(`/api/lists/${listName}/save`);
-};
 export async function deleteRecipeFromList({ listName, entryId }) {
     try {
-        const response = await fetch(`/api/lists/${listName}/entries/${entryId}`, {
-            method: "DELETE"
-        });
-        if (!response.ok) {
-            throw new Error("Failed to delete recipe from list");
-        }
+        await axios.delete(`${API}/${listName}/entries/${entryId}`);
     } catch (err) {
         console.error("API deleteRecipeFromList error:", err);
-        throw err;
+        throw new Error("Failed to delete recipe from list");
     }
 }
