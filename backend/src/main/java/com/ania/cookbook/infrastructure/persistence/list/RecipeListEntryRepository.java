@@ -1,8 +1,6 @@
 package com.ania.cookbook.infrastructure.persistence.list;
-
 import com.ania.cookbook.infrastructure.persistence.entity.RecipeListEntry;
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -12,5 +10,4 @@ public interface RecipeListEntryRepository extends JpaRepository<RecipeListEntry
     boolean existsByRecipe_RecipeId(UUID recipeId);
     void deleteBySavedList_ListName(String listName);
     Optional<RecipeListEntry> findByRecipe_RecipeIdAndSavedList_ListName(UUID id, String listName);
-
 }

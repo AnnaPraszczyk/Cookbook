@@ -77,7 +77,7 @@ const ProductManagement = () => {
                     placeholder="Product Name"
                     value={newProductName}
                     onChange={(e) => setNewProductName(e.target.value)}
-                    className="p-2 text-lg border-2 border-gray-400 bg-[#292F33] rounded text-gray-400 focus:outline-none focus:ring-2 sm:w-auto w-112 focus:ring-white"/>
+                    className="p-2 text-lg border-2 border-gray-400 bg-[#292F33] rounded text-gray-400 focus:outline-none focus:ring-2 w-112 focus:ring-white"/>
                 <button
                     onClick={handleAdd}
                     className="text-lg px-4 py-2 w-38 bg-[#c0a060] text-white rounded hover:bg-gray-600 transition-colors duration-200">

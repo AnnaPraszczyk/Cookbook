@@ -8,12 +8,14 @@ import com.ania.cookbook.application.services.interfaces.recipe.UpdateRecipeUseC
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.*;
+import com.ania.cookbook.infrastructure.persistence.list.RecipeListEntryRepository;
 import com.ania.cookbook.infrastructure.repositories.InMemoryProductRepository;
 import com.ania.cookbook.infrastructure.repositories.InMemoryRecipeRepository;
 import com.ania.cookbook.web.ingredient.IngredientRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.UUID;
@@ -26,13 +28,17 @@ class RecipeServiceTest {
     private RecipeService recipeService;
     private ReadRecipeService readRecipeService;
 
+    @Mock
+    private RecipeListEntryRepository recipeListEntryRepository;
+
 
     @BeforeEach
     void setUp() {
         recipeRepository = new InMemoryRecipeRepository();
         InMemoryProductRepository productRepository = new InMemoryProductRepository();
         ProductUseCase productUseCase = new ProductService(productRepository, productRepository, productRepository, productRepository);
-        recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository, productUseCase);
+        recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository, productUseCase, recipeListEntryRepository
+        );
         readRecipeService = new ReadRecipeService(recipeRepository);
     }
 

@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-
 public enum Category {
     APPETIZER("Appetizer"), SOUP("Soup"), MAIN_COURSE("Main Course"), SAUCE("Sauce"),
     SALAD("Salad"), PASTA("Pasta"), SNACK("Snack"), BEVERAGE("Beverage"),

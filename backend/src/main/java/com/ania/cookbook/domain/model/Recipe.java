@@ -1,5 +1,4 @@
 package com.ania.cookbook.domain.model;
-
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +11,6 @@ import static io.micrometer.common.util.StringUtils.isBlank;
 
 @AllArgsConstructor
 @Getter
-@Builder
 public class Recipe {
     private final UUID recipeId;
     private final String recipeName;
@@ -23,9 +21,10 @@ public class Recipe {
     private final int numberOfServings;
     private final List<String> tags;
 
-    private Recipe(UUID recipe_id, String recipeName, Category category, List<Ingredient> ingredients, String instructions,int numberOfServings, List<String> tags) {
-        if(recipe_id==null){throw new RecipeValidationException("Recipe id cannot be null.");}
-        this.recipeId = recipe_id;
+    @Builder
+    private Recipe(UUID recipeId, String recipeName, Category category, List<Ingredient> ingredients, String instructions,int numberOfServings, List<String> tags) {
+        if(recipeId==null){throw new RecipeValidationException("Recipe id cannot be null.");}
+        this.recipeId = recipeId;
         if(isBlank(recipeName)){throw new RecipeValidationException("Recipe name cannot be null or empty.");}
         this.recipeName = recipeName;
         if(category==null){throw new RecipeValidationException("Recipe category cannot be null.");}
@@ -39,9 +38,9 @@ public class Recipe {
         this.tags = tags != null ? new ArrayList<>(tags) : new ArrayList<>();
     }
 
-    public static Recipe newRecipe(UUID recipeId, String name, Category category,
+    public static Recipe newRecipe(UUID recipeId, String recipeName, Category category,
                                    List<Ingredient> ingredients, String instructions, int numberOfServings, List<String> tags){
-        return new Recipe(recipeId, name, category, ingredients, instructions, numberOfServings, tags);
+        return new Recipe(recipeId, recipeName, category, ingredients, instructions, numberOfServings, tags);
     }
 
     public int calculateServings() {

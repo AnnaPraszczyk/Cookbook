@@ -14,7 +14,6 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Builder
 @AllArgsConstructor
 @Table(name = "recipe")
 public class RecipeEntity {
@@ -39,6 +38,7 @@ public class RecipeEntity {
         @Convert(converter = TagsJsonConverter.class)
         private List<String> tags;
 
+    @Builder
     private RecipeEntity(UUID recipeId, String recipeName, Category category, List<IngredientJson> ingredients, String instructions, int numberOfServings, List<String> tags) {
             if(recipeId==null){throw new RecipeValidationException("Recipe id cannot be null");}
             this.recipeId = recipeId;
@@ -53,7 +53,6 @@ public class RecipeEntity {
             this.numberOfServings = numberOfServings;
             this.tags = tags != null ? new ArrayList<>(tags) : new ArrayList<>();
         }
-
 
     public static RecipeEntity newRecipeEntity(UUID recipeId, String name, Category category, List<IngredientJson> ingredients, String instructions, int numberOfServings, List<String> tags){
             return new RecipeEntity(recipeId, name, category, ingredients, instructions,numberOfServings, tags);
