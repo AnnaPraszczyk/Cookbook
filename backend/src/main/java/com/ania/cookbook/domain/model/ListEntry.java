@@ -6,14 +6,14 @@ import lombok.Getter;
 import java.util.UUID;
 
 @Getter
-public class RecipeListEntryDomain {
+public class ListEntry {
     private final UUID entryId;
     private final Recipe recipe;
-    private final SavedRecipeListDomain savedRecipeList;
+    private final SavedList savedRecipeList;
     private final int portions;
 
     @Builder
-    public RecipeListEntryDomain(UUID entryId, Recipe recipe,SavedRecipeListDomain savedRecipeList , int portions) {
+    public ListEntry(UUID entryId, Recipe recipe, SavedList savedRecipeList , int portions) {
         if(entryId==null){throw new ListValidationException("Entry id cannot be null.");}
         this.entryId = entryId;
         if(recipe==null){throw new RecipeValidationException("Recipe cannot be null.");}

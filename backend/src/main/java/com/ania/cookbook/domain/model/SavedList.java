@@ -1,5 +1,5 @@
 package com.ania.cookbook.domain.model;
-import com.ania.cookbook.application.services.interfaces.recipe.ListManagementUseCase.ListName;
+import com.ania.cookbook.application.services.implementations.list.ListName;
 import com.ania.cookbook.domain.exceptions.ListValidationException;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,15 +8,15 @@ import java.time.Instant;
 import java.util.List;
 
 @Getter
-public class SavedRecipeListDomain {
+public class SavedList {
     private final ListName listName;
     private final Instant createdAt;
     private String listDescription;
     private final int expectedPortions;
-    private final List<RecipeListEntryDomain> entries;
+    private final List<ListEntry> entries;
 
     @Builder
-    public SavedRecipeListDomain(ListName listName, Instant createdAt, String listDescription, int expectedPortions, @Singular List<RecipeListEntryDomain> entries) {
+    public SavedList(ListName listName, Instant createdAt, String listDescription, int expectedPortions, @Singular List<ListEntry> entries) {
         this.listName = listName;
         this.createdAt = createdAt != null ? createdAt : Instant.now();
         this.listDescription = listDescription;

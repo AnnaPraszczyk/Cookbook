@@ -8,7 +8,7 @@ import com.ania.cookbook.application.services.interfaces.recipe.UpdateRecipeUseC
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.*;
-import com.ania.cookbook.infrastructure.persistence.list.RecipeListEntryRepository;
+import com.ania.cookbook.infrastructure.persistence.list.ListEntryRepository;
 import com.ania.cookbook.infrastructure.repositories.InMemoryProductRepository;
 import com.ania.cookbook.infrastructure.repositories.InMemoryRecipeRepository;
 import com.ania.cookbook.web.ingredient.IngredientRequest;
@@ -29,7 +29,7 @@ class RecipeServiceTest {
     private ReadRecipeService readRecipeService;
 
     @Mock
-    private RecipeListEntryRepository recipeListEntryRepository;
+    private ListEntryRepository listEntryRepository;
 
 
     @BeforeEach
@@ -37,7 +37,7 @@ class RecipeServiceTest {
         recipeRepository = new InMemoryRecipeRepository();
         InMemoryProductRepository productRepository = new InMemoryProductRepository();
         ProductUseCase productUseCase = new ProductService(productRepository, productRepository, productRepository, productRepository);
-        recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository, productUseCase, recipeListEntryRepository
+        recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository, productUseCase, listEntryRepository
         );
         readRecipeService = new ReadRecipeService(recipeRepository);
     }

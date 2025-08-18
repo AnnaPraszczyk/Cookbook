@@ -15,12 +15,11 @@ import com.ania.cookbook.domain.repositories.recipe.DeleteRecipe;
 import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
 import com.ania.cookbook.domain.repositories.recipe.SaveRecipe;
 import com.ania.cookbook.domain.repositories.recipe.UpdateRecipe;
-import com.ania.cookbook.infrastructure.persistence.list.RecipeListEntryRepository;
+import com.ania.cookbook.infrastructure.persistence.list.ListEntryRepository;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.*;
-
 import static io.micrometer.common.util.StringUtils.isBlank;
 
 @Service
@@ -32,7 +31,7 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
     private final UpdateRecipe updateRecipeRepository;
     private final DeleteRecipe deleteRecipeRepository;
     private final ProductUseCase productUseCase;
-    private final RecipeListEntryRepository recipeListEntryRepository;
+    private final ListEntryRepository listEntryRepository;
 
     @Override
     public Recipe createRecipe(CreateRecipe recipe) {
@@ -75,7 +74,6 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
         Recipe updatedRecipe = Recipe.newRecipe(originalRecipe.getRecipeId(),
                 updatedName, updatedCategory, updatedIngredients,
                 updatedInstructions, updatedNumberOfServings, updatedTags);
-
         return updateRecipeRepository.updateRecipe(updatedRecipe);
     }
 
@@ -91,7 +89,6 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
 
     @Override
     public void deleteRecipe(DeleteRecipeCase recipe) {
-
         List<Recipe> matchingRecipes = readRecipeRepository.findRecipeByName(recipe.recipeName());
         if (matchingRecipes.isEmpty()) {
             throw new RecipeNotFoundException("Recipe with given name does not exist.");
@@ -101,7 +98,7 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
                 matchingRecipes.getFirst();
         readRecipeRepository.findRecipeById(recipeToDelete.getRecipeId()).orElseThrow(()
                 -> new RecipeNotFoundException("Recipe with given Id not found"));
-        boolean isReferenced = recipeListEntryRepository.existsByRecipe_RecipeId(recipe.recipeId());
+        boolean isReferenced = listEntryRepository.existsByRecipe_RecipeId(recipe.recipeId());
         if (isReferenced) {
             throw new RecipeValidationException("Cannot delete recipe — it is used in a recipe list.");
         }

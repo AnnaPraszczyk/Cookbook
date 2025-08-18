@@ -1,6 +1,5 @@
-package com.ania.cookbook.web.recipe;
-
-import com.ania.cookbook.application.services.interfaces.recipe.ListManagementUseCase.ListName;
+package com.ania.cookbook.web.list;
+import com.ania.cookbook.application.services.implementations.list.ListName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,9 +8,9 @@ import java.util.List;
 @Data
 @Builder
 @AllArgsConstructor
-public class RecipeListResponse {
+public class ListResponse {
     private ListName listName;
     private String listDescription;
     private Integer expectedPortions;
-    private List<RecipeListEntryResponse> recipes;
+    private List<ListEntryResponse> recipes;
 }

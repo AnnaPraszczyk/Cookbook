@@ -1,6 +1,6 @@
 package com.ania.cookbook.domain.model;
+import com.ania.cookbook.application.services.implementations.list.ListName;
 import com.ania.cookbook.application.services.implementations.product.ProductName;
-import com.ania.cookbook.application.services.interfaces.recipe.ListManagementUseCase.ListName;
 import com.ania.cookbook.domain.exceptions.ListValidationException;
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import org.junit.jupiter.api.Test;
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
-class RecipeListEntryDomainTest {
+class ListEntryTest {
     @Test
     void createValidEntry() {
         Recipe recipe = Recipe.builder()
@@ -20,12 +20,12 @@ class RecipeListEntryDomainTest {
                 .numberOfServings(2)
                 .tags(List.of("fast", "easy"))
                 .build();
-        SavedRecipeListDomain list = SavedRecipeListDomain.builder()
+        SavedList list = SavedList.builder()
                 .listName(new ListName("My list"))
                 .expectedPortions(4)
                 .listDescription("My list description")
                 .build();
-        RecipeListEntryDomain entry = RecipeListEntryDomain.builder()
+        ListEntry entry = ListEntry.builder()
                 .entryId(UUID.randomUUID())
                 .recipe(recipe)
                 .savedRecipeList(list)
@@ -48,14 +48,14 @@ class RecipeListEntryDomainTest {
                 .numberOfServings(2)
                 .tags(List.of("fast", "easy"))
                 .build();
-        SavedRecipeListDomain list = SavedRecipeListDomain.builder()
+        SavedList list = SavedList.builder()
                 .listName(new ListName("My list"))
                 .expectedPortions(4)
                 .listDescription("My list description")
                 .build();
 
         assertThrows(ListValidationException.class, () -> {
-            RecipeListEntryDomain.builder()
+            ListEntry.builder()
                     .entryId(null)
                     .recipe(recipe)
                     .savedRecipeList(list)
@@ -66,14 +66,14 @@ class RecipeListEntryDomainTest {
 
     @Test
     void throwExceptionWhenRecipeIsNull() {
-        SavedRecipeListDomain list = SavedRecipeListDomain.builder()
+        SavedList list = SavedList.builder()
                 .listName(new ListName("My list"))
                 .expectedPortions(4)
                 .listDescription("My list description")
                 .build();
 
         assertThrows(RecipeValidationException.class, () -> {
-            RecipeListEntryDomain.builder()
+            ListEntry.builder()
                     .entryId(UUID.randomUUID())
                     .recipe(null)
                     .savedRecipeList(list)
@@ -95,7 +95,7 @@ class RecipeListEntryDomainTest {
                 .build();
 
         assertThrows(ListValidationException.class, () -> {
-            RecipeListEntryDomain.builder()
+            ListEntry.builder()
                     .entryId(UUID.randomUUID())
                     .recipe(recipe)
                     .savedRecipeList(null)
@@ -115,13 +115,13 @@ class RecipeListEntryDomainTest {
                 .numberOfServings(2)
                 .tags(List.of("fast", "easy"))
                 .build();
-        SavedRecipeListDomain list = SavedRecipeListDomain.builder()
+        SavedList list = SavedList.builder()
                 .listName(new ListName("Desserts")).listDescription("Dessert description")
                 .expectedPortions(4)
                 .build();
 
         assertThrows(RecipeValidationException.class, () -> {
-            RecipeListEntryDomain.builder()
+            ListEntry.builder()
                     .entryId(UUID.randomUUID())
                     .recipe(recipe)
                     .savedRecipeList(list)

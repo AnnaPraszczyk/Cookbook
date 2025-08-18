@@ -11,7 +11,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @Table(name = "recipe_list_entry")
-public class RecipeListEntry {
+public class ListEntryEntity {
     @Id
     @GeneratedValue
     @Column(name="entry_id")
@@ -21,7 +21,7 @@ public class RecipeListEntry {
     private RecipeEntity recipe;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "list_name", nullable = false)
-    private SavedRecipeList savedList;
+    private SavedListEntity savedList;
     @Column
     private int portions;
 }

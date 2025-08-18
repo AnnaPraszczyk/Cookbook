@@ -11,14 +11,10 @@ import java.util.UUID;
 public interface FindRecipeUseCase {
 
     Optional<Recipe> findRecipeById(UUID id);
-
     boolean existsRecipeById(UUID id);
-
     List<Recipe> findRecipeByName(String name);
     Page<Recipe> findRecipeByName(String name, Pageable pageable);
-
     boolean existsRecipeByName(String name);
-
     List<Recipe> findRecipeByCategory(Category category);
     Page<Recipe> findRecipeByCategory(Category category, Pageable pageable);
     List<Recipe> getLatestRecipes(int limit);

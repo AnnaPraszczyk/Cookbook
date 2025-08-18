@@ -1,16 +1,16 @@
 package com.ania.cookbook.domain.model;
 import com.ania.cookbook.application.services.implementations.product.ProductName;
-import com.ania.cookbook.application.services.interfaces.recipe.ListManagementUseCase.ListName;
+import com.ania.cookbook.application.services.interfaces.list.ListUseCase.ListName;
 import com.ania.cookbook.domain.exceptions.ListValidationException;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
-class SavedRecipeListDomainTest {
+class SavedListTest {
     @Test
     void createObjectWithValidData() {
-        SavedRecipeListDomain savedList = SavedRecipeListDomain.builder()
+        SavedList savedList = SavedList.builder()
                 .listName(new ListName("Dinner"))
                 .listDescription("Dinner description")
                 .expectedPortions(4)
@@ -34,13 +34,13 @@ class SavedRecipeListDomainTest {
                 .numberOfServings(4)
                 .tags(List.of("fast", "easy"))
                 .build();
-        RecipeListEntryDomain entry1 = RecipeListEntryDomain.builder()
+        ListEntry entry1 = ListEntry.builder()
                 .entryId(UUID.randomUUID())
                 .recipe(recipe1)
                 .savedRecipeList(savedList)
                 .portions(2)
                 .build();
-        RecipeListEntryDomain entry2 = RecipeListEntryDomain.builder()
+        ListEntry entry2 = ListEntry.builder()
                 .entryId(UUID.randomUUID())
                 .recipe(recipe2)
                 .savedRecipeList(savedList)
@@ -60,7 +60,7 @@ class SavedRecipeListDomainTest {
     @Test
     void throwExceptionWhenExpectedPortionsIsZero() {
         assertThrows(ListValidationException.class, () -> {
-            SavedRecipeListDomain.builder()
+            SavedList.builder()
                     .listName(new ListName("Dinner"))
                     .listDescription("Dinner description")
                     .expectedPortions(0)
@@ -70,7 +70,7 @@ class SavedRecipeListDomainTest {
 
     @Test
     void setCreatedAtAutomaticallyIfNull() {
-        SavedRecipeListDomain domain = SavedRecipeListDomain.builder()
+        SavedList domain = SavedList.builder()
                 .listName(new ListName("Dinner"))
                 .listDescription("Dinner description")
                 .expectedPortions(2)
@@ -81,7 +81,7 @@ class SavedRecipeListDomainTest {
 
     @Test
     void shouldCreateEmptyEntriesListWhenNotProvided() {
-        SavedRecipeListDomain domain = SavedRecipeListDomain.builder()
+        SavedList domain = SavedList.builder()
                 .listName(new ListName("Breakfast"))
                 .listDescription("Breakfast description")
                 .expectedPortions(1)
@@ -93,7 +93,7 @@ class SavedRecipeListDomainTest {
 
     @Test
     void allowEmptyDescription() {
-        SavedRecipeListDomain domain = SavedRecipeListDomain.builder()
+        SavedList domain = SavedList.builder()
                 .listName(new ListName("Dessert"))
                 .listDescription(null)
                 .expectedPortions(3)

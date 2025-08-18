@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Table(name = "saved_recipe_list")
-public class SavedRecipeList {
+public class SavedListEntity {
     @Id
     @Column(name = "list_name", nullable = false, unique = true)
     private String listName;
@@ -28,5 +28,5 @@ public class SavedRecipeList {
     private int expectedPortions;
 
     @OneToMany(mappedBy = "savedList", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RecipeListEntry> entries = new ArrayList<>();
+    private List<ListEntryEntity> entries = new ArrayList<>();
 }
