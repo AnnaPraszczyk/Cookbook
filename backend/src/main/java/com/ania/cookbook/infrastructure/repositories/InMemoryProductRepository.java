@@ -8,7 +8,6 @@ import com.ania.cookbook.domain.model.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
-
 import java.util.*;
 
 @RequiredArgsConstructor

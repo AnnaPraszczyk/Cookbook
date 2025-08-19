@@ -54,14 +54,12 @@ class ListEntryTest {
                 .listDescription("My list description")
                 .build();
 
-        assertThrows(ListValidationException.class, () -> {
-            ListEntry.builder()
-                    .entryId(null)
-                    .recipe(recipe)
-                    .savedRecipeList(list)
-                    .portions(1)
-                    .build();
-        });
+        assertThrows(ListValidationException.class, () -> ListEntry.builder()
+                .entryId(null)
+                .recipe(recipe)
+                .savedRecipeList(list)
+                .portions(1)
+                .build());
     }
 
     @Test
@@ -72,14 +70,12 @@ class ListEntryTest {
                 .listDescription("My list description")
                 .build();
 
-        assertThrows(RecipeValidationException.class, () -> {
-            ListEntry.builder()
-                    .entryId(UUID.randomUUID())
-                    .recipe(null)
-                    .savedRecipeList(list)
-                    .portions(1)
-                    .build();
-        });
+        assertThrows(RecipeValidationException.class, () -> ListEntry.builder()
+                .entryId(UUID.randomUUID())
+                .recipe(null)
+                .savedRecipeList(list)
+                .portions(1)
+                .build());
     }
 
     @Test
@@ -94,14 +90,12 @@ class ListEntryTest {
                 .tags(List.of("fast", "easy"))
                 .build();
 
-        assertThrows(ListValidationException.class, () -> {
-            ListEntry.builder()
-                    .entryId(UUID.randomUUID())
-                    .recipe(recipe)
-                    .savedRecipeList(null)
-                    .portions(1)
-                    .build();
-        });
+        assertThrows(ListValidationException.class, () -> ListEntry.builder()
+                .entryId(UUID.randomUUID())
+                .recipe(recipe)
+                .savedRecipeList(null)
+                .portions(1)
+                .build());
     }
 
     @Test
@@ -120,13 +114,11 @@ class ListEntryTest {
                 .expectedPortions(4)
                 .build();
 
-        assertThrows(RecipeValidationException.class, () -> {
-            ListEntry.builder()
-                    .entryId(UUID.randomUUID())
-                    .recipe(recipe)
-                    .savedRecipeList(list)
-                    .portions(-1)
-                    .build();
-        });
+        assertThrows(RecipeValidationException.class, () -> ListEntry.builder()
+                .entryId(UUID.randomUUID())
+                .recipe(recipe)
+                .savedRecipeList(list)
+                .portions(-1)
+                .build());
     }
 }

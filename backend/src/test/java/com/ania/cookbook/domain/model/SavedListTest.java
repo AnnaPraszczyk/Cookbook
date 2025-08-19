@@ -1,6 +1,6 @@
 package com.ania.cookbook.domain.model;
+import com.ania.cookbook.application.services.implementations.list.ListName;
 import com.ania.cookbook.application.services.implementations.product.ProductName;
-import com.ania.cookbook.application.services.interfaces.list.ListUseCase.ListName;
 import com.ania.cookbook.domain.exceptions.ListValidationException;
 import org.junit.jupiter.api.Test;
 import java.util.List;
@@ -59,13 +59,11 @@ class SavedListTest {
 
     @Test
     void throwExceptionWhenExpectedPortionsIsZero() {
-        assertThrows(ListValidationException.class, () -> {
-            SavedList.builder()
-                    .listName(new ListName("Dinner"))
-                    .listDescription("Dinner description")
-                    .expectedPortions(0)
-                    .build();
-        });
+        assertThrows(ListValidationException.class, () -> SavedList.builder()
+                .listName(new ListName("Dinner"))
+                .listDescription("Dinner description")
+                .expectedPortions(0)
+                .build());
     }
 
     @Test

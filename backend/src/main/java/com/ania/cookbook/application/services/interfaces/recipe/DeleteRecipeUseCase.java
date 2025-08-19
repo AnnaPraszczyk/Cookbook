@@ -7,7 +7,6 @@ import java.util.UUID;
 import static io.micrometer.common.util.StringUtils.isBlank;
 
 public interface DeleteRecipeUseCase {
-
     void deleteRecipe(DeleteRecipeCase request);
     record DeleteRecipeCase(UUID recipeId, String recipeName){
         public DeleteRecipeCase{

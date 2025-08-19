@@ -51,7 +51,7 @@ public class RecipeListController {
 
     @GetMapping("/{listName}")
     public ResponseEntity<ListResponse> getRecipesList(@PathVariable String listName) {
-        SavedList savedList = listService.getRecipeList(new ListName(listName));
+        SavedList savedList = listService.getRecipesList(new ListName(listName));
         ListResponse response = listResponseMapper.from(savedList);
         return ResponseEntity.ok(response);
     }

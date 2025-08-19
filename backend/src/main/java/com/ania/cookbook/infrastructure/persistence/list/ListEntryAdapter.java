@@ -45,6 +45,12 @@ public class ListEntryAdapter implements SaveEntry, ReadEntry, DeleteEntry {
     }
 
     @Override
+    public boolean existsByRecipeId(UUID recipeId) {
+        return repository.existsByRecipe_RecipeId(recipeId);
+    }
+
+
+    @Override
     public void deleteById(UUID entryId) {
         repository.deleteById(entryId);
     }

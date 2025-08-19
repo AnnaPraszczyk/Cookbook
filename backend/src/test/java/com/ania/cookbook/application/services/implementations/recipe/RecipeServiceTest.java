@@ -1,43 +1,38 @@
 package com.ania.cookbook.application.services.implementations.recipe;
-
 import com.ania.cookbook.application.services.implementations.product.ProductService;
 import com.ania.cookbook.application.services.interfaces.product.ProductUseCase;
-import com.ania.cookbook.application.services.interfaces.recipe.CreateRecipeUseCase.CreateRecipe;
 import com.ania.cookbook.application.services.interfaces.recipe.DeleteRecipeUseCase.DeleteRecipeCase;
 import com.ania.cookbook.application.services.interfaces.recipe.UpdateRecipeUseCase.UpdateRecipeCase;
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.*;
-import com.ania.cookbook.infrastructure.persistence.list.ListEntryRepository;
+import com.ania.cookbook.infrastructure.repositories.InMemoryEntryRepository;
 import com.ania.cookbook.infrastructure.repositories.InMemoryProductRepository;
 import com.ania.cookbook.infrastructure.repositories.InMemoryRecipeRepository;
 import com.ania.cookbook.web.ingredient.IngredientRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
-
 
 @ExtendWith(MockitoExtension.class)
 class RecipeServiceTest {
     private InMemoryRecipeRepository recipeRepository;
     private RecipeService recipeService;
     private ReadRecipeService readRecipeService;
-
-    @Mock
-    private ListEntryRepository listEntryRepository;
+    private InMemoryEntryRepository entryRepository;
 
 
     @BeforeEach
     void setUp() {
         recipeRepository = new InMemoryRecipeRepository();
+        entryRepository = new InMemoryEntryRepository();
         InMemoryProductRepository productRepository = new InMemoryProductRepository();
         ProductUseCase productUseCase = new ProductService(productRepository, productRepository, productRepository, productRepository);
-        recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository, productUseCase, listEntryRepository
+        recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository, productUseCase, entryRepository
         );
         readRecipeService = new ReadRecipeService(recipeRepository);
     }
@@ -46,15 +41,15 @@ class RecipeServiceTest {
     void createRecipe() {
         IngredientRequest raw1 = new IngredientRequest("Flour", 20f, Unit.DAG);
         IngredientRequest raw2 = new IngredientRequest("Sugar", 10f, Unit.G);
-        CreateRecipe request = new CreateRecipe("Pancakes", Category.DESSERT,
+        RecipeCommand request = new RecipeCommand("Pancakes", Category.DESSERT,
                 List.of(raw1,raw2), "Mix and fry", 2, List.of("Easy"));
         Recipe savedRecipe = recipeService.createRecipe(request);
 
         assertNotNull(savedRecipe);
-        assertEquals(request.recipeName(), savedRecipe.getRecipeName());
-        assertEquals(request.category(), savedRecipe.getCategory());
-        assertEquals(request.ingredients().size(), savedRecipe.getIngredients().size());
-        assertEquals(request.instructions(), savedRecipe.getInstructions());
+        assertEquals(request.getRecipeName(), savedRecipe.getRecipeName());
+        assertEquals(request.getCategory(), savedRecipe.getCategory());
+        assertEquals(request.getIngredients().size(), savedRecipe.getIngredients().size());
+        assertEquals(request.getInstructions(), savedRecipe.getInstructions());
         for (Ingredient ing : savedRecipe.getIngredients()) {
             assertNotNull(ing.getProduct().getProductId());
             assertNotNull(ing.getProduct().getProductName());
@@ -73,7 +68,7 @@ class RecipeServiceTest {
 
     @Test
     void createRecipeWhenCategoryIsNull() {
-        CreateRecipe request = new CreateRecipe(
+        RecipeCommand request = new RecipeCommand(
                 "Pancakes", null,
                 List.of(new IngredientRequest("Flour", 200, Unit.G)),
                 "Mix ingredients and fry.", 4, List.of("Easy"));
@@ -85,7 +80,7 @@ class RecipeServiceTest {
 
     @Test
     void createRecipeWhenInstructionsAreBlank() {
-        CreateRecipe recipe = new CreateRecipe(
+        RecipeCommand recipe = new RecipeCommand(
                 "Pancakes", Category.DESSERT,
                 List.of(new IngredientRequest("Flour", 200, Unit.G)),
                 "", 4, List.of("Easy"));
@@ -97,7 +92,7 @@ class RecipeServiceTest {
 
     @Test
     void createRecipeWhenNumberOfServingsIsNegative() {
-        CreateRecipe request = new CreateRecipe(
+        RecipeCommand request = new RecipeCommand(
                 "Pancakes", Category.DESSERT,
                 List.of(new IngredientRequest("Flour", 200, Unit.G)),
                 "Mix ingredients and fry.", -2, List.of("Easy"));
@@ -109,10 +104,10 @@ class RecipeServiceTest {
 
     @Test
     void updateRecipe() {
-        CreateRecipe createRecipe = new CreateRecipe("Pancakes", Category.DESSERT,
+        RecipeCommand recipeCommand = new RecipeCommand("Pancakes", Category.DESSERT,
                 List.of(new IngredientRequest("Flour", 10, Unit.DAG)),
                 "Mix and cook", 2, List.of("Easy", "Breakfast"));
-        Recipe originalRecipe = recipeService.createRecipe(createRecipe);
+        Recipe originalRecipe = recipeService.createRecipe(recipeCommand);
         UpdateRecipeCase updateRecipe = new UpdateRecipeCase("Updated Pancakes", null,null,
                 "Updated Instructions",5,null );
         List<Recipe> foundedRecipes =readRecipeService.findRecipeByName("Pancakes");
@@ -138,7 +133,7 @@ class RecipeServiceTest {
 
     @Test
     void updateRecipeWhenNumberOfServingsIsNegative() {
-        CreateRecipe createRequest = new CreateRecipe("Pancakes", Category.DESSERT,
+        RecipeCommand createRequest = new RecipeCommand("Pancakes", Category.DESSERT,
                 List.of(new IngredientRequest("Flour", 10, Unit.DAG)),
                 "Mix and cook", 2, List.of("Easy", "Breakfast"));
         Recipe originalRecipe = recipeService.createRecipe(createRequest);
@@ -155,7 +150,7 @@ class RecipeServiceTest {
 
     @Test
     void updateRecipeWhenNumberOfServingsIsCalculate() {
-        CreateRecipe createRequest = new CreateRecipe("Pancakes", Category.DESSERT,
+        RecipeCommand createRequest = new RecipeCommand("Pancakes", Category.DESSERT,
                 List.of(new IngredientRequest("Flour", 10, Unit.DAG),
                         new IngredientRequest("Eggs", 2, Unit.G)),
                 "Mix and cook", 2, List.of("Easy", "Breakfast"));
@@ -172,10 +167,10 @@ class RecipeServiceTest {
 
         @Test
     void deleteRecipeById() {
-        CreateRecipe createRecipe = new CreateRecipe("Pancakes", Category.DESSERT,
+        RecipeCommand recipeCommand = new RecipeCommand("Pancakes", Category.DESSERT,
                 List.of(new IngredientRequest("Flour", 200, Unit.G)),
                 "Mix ingredients and fry.", 4, List.of("Easy"));
-        Recipe originalRecipe = recipeService.createRecipe(createRecipe);
+        Recipe originalRecipe = recipeService.createRecipe(recipeCommand);
         List<Recipe> foundedRecipes =readRecipeService.findRecipeByName("Pancakes");
         Recipe recipeToDelete = recipeService.selectRecipeFromList(foundedRecipes,originalRecipe.getRecipeId());
         DeleteRecipeCase deleteRequest = new DeleteRecipeCase(recipeToDelete.getRecipeId(),recipeToDelete.getRecipeName());

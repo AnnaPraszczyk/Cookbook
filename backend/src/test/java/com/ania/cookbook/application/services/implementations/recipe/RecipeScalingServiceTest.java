@@ -2,7 +2,6 @@ package com.ania.cookbook.application.services.implementations.recipe;
 
 import com.ania.cookbook.application.services.implementations.product.ProductService;
 import com.ania.cookbook.application.services.interfaces.product.ProductUseCase;
-import com.ania.cookbook.application.services.interfaces.recipe.CreateRecipeUseCase.CreateRecipe;
 import com.ania.cookbook.application.services.interfaces.recipe.ScaleIngredientsUseCase.AdjustRecipe;
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
@@ -44,7 +43,7 @@ class RecipeScalingServiceTest {
         IngredientRequest ingredient1 = new IngredientRequest( "Sugar", 100, Unit.G);
         IngredientRequest ingredient2 = new IngredientRequest("Butter", 200, Unit.G);
         List<IngredientRequest> ingredients = List.of(ingredient1, ingredient2);
-        CreateRecipe recipe = new CreateRecipe("Pancakes", Category.DESSERT,
+        RecipeCommand recipe = new RecipeCommand("Pancakes", Category.DESSERT,
                 ingredients, "Mix and fry", 2, List.of("Easy"));
         Recipe newRecipe = recipeService.createRecipe(recipe);
         Recipe scaledRecipe = recipeScalingService.adjustRecipeByServings(new AdjustRecipe(newRecipe.getRecipeId(), 4));
@@ -60,7 +59,7 @@ class RecipeScalingServiceTest {
         IngredientRequest ingredient1 = new IngredientRequest( "Sugar", 100, Unit.G);
         IngredientRequest ingredient2 = new IngredientRequest("Butter", 200, Unit.G);
         List<IngredientRequest> ingredients = List.of(ingredient1, ingredient2);
-        CreateRecipe recipe = new CreateRecipe("Pancakes", Category.DESSERT,
+        RecipeCommand recipe = new RecipeCommand("Pancakes", Category.DESSERT,
                 ingredients, "Mix and fry", 2, List.of("Easy"));
         Recipe newRecipe = recipeService.createRecipe(recipe);
 

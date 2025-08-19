@@ -7,7 +7,6 @@ import com.ania.cookbook.infrastructure.persistence.entity.SavedListEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import java.util.*;
-import java.util.function.Function;
 
 @Component
 @RequiredArgsConstructor

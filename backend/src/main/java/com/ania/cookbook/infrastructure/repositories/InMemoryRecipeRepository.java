@@ -1,5 +1,4 @@
 package com.ania.cookbook.infrastructure.repositories;
-
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
 import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.domain.model.Recipe;
@@ -13,7 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-
 import java.util.*;
 
 @RequiredArgsConstructor

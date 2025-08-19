@@ -9,4 +9,5 @@ public interface ReadEntry {
     Optional<ListEntry> findByRecipeIdAndListName(UUID recipeId, ListName listName);
     List<ListEntry> findByListName(ListName listName);
     Optional<ListEntry> findById(UUID entryId);
+    boolean existsByRecipeId(UUID recipeId);
 }

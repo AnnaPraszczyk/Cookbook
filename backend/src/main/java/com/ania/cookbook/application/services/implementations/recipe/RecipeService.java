@@ -1,6 +1,7 @@
 package com.ania.cookbook.application.services.implementations.recipe;
 
 import com.ania.cookbook.application.services.implementations.product.ProductName;
+import com.ania.cookbook.application.services.interfaces.list.ListUseCase;
 import com.ania.cookbook.application.services.interfaces.product.ProductUseCase;
 import com.ania.cookbook.application.services.interfaces.recipe.CreateRecipeUseCase;
 import com.ania.cookbook.application.services.interfaces.recipe.DeleteRecipeUseCase;
@@ -15,7 +16,6 @@ import com.ania.cookbook.domain.repositories.recipe.DeleteRecipe;
 import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
 import com.ania.cookbook.domain.repositories.recipe.SaveRecipe;
 import com.ania.cookbook.domain.repositories.recipe.UpdateRecipe;
-import com.ania.cookbook.infrastructure.persistence.list.ListEntryRepository;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,12 +31,11 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
     private final UpdateRecipe updateRecipeRepository;
     private final DeleteRecipe deleteRecipeRepository;
     private final ProductUseCase productUseCase;
-    private final ListEntryRepository listEntryRepository;
+    private final ListUseCase listUseCase;
 
     @Override
-    public Recipe createRecipe(CreateRecipe recipe) {
-
-        List<Ingredient> ingredients = recipe.ingredients().stream()
+    public Recipe createRecipe(RecipeCommand recipe) {
+        List<Ingredient> ingredients = recipe.getIngredients().stream()
                 .map(i -> {
                     ProductName name = ProductName.from(i.productName());
                     Product product = productUseCase
@@ -46,9 +45,9 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
                 })
                 .toList();
         UUID id = UUID.randomUUID();
-        Recipe newRecipe = Recipe.newRecipe(id,recipe.recipeName(),recipe.category(),ingredients,
-                recipe.instructions(),recipe.numberOfServings(),
-                recipe.tags());
+        Recipe newRecipe = Recipe.newRecipe(id,recipe.getRecipeName(),recipe.getCategory(),ingredients,
+                recipe.getInstructions(),recipe.getNumberOfServings(),
+                recipe.getTags());
         return saveRecipeRepository.saveRecipe(newRecipe);
     }
 
@@ -98,7 +97,7 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
                 matchingRecipes.getFirst();
         readRecipeRepository.findRecipeById(recipeToDelete.getRecipeId()).orElseThrow(()
                 -> new RecipeNotFoundException("Recipe with given Id not found"));
-        boolean isReferenced = listEntryRepository.existsByRecipe_RecipeId(recipe.recipeId());
+        boolean isReferenced = listUseCase.existsRecipeOnListByRecipeId(recipe.recipeId());
         if (isReferenced) {
             throw new RecipeValidationException("Cannot delete recipe — it is used in a recipe list.");
         }

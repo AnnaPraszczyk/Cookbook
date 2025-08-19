@@ -1,5 +1,4 @@
 package com.ania.cookbook.application.services.implementations.product;
-
 import com.ania.cookbook.domain.exceptions.ProductNotFoundException;
 import com.ania.cookbook.domain.exceptions.ProductValidationException;
 import com.ania.cookbook.domain.model.Product;
@@ -11,7 +10,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ProductServiceTest {
-
     private ProductService productService;
     private InMemoryProductRepository inMemoryRepository;
 

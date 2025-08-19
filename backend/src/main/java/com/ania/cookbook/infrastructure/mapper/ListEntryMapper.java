@@ -10,11 +10,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class ListEntryMapper {
     private final RecipeMapper recipeMapper;
-    private final SavedListMapper savedListMapper;
+    private final SavedListMapperWithoutEntries savedListMapper;
 
     public ListEntry toDomain(ListEntryEntity entity) {
         Recipe recipe = recipeMapper.toDomain(entity.getRecipe());
-        SavedList savedList = savedListMapper.toDomain(entity.getSavedList());
+        SavedList savedList = savedListMapper.toDomainWithoutEntries(entity.getSavedList());
 
         return ListEntry.builder()
                 .entryId(entity.getEntryId())

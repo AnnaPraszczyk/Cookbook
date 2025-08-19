@@ -1,6 +1,5 @@
 package com.ania.cookbook.domain.model;
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import java.time.Instant;
@@ -9,7 +8,6 @@ import java.util.List;
 import java.util.UUID;
 import static io.micrometer.common.util.StringUtils.isBlank;
 
-@AllArgsConstructor
 @Getter
 public class Recipe {
     private final UUID recipeId;
@@ -44,11 +42,11 @@ public class Recipe {
     }
 
     public int calculateServings() {
-    float totalMassInGrams = 0;
-    for (Ingredient ingredient : ingredients) {
-        totalMassInGrams += ingredient.getAmount() * ingredient.getUnit().toGrams(1);
-    }
-    return Math.max(1, Math.round(totalMassInGrams / 350));
+        float totalMassInGrams = 0;
+        for (Ingredient ingredient : ingredients) {
+            totalMassInGrams += ingredient.getAmount() * ingredient.getUnit().toGrams(1);
+        }
+        return Math.max(1, Math.round(totalMassInGrams / 350));
     }
 }
 

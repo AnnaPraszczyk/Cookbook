@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class SaveListAdapter implements SaveList, ReadList, DeleteList {
+public class SavedListAdapter implements SaveList, ReadList, DeleteList {
     private final SavedListRepository repository;
     private final SavedListMapper mapper;
 
@@ -33,13 +33,6 @@ public class SaveListAdapter implements SaveList, ReadList, DeleteList {
     @Override
     public boolean existsByName(ListName listName) {
         return repository.existsByListName(listName.name());
-    }
-
-    @Override
-    public List<SavedList> findAll() {
-        return repository.findAll().stream()
-                .map(mapper::toDomain)
-                .toList();
     }
 
     @Override

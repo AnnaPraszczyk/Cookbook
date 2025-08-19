@@ -2,19 +2,17 @@ package com.ania.cookbook.application.services.implementations.recipe;
 
 import com.ania.cookbook.application.services.implementations.product.ProductService;
 import com.ania.cookbook.application.services.interfaces.product.ProductUseCase;
-import com.ania.cookbook.application.services.interfaces.recipe.CreateRecipeUseCase.CreateRecipe;
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
 import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.domain.model.Recipe;
 import com.ania.cookbook.domain.model.Unit;
-import com.ania.cookbook.infrastructure.persistence.list.ListEntryRepository;
+import com.ania.cookbook.infrastructure.repositories.InMemoryEntryRepository;
 import com.ania.cookbook.infrastructure.repositories.InMemoryProductRepository;
 import com.ania.cookbook.infrastructure.repositories.InMemoryRecipeRepository;
 import com.ania.cookbook.web.ingredient.IngredientRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
@@ -27,22 +25,21 @@ class ReadRecipeServiceTest {
     private ReadRecipeService readRecipeService;
     private RecipeService recipeService;
 
-    @Mock
-    private ListEntryRepository listEntryRepository;
 
     @BeforeEach
     void setUp() {
         InMemoryProductRepository productRepository = new InMemoryProductRepository();
         ProductUseCase productUseCase = new ProductService(productRepository, productRepository, productRepository, productRepository);
         InMemoryRecipeRepository recipeRepository = new InMemoryRecipeRepository();
+        InMemoryEntryRepository listEntryRepository = new InMemoryEntryRepository();
         readRecipeService = new ReadRecipeService(recipeRepository);
-        recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository, productUseCase, listEntryRepository);
+        recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository, productUseCase,);
 
     }
 
     @Test
     void findRecipeById() {
-        CreateRecipe request = new CreateRecipe(
+        RecipeCommand request = new RecipeCommand(
                 "Pancakes", Category.DESSERT,
                 List.of(new IngredientRequest("Flour", 200, Unit.G)),
                 "Mix ingredients and fry.", 4, List.of("Easy"));
@@ -64,7 +61,7 @@ class ReadRecipeServiceTest {
 
     @Test
     void existsRecipeById() {
-        CreateRecipe request = new CreateRecipe(
+        RecipeCommand request = new RecipeCommand(
                 "Pancakes", Category.DESSERT,
                 List.of(new IngredientRequest("Flour", 200, Unit.G)),
                 "Mix ingredients and fry.", 4, List.of("Easy"));
@@ -82,7 +79,7 @@ class ReadRecipeServiceTest {
 
     @Test
     void findRecipeByName() {
-        CreateRecipe request = new CreateRecipe(
+        RecipeCommand request = new RecipeCommand(
                 "Pancakes", Category.DESSERT,
                 List.of(new IngredientRequest("Flour", 200, Unit.G)),
                 "Mix ingredients and fry.", 4, List.of("Easy"));
@@ -102,7 +99,7 @@ class ReadRecipeServiceTest {
 
     @Test
     void existsRecipeByName() {
-        CreateRecipe request = new CreateRecipe(
+        RecipeCommand request = new RecipeCommand(
                 "Pancakes", Category.DESSERT,
                 List.of(new IngredientRequest("Flour", 200, Unit.G)),
                 "Mix ingredients and fry.", 4, List.of("Easy"));
@@ -120,7 +117,7 @@ class ReadRecipeServiceTest {
 
     @Test
     void findRecipeByCategory() {
-        CreateRecipe request = new CreateRecipe(
+        RecipeCommand request = new RecipeCommand(
                 "Pancakes", Category.DESSERT,
                 List.of(new IngredientRequest("Flour", 200, Unit.G)),
                 "Mix ingredients and fry.", 4, List.of("Easy"));

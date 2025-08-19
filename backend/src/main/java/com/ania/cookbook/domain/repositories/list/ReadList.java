@@ -7,6 +7,5 @@ import java.util.Optional;
 public interface ReadList {
     Optional<SavedList> findByName(ListName name);
     boolean existsByName(ListName name);
-    List<SavedList> findAll();
     List<ListName> getAllLists();
 }
