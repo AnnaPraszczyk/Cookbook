@@ -7,8 +7,8 @@ import com.ania.cookbook.web.list.ListEntryResponse;
 import com.ania.cookbook.web.recipe.ReadRecipeResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
 import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class ListEntryResponseMapper {

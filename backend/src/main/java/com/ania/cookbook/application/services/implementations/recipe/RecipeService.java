@@ -1,7 +1,5 @@
 package com.ania.cookbook.application.services.implementations.recipe;
-
 import com.ania.cookbook.application.services.implementations.product.ProductName;
-import com.ania.cookbook.application.services.interfaces.list.ListUseCase;
 import com.ania.cookbook.application.services.interfaces.product.ProductUseCase;
 import com.ania.cookbook.application.services.interfaces.recipe.CreateRecipeUseCase;
 import com.ania.cookbook.application.services.interfaces.recipe.DeleteRecipeUseCase;
@@ -12,6 +10,8 @@ import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.domain.model.Ingredient;
 import com.ania.cookbook.domain.model.Product;
 import com.ania.cookbook.domain.model.Recipe;
+import com.ania.cookbook.domain.repositories.list.ReadEntry;
+import com.ania.cookbook.domain.repositories.list.ReadList;
 import com.ania.cookbook.domain.repositories.recipe.DeleteRecipe;
 import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;
 import com.ania.cookbook.domain.repositories.recipe.SaveRecipe;
@@ -31,10 +31,11 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
     private final UpdateRecipe updateRecipeRepository;
     private final DeleteRecipe deleteRecipeRepository;
     private final ProductUseCase productUseCase;
-    private final ListUseCase listUseCase;
+    private final ReadList readListRepository;
+    private final ReadEntry readEntryRepository;
 
     @Override
-    public Recipe createRecipe(RecipeCommand recipe) {
+    public Recipe createRecipe(CreateRecipe recipe) {
         List<Ingredient> ingredients = recipe.getIngredients().stream()
                 .map(i -> {
                     ProductName name = ProductName.from(i.productName());
@@ -97,9 +98,11 @@ public class RecipeService implements CreateRecipeUseCase, UpdateRecipeUseCase, 
                 matchingRecipes.getFirst();
         readRecipeRepository.findRecipeById(recipeToDelete.getRecipeId()).orElseThrow(()
                 -> new RecipeNotFoundException("Recipe with given Id not found"));
-        boolean isReferenced = listUseCase.existsRecipeOnListByRecipeId(recipe.recipeId());
+        boolean isReferenced = readListRepository.getAllLists().stream()
+                .anyMatch(listName -> readEntryRepository.findByRecipeIdAndListName(recipe.recipeId(), listName).isPresent()
+                );
         if (isReferenced) {
-            throw new RecipeValidationException("Cannot delete recipe — it is used in a recipe list.");
+            throw new RecipeValidationException("Cannot delete recipe — it is used in a recipe list: ");
         }
         deleteRecipeRepository.deleteRecipeById(recipeToDelete.getRecipeId());
     }

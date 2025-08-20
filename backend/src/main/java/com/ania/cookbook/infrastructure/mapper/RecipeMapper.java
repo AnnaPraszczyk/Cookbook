@@ -1,5 +1,4 @@
 package com.ania.cookbook.infrastructure.mapper;
-
 import com.ania.cookbook.application.services.implementations.product.ProductName;
 import com.ania.cookbook.domain.model.Ingredient;
 import com.ania.cookbook.domain.model.Product;

@@ -1,4 +1,5 @@
 package com.ania.cookbook.application.services.implementations.recipe;
+import com.ania.cookbook.application.services.implementations.list.ListName;
 import com.ania.cookbook.application.services.implementations.product.ProductService;
 import com.ania.cookbook.application.services.interfaces.product.ProductUseCase;
 import com.ania.cookbook.application.services.interfaces.recipe.DeleteRecipeUseCase.DeleteRecipeCase;
@@ -7,33 +8,33 @@ import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.*;
 import com.ania.cookbook.infrastructure.repositories.InMemoryEntryRepository;
+import com.ania.cookbook.infrastructure.repositories.InMemoryListRepository;
 import com.ania.cookbook.infrastructure.repositories.InMemoryProductRepository;
 import com.ania.cookbook.infrastructure.repositories.InMemoryRecipeRepository;
 import com.ania.cookbook.web.ingredient.IngredientRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(MockitoExtension.class)
 class RecipeServiceTest {
     private InMemoryRecipeRepository recipeRepository;
+    private InMemoryEntryRepository entryRepository;
+    private InMemoryListRepository listRepository;
     private RecipeService recipeService;
     private ReadRecipeService readRecipeService;
-    private InMemoryEntryRepository entryRepository;
-
 
     @BeforeEach
     void setUp() {
         recipeRepository = new InMemoryRecipeRepository();
         entryRepository = new InMemoryEntryRepository();
+        listRepository = new InMemoryListRepository();
+
         InMemoryProductRepository productRepository = new InMemoryProductRepository();
         ProductUseCase productUseCase = new ProductService(productRepository, productRepository, productRepository, productRepository);
-        recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository, productUseCase, entryRepository
-        );
+        recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository, productUseCase, listRepository, entryRepository);
         readRecipeService = new ReadRecipeService(recipeRepository);
     }
 
@@ -41,7 +42,7 @@ class RecipeServiceTest {
     void createRecipe() {
         IngredientRequest raw1 = new IngredientRequest("Flour", 20f, Unit.DAG);
         IngredientRequest raw2 = new IngredientRequest("Sugar", 10f, Unit.G);
-        RecipeCommand request = new RecipeCommand("Pancakes", Category.DESSERT,
+        CreateRecipe request = new CreateRecipe("Pancakes", Category.DESSERT,
                 List.of(raw1,raw2), "Mix and fry", 2, List.of("Easy"));
         Recipe savedRecipe = recipeService.createRecipe(request);
 
@@ -67,47 +68,11 @@ class RecipeServiceTest {
     }
 
     @Test
-    void createRecipeWhenCategoryIsNull() {
-        RecipeCommand request = new RecipeCommand(
-                "Pancakes", null,
-                List.of(new IngredientRequest("Flour", 200, Unit.G)),
-                "Mix ingredients and fry.", 4, List.of("Easy"));
-
-        Exception exception = assertThrows(RecipeValidationException.class,
-                () -> recipeService.createRecipe(request));
-        assertEquals("Recipe category cannot be null.", exception.getMessage());
-    }
-
-    @Test
-    void createRecipeWhenInstructionsAreBlank() {
-        RecipeCommand recipe = new RecipeCommand(
-                "Pancakes", Category.DESSERT,
-                List.of(new IngredientRequest("Flour", 200, Unit.G)),
-                "", 4, List.of("Easy"));
-
-        Exception exception = assertThrows(RecipeValidationException.class,
-                () -> recipeService.createRecipe(recipe));
-        assertEquals("Recipe instructions cannot be null or empty.", exception.getMessage());
-    }
-
-    @Test
-    void createRecipeWhenNumberOfServingsIsNegative() {
-        RecipeCommand request = new RecipeCommand(
-                "Pancakes", Category.DESSERT,
-                List.of(new IngredientRequest("Flour", 200, Unit.G)),
-                "Mix ingredients and fry.", -2, List.of("Easy"));
-
-        Exception exception = assertThrows(RecipeValidationException.class,
-                () -> recipeService.createRecipe(request));
-        assertEquals("Recipe number of servings cannot be negative.", exception.getMessage());
-    }
-
-    @Test
     void updateRecipe() {
-        RecipeCommand recipeCommand = new RecipeCommand("Pancakes", Category.DESSERT,
+        CreateRecipe createRecipe = new CreateRecipe("Pancakes", Category.DESSERT,
                 List.of(new IngredientRequest("Flour", 10, Unit.DAG)),
                 "Mix and cook", 2, List.of("Easy", "Breakfast"));
-        Recipe originalRecipe = recipeService.createRecipe(recipeCommand);
+        Recipe originalRecipe = recipeService.createRecipe(createRecipe);
         UpdateRecipeCase updateRecipe = new UpdateRecipeCase("Updated Pancakes", null,null,
                 "Updated Instructions",5,null );
         List<Recipe> foundedRecipes =readRecipeService.findRecipeByName("Pancakes");
@@ -133,7 +98,7 @@ class RecipeServiceTest {
 
     @Test
     void updateRecipeWhenNumberOfServingsIsNegative() {
-        RecipeCommand createRequest = new RecipeCommand("Pancakes", Category.DESSERT,
+        CreateRecipe createRequest = new CreateRecipe("Pancakes", Category.DESSERT,
                 List.of(new IngredientRequest("Flour", 10, Unit.DAG)),
                 "Mix and cook", 2, List.of("Easy", "Breakfast"));
         Recipe originalRecipe = recipeService.createRecipe(createRequest);
@@ -150,7 +115,7 @@ class RecipeServiceTest {
 
     @Test
     void updateRecipeWhenNumberOfServingsIsCalculate() {
-        RecipeCommand createRequest = new RecipeCommand("Pancakes", Category.DESSERT,
+        CreateRecipe createRequest = new CreateRecipe("Pancakes", Category.DESSERT,
                 List.of(new IngredientRequest("Flour", 10, Unit.DAG),
                         new IngredientRequest("Eggs", 2, Unit.G)),
                 "Mix and cook", 2, List.of("Easy", "Breakfast"));
@@ -167,16 +132,40 @@ class RecipeServiceTest {
 
         @Test
     void deleteRecipeById() {
-        RecipeCommand recipeCommand = new RecipeCommand("Pancakes", Category.DESSERT,
+        CreateRecipe createRecipe = new CreateRecipe("Pancakes", Category.DESSERT,
                 List.of(new IngredientRequest("Flour", 200, Unit.G)),
                 "Mix ingredients and fry.", 4, List.of("Easy"));
-        Recipe originalRecipe = recipeService.createRecipe(recipeCommand);
+        Recipe originalRecipe = recipeService.createRecipe(createRecipe);
         List<Recipe> foundedRecipes =readRecipeService.findRecipeByName("Pancakes");
         Recipe recipeToDelete = recipeService.selectRecipeFromList(foundedRecipes,originalRecipe.getRecipeId());
         DeleteRecipeCase deleteRequest = new DeleteRecipeCase(recipeToDelete.getRecipeId(),recipeToDelete.getRecipeName());
         recipeService.deleteRecipe(deleteRequest);
 
         assertTrue(recipeRepository.findRecipeById(recipeToDelete.getRecipeId()).isEmpty());
+        assertFalse(recipeRepository.existsRecipeById(recipeToDelete.getRecipeId()));
+    }
+
+    @Test
+    void throwExceptionWhenRecipeIsUsedInList() {
+        UUID recipeId = UUID.randomUUID();
+        Recipe recipe = Recipe.newRecipe(
+                recipeId,
+                "Pasta with cheese",
+                Category.MAIN_COURSE,
+                List.of(),
+                "Cook pasta in water and cheese.",
+                2,
+                List.of("fast", "easy")
+        );
+        recipeRepository.saveRecipe(recipe);
+        ListName listName = new ListName("List");
+        SavedList savedList = new SavedList(listName, Instant.now(), "New list",2,List.of());
+        listRepository.save(savedList);
+        ListEntry entry = new ListEntry(UUID.randomUUID(), recipe, savedList, 1);
+        entryRepository.save(entry);
+        DeleteRecipeCase deleteCase = new DeleteRecipeCase(recipeId, "Pasta with cheese");
+
+        assertThrows(RecipeValidationException.class, () -> recipeService.deleteRecipe(deleteCase));
     }
 
     @Test

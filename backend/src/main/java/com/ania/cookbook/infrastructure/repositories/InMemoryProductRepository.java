@@ -1,5 +1,4 @@
 package com.ania.cookbook.infrastructure.repositories;
-
 import com.ania.cookbook.domain.repositories.product.DeleteProduct;
 import com.ania.cookbook.domain.repositories.product.ReadProduct;
 import com.ania.cookbook.domain.repositories.product.SaveProduct;

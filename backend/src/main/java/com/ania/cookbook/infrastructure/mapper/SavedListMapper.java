@@ -14,10 +14,10 @@ public class SavedListMapper {
     private final ListEntryMapper entryMapper;
 
     public SavedList toDomain(SavedListEntity entity) {
-        List<ListEntry> domainEntries = entity.getEntries().stream()
+        List<ListEntry> domainEntries = Optional.ofNullable(entity.getEntries())
+                .orElse(Collections.emptyList()).stream()
                 .map(entryMapper::toDomain)
                 .toList();
-
         return SavedList.builder()
                 .listName(new ListName(entity.getListName()))
                 .createdAt(entity.getCreatedAt())
@@ -28,17 +28,16 @@ public class SavedListMapper {
     }
 
     public SavedListEntity toEntity(SavedList domain) {
-        List<ListEntryEntity> entryEntities = domain.getEntries().stream()
-                .map(entryMapper::toEntity)
-                .toList();
         SavedListEntity entity = SavedListEntity.builder()
                 .listName(domain.getListName().name())
                 .createdAt(domain.getCreatedAt())
                 .listDescription(domain.getListDescription())
                 .expectedPortions(domain.getExpectedPortions())
-                .entries(entryEntities)
                 .build();
-        entity.getEntries().forEach(e -> e.setSavedList(entity));
+        List<ListEntryEntity> entryEntities = domain.getEntries().stream()
+                .map(entry -> entryMapper.toEntity(entry, entity))
+                .toList();
+        entity.setEntries(entryEntities);
         return entity;
     }
 }

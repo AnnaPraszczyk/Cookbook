@@ -1,5 +1,4 @@
 package com.ania.cookbook.infrastructure.mapper;
-
 import com.ania.cookbook.application.services.implementations.product.ProductName;
 import com.ania.cookbook.domain.model.*;
 import com.ania.cookbook.infrastructure.persistence.entity.IngredientJson;
@@ -25,6 +24,7 @@ class RecipeMapperTest {
         RecipeEntity entity = RecipeEntity.newRecipeEntity(recipeId, "Cake", Category.DESSERT, List.of(ingJson),
                 "Mix and bake for 40 minutes.", 4, List.of("fast", "sweet"));
         Recipe domain = mapper.toDomain(entity);
+
         assertEquals(recipeId, domain.getRecipeId());
         assertEquals("Cake", domain.getRecipeName());
         assertEquals(Category.DESSERT, domain.getCategory());

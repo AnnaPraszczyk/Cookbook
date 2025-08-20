@@ -16,6 +16,7 @@ public class Product {
                     @JsonProperty("productName") ProductName productName) {
         if(productId==null){throw new ProductValidationException("Product id cannot be null");}
         this.productId = productId;
+        if(productName==null){throw new ProductValidationException("Product name cannot be null");}
         this.productName = productName;
     }
 

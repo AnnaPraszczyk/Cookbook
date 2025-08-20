@@ -3,6 +3,7 @@ import com.ania.cookbook.domain.model.ListEntry;
 import com.ania.cookbook.domain.model.Recipe;
 import com.ania.cookbook.domain.model.SavedList;
 import com.ania.cookbook.infrastructure.persistence.entity.ListEntryEntity;
+import com.ania.cookbook.infrastructure.persistence.entity.SavedListEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -24,10 +25,11 @@ public class ListEntryMapper {
                 .build();
     }
 
-    public ListEntryEntity toEntity(ListEntry domain) {
+    public ListEntryEntity toEntity(ListEntry domain, SavedListEntity savedListEntity) {
         return ListEntryEntity.builder()
                 .entryId(domain.getEntryId())
                 .recipe(recipeMapper.toEntity(domain.getRecipe()))
+                .savedList(savedListEntity)
                 .portions(domain.getPortions())
                 .build();
     }

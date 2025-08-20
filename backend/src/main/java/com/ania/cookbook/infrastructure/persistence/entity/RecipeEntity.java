@@ -1,5 +1,4 @@
 package com.ania.cookbook.infrastructure.persistence.entity;
-
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.infrastructure.converters.IngredientsJsonConverter;
@@ -14,7 +13,6 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@AllArgsConstructor
 @Table(name = "recipe")
 public class RecipeEntity {
         @Id
@@ -58,7 +56,7 @@ public class RecipeEntity {
             return new RecipeEntity(recipeId, name, category, ingredients, instructions,numberOfServings, tags);
         }
 
-    protected RecipeEntity() {
+    public RecipeEntity() {
         this.recipeId = null;
         this.recipeName = null;
         this.category = null;
@@ -67,6 +65,5 @@ public class RecipeEntity {
         this.created = null;
         this.numberOfServings = 0;
         this.tags = null;
-
     }
 }

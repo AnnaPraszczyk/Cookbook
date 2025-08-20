@@ -1,12 +1,10 @@
 package com.ania.cookbook.infrastructure.converters;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import java.util.ArrayList;
 import java.util.List;
-
 import static io.micrometer.common.util.StringUtils.isBlank;
 
 @Converter

@@ -1,5 +1,4 @@
 package com.ania.cookbook.infrastructure.converters;
-
 import com.ania.cookbook.domain.exceptions.IngredientConversionException;
 import com.ania.cookbook.infrastructure.persistence.entity.IngredientJson;
 import com.fasterxml.jackson.core.JsonProcessingException;

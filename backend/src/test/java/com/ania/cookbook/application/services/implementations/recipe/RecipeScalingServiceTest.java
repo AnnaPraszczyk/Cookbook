@@ -1,5 +1,4 @@
 package com.ania.cookbook.application.services.implementations.recipe;
-
 import com.ania.cookbook.application.services.implementations.product.ProductService;
 import com.ania.cookbook.application.services.interfaces.product.ProductUseCase;
 import com.ania.cookbook.application.services.interfaces.recipe.ScaleIngredientsUseCase.AdjustRecipe;
@@ -8,34 +7,30 @@ import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.domain.model.Recipe;
 import com.ania.cookbook.domain.model.Unit;
-import com.ania.cookbook.infrastructure.persistence.list.ListEntryRepository;
+import com.ania.cookbook.infrastructure.repositories.InMemoryEntryRepository;
+import com.ania.cookbook.infrastructure.repositories.InMemoryListRepository;
 import com.ania.cookbook.infrastructure.repositories.InMemoryProductRepository;
 import com.ania.cookbook.infrastructure.repositories.InMemoryRecipeRepository;
 import com.ania.cookbook.web.ingredient.IngredientRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(MockitoExtension.class)
 class RecipeScalingServiceTest {
     private RecipeScalingService recipeScalingService;
     private RecipeService recipeService;
-
-    @Mock
-    private ListEntryRepository listEntryRepository;
 
     @BeforeEach
     void setUp() {
         InMemoryProductRepository productRepository = new InMemoryProductRepository();
         ProductUseCase productUseCase = new ProductService(productRepository, productRepository, productRepository, productRepository);
         InMemoryRecipeRepository recipeRepository = new InMemoryRecipeRepository();
+        InMemoryListRepository listRepository = new InMemoryListRepository();
+        InMemoryEntryRepository entryRepository = new InMemoryEntryRepository();
         recipeScalingService = new RecipeScalingService(recipeRepository);
-        recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository, productUseCase, listEntryRepository);
+        recipeService = new RecipeService(recipeRepository, recipeRepository, recipeRepository, recipeRepository, productUseCase, listRepository, entryRepository);
     }
 
     @Test
@@ -43,7 +38,7 @@ class RecipeScalingServiceTest {
         IngredientRequest ingredient1 = new IngredientRequest( "Sugar", 100, Unit.G);
         IngredientRequest ingredient2 = new IngredientRequest("Butter", 200, Unit.G);
         List<IngredientRequest> ingredients = List.of(ingredient1, ingredient2);
-        RecipeCommand recipe = new RecipeCommand("Pancakes", Category.DESSERT,
+        CreateRecipe recipe = new CreateRecipe("Pancakes", Category.DESSERT,
                 ingredients, "Mix and fry", 2, List.of("Easy"));
         Recipe newRecipe = recipeService.createRecipe(recipe);
         Recipe scaledRecipe = recipeScalingService.adjustRecipeByServings(new AdjustRecipe(newRecipe.getRecipeId(), 4));
@@ -59,7 +54,7 @@ class RecipeScalingServiceTest {
         IngredientRequest ingredient1 = new IngredientRequest( "Sugar", 100, Unit.G);
         IngredientRequest ingredient2 = new IngredientRequest("Butter", 200, Unit.G);
         List<IngredientRequest> ingredients = List.of(ingredient1, ingredient2);
-        RecipeCommand recipe = new RecipeCommand("Pancakes", Category.DESSERT,
+        CreateRecipe recipe = new CreateRecipe("Pancakes", Category.DESSERT,
                 ingredients, "Mix and fry", 2, List.of("Easy"));
         Recipe newRecipe = recipeService.createRecipe(recipe);
 

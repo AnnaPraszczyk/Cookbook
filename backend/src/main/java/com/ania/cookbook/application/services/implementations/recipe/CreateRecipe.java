@@ -1,12 +1,12 @@
 package com.ania.cookbook.application.services.implementations.recipe;
 import com.ania.cookbook.application.services.implementations.product.ProductName;
 import com.ania.cookbook.application.services.interfaces.product.ProductUseCase;
+import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.domain.model.Ingredient;
 import com.ania.cookbook.domain.model.Product;
 import com.ania.cookbook.domain.model.Recipe;
 import com.ania.cookbook.web.ingredient.IngredientRequest;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -16,7 +16,7 @@ import java.util.UUID;
 import static org.apache.logging.log4j.util.Strings.isBlank;
 
 @Getter
-public class RecipeCommand {
+public class CreateRecipe {
     private final String recipeName;
     private final Category category;
     private final List<IngredientRequest> ingredients;
@@ -25,16 +25,16 @@ public class RecipeCommand {
     private final List<String> tags;
 
     @Builder
-    public RecipeCommand(String recipeName, Category category, List<IngredientRequest> ingredients,
-                         String instructions, int numberOfServings, List<String> tags) {
-        if (isBlank(recipeName)) throw new IllegalArgumentException("Recipe name cannot be blank");
+    public CreateRecipe(String recipeName, Category category, List<IngredientRequest> ingredients,
+                        String instructions, int numberOfServings, List<String> tags) {
+        if (isBlank(recipeName)) throw new RecipeValidationException("Recipe name cannot be null or empty.");
         this.recipeName = recipeName;
-        if (category == null) throw new IllegalArgumentException("Recipe category cannot be null");
+        if (category == null) throw new RecipeValidationException("Recipe category cannot be null.");
         this.category = category;
         this.ingredients = ingredients != null ? new ArrayList<>(ingredients) : new ArrayList<>();
-        if (isBlank(instructions)) throw new IllegalArgumentException("Recipe instructions cannot be blank");
+        if (isBlank(instructions)) throw new RecipeValidationException("Recipe instructions cannot be null or empty.");
         this.instructions = instructions;
-        if (numberOfServings < 0) throw new IllegalArgumentException("Recipe number of servings cannot be negative");
+        if (numberOfServings < 0) throw new RecipeValidationException("Recipe number of servings cannot be negative.");
         this.numberOfServings = numberOfServings;
         this.tags = tags;
     }
