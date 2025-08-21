@@ -1,5 +1,9 @@
 package com.ania.cookbook.web.recipe;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import java.util.UUID;
 
@@ -8,10 +12,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class ReadRecipeRequest {
-    private UUID recipeId;
-    private String recipeName;
-    private String category;
-    private String tag;
-    private Integer page = 0;
-    private Integer size = 10;
+    @NotNull private UUID recipeId;
+    @NotBlank private String recipeName;
+    @NotNull private String category;
+    @Size(max = 100) private String tag;
+    @Min(0) private Integer page = 0;
+    @Min(1) private Integer size = 10;
 }

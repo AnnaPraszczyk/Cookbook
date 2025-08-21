@@ -1,5 +1,4 @@
 package com.ania.cookbook.web.controllers.recipe;
-
 import com.ania.cookbook.application.services.interfaces.recipe.DeleteRecipeUseCase.DeleteRecipeCase;
 import com.ania.cookbook.application.services.interfaces.recipe.UpdateRecipeUseCase.UpdateRecipeCase;
 import com.ania.cookbook.domain.model.Category;
@@ -20,6 +19,7 @@ import java.util.UUID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -52,6 +52,24 @@ public class RecipeControllerIntegrationTest {
     }
 
     @Test
+    void createRecipe_shouldReturnBadRequest_whenIngredientAmountIsZero() throws Exception {
+        RecipeRequest request = new RecipeRequest(
+                "Invalid",
+                Category.MAIN_COURSE,
+                List.of(new IngredientRequest("Sugar", 0, Unit.G)),
+                "Cook",
+                2,
+                List.of("Tag")
+        );
+        String json = objectMapper.writeValueAsString(request);
+
+        mockMvc.perform(post("/api/recipes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void updateRecipe() throws Exception {
         List<IngredientRequest> ingredients = List.of(
                 new IngredientRequest("Sugar", 200, Unit.G)
@@ -66,24 +84,46 @@ public class RecipeControllerIntegrationTest {
                 .andReturn().getResponse().getContentAsString();
         RecipeResponse createdRecipe = objectMapper.readValue(responseContent, RecipeResponse.class);
         UUID recipeId = createdRecipe.recipeId();
+        List<IngredientRequest> updatedIngredients = List.of(
+                new IngredientRequest("Sugar", 100, Unit.G)
+        );
         UpdateRecipeCase updateRequest = new UpdateRecipeCase(
                 "Updated Salad",
                 Category.APPETIZER,
-                Collections.emptyList(),
+                updatedIngredients,
                 "Mix veggies with dressing",
                 2,
-                Collections.singletonList("Fresh")
+                List.of("Fresh")
         );
         String updateJson = objectMapper.writeValueAsString(updateRequest);
 
         mockMvc.perform(put("/api/recipes/" + recipeId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(updateJson))
+                        .content(updateJson)).andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.recipeName").value("Updated Salad"))
                 .andExpect(jsonPath("$.instructions").value("Mix veggies with dressing"))
                 .andExpect(jsonPath("$.numberOfServings").value(2))
                 .andExpect(jsonPath("$.tags[0]").value("Fresh"));
+    }
+
+    @Test
+    void updateRecipe_shouldReturnNotFound_whenRecipeDoesNotExist() throws Exception {
+        UUID fakeId = UUID.randomUUID();
+        UpdateRecipeCase updateRequest = new UpdateRecipeCase(
+                "Ghost Recipe",
+                Category.DESSERT,
+                List.of(new IngredientRequest("Sugar", 100, Unit.G)),
+                "No instructions",
+                1,
+                List.of("Ghost")
+        );
+        String json = objectMapper.writeValueAsString(updateRequest);
+
+        mockMvc.perform(put("/api/recipes/" + fakeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -113,5 +153,17 @@ public class RecipeControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(deleteJson))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void deleteRecipe_shouldReturnNotFound_whenRecipeDoesNotExist() throws Exception {
+        UUID fakeId = UUID.randomUUID();
+        DeleteRecipeCase deleteRequest = new DeleteRecipeCase(fakeId, "Ghost");
+        String json = objectMapper.writeValueAsString(deleteRequest);
+
+        mockMvc.perform(delete("/api/recipes/" + fakeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isNotFound());
     }
 }

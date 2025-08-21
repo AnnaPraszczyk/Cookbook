@@ -2,106 +2,100 @@ package com.ania.cookbook.web.controllers.recipe;
 
 import com.ania.cookbook.application.services.interfaces.recipe.FindRecipeUseCase;
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
+import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.domain.model.Recipe;
-import com.ania.cookbook.web.recipe.ReadRecipeResponse;
+import com.ania.cookbook.web.mappers.CategoryResolver;
+import com.ania.cookbook.web.mappers.RecipeResponseMapper;
+import com.ania.cookbook.web.recipe.RecipeResponse;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import lombok.extern.slf4j.Slf4j;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import static io.micrometer.common.util.StringUtils.isBlank;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/api/recipes")
 @RequiredArgsConstructor
 public class ReadRecipeController {
     private final FindRecipeUseCase finder;
-
+    private final RecipeResponseMapper responseMapper;
+    private final CategoryResolver categoryResolver;
 
     @GetMapping("/latest")
-    public ResponseEntity<List<ReadRecipeResponse>> getLatestRecipes() {
+    public ResponseEntity<List<RecipeResponse>> getLatestRecipes() {
         List<Recipe> latest = finder.getLatestRecipes(12);
-        return ResponseEntity.ok(latest.stream().map(ReadRecipeResponse::from).toList());
+        return ResponseEntity.ok(responseMapper.toResponseList(latest));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ReadRecipeResponse> getRecipeById(@PathVariable UUID id) {
+    public ResponseEntity<RecipeResponse> getRecipeById(@PathVariable @NotNull UUID id) {
         Recipe recipe = finder.findRecipeById(id).orElseThrow(()
                 -> new RecipeNotFoundException("Unable to find the recipe because it does not exist."));
-        return ResponseEntity.ok(ReadRecipeResponse.from(recipe));
+        RecipeResponse response = responseMapper.toResponse(recipe);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}/exists")
-    public ResponseEntity<Boolean> existsRecipeById(@PathVariable UUID id) {
-        boolean exists = finder.existsRecipeById(id);
-        return ResponseEntity.ok(exists);
+    public ResponseEntity<Boolean> existsRecipeById(@PathVariable @NotNull UUID id) {
+        return ResponseEntity.ok(finder.existsRecipeById(id));
     }
 
     @GetMapping("/byName")
-    public ResponseEntity<List<ReadRecipeResponse>> getRecipesByName(@RequestParam("name") String recipeName) {
+    public ResponseEntity<List<RecipeResponse>> getRecipesByName(@RequestParam("name") @NotBlank String recipeName) {
         List<Recipe> recipes = finder.findRecipeByName(recipeName);
-        List<ReadRecipeResponse> responses = recipes.stream()
-                .map(ReadRecipeResponse::from)
-                .collect(Collectors.toList());
+        List<RecipeResponse> responses = responseMapper.toResponseList(recipes);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/byName/exists")
-    public ResponseEntity<Boolean> existsRecipeByName(@RequestParam("name") String recipeName) {
-        boolean exists = finder.existsRecipeByName(recipeName);
-        return ResponseEntity.ok(exists);
+    public ResponseEntity<Boolean> existsRecipeByName(@RequestParam("name") @NotBlank String recipeName) {
+        return ResponseEntity.ok(finder.existsRecipeByName(recipeName));
     }
 
     @GetMapping("/byCategory")
-    public ResponseEntity<List<ReadRecipeResponse>> getRecipesByCategory(@RequestParam String category) {
-        Category cat = resolveCategory(category);
+    public ResponseEntity<List<RecipeResponse>> getRecipesByCategory(@RequestParam @NotNull String category) {
+        Category cat = categoryResolver.resolve(category.trim());
         List<Recipe> recipes = finder.findRecipeByCategory(cat);
-        return ResponseEntity.ok(recipes.stream().map(ReadRecipeResponse::from).toList());
+        return ResponseEntity.ok(responseMapper.toResponseList(recipes));
     }
 
-
     @GetMapping("/search")
-    public Page<ReadRecipeResponse> search(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String category,
-            @PageableDefault(sort = "recipeName") Pageable pageable) {
+    public ResponseEntity<Page<RecipeResponse>> search(@RequestParam(required = false) String name,
+                                                       @RequestParam(required = false) String category,
+                                                       @PageableDefault(sort = "recipeName") Pageable pageable) {
         try {
             if (!isBlank(name)) {
-                return finder.findRecipeByName(name, pageable)
-                        .map(ReadRecipeResponse::from);
+                Page<Recipe> page = finder.findRecipeByName(name.trim(), pageable);
+                return ResponseEntity.ok(responseMapper.toResponsePage(page));
+
             }
             if (!isBlank(category)) {
-                Category cat = resolveCategory(category);
-                return finder.findRecipeByCategory(cat, pageable)
-                        .map(ReadRecipeResponse::from);
+                Category cat = categoryResolver.resolve(category.trim());
+                Page<Recipe> page = finder.findRecipeByCategory(cat, pageable);
+                return ResponseEntity.ok(responseMapper.toResponsePage(page));
             }
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Provide either name or category");
-        } catch (IllegalArgumentException ex) {
+        } catch (RecipeValidationException ex) {
             log.warn("Invalid category value: {}", category);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid category: " + category, ex);
         } catch (ResponseStatusException ex) {
             throw ex;
         } catch (Exception e) {
-            log.error("❌ Internal error during recipe search", e);
+            log.error("Internal error during recipe search", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", e);
         }
     }
-
-    private Category resolveCategory(String categoryValue) {
-        return Arrays.stream(Category.values())
-                .filter(cat -> cat.name().equalsIgnoreCase(categoryValue.trim()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Invalid category: " + categoryValue));
-    }
-
 }

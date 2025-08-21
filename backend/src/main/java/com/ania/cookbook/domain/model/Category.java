@@ -1,5 +1,6 @@
 package com.ania.cookbook.domain.model;
 
+import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
@@ -26,8 +27,7 @@ public enum Category {
                 return c;
             }
         }
-        throw new IllegalArgumentException("Unknown category: " + value);
+        throw new RecipeValidationException("Unknown category: " + value);
     }
-
 }
 

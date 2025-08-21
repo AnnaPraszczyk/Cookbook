@@ -1,70 +1,108 @@
 package com.ania.cookbook.web.controllers.recipe;
-
 import com.ania.cookbook.application.services.implementations.product.ProductName;
 import com.ania.cookbook.application.services.implementations.recipe.RecipeScalingService;
 import com.ania.cookbook.application.services.interfaces.recipe.ScaleIngredientsUseCase.AdjustRecipe;
+import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
+import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.*;
+import com.ania.cookbook.web.ingredient.IngredientResponse;
+import com.ania.cookbook.web.mappers.RecipeResponseMapper;
+import com.ania.cookbook.web.recipe.RecipeResponse;
 import com.ania.cookbook.web.recipe.RecipeScalingRequest;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import java.util.Arrays;
-import java.util.Collections;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import java.util.List;
 import java.util.UUID;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(RecipeScalingController.class)
+@ExtendWith(MockitoExtension.class)
 class RecipeScalingControllerTest {
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockitoBean
+    @Mock
     private RecipeScalingService recipeScalingService;
 
+    @Mock
+    private RecipeResponseMapper recipeResponseMapper;
+
+    @InjectMocks
+    private RecipeScalingController controller;
+
     @Test
-    void scaleRecipe() throws Exception {
+    void scaleRecipe() {
         UUID recipeId = UUID.randomUUID();
         int newServings = 4;
         RecipeScalingRequest request = RecipeScalingRequest.builder()
                 .recipeId(recipeId)
                 .servings(newServings)
                 .build();
-        String requestJson = objectMapper.writeValueAsString(request);
-        Category category = Category.MAIN_COURSE;
         Product product = Product.newProduct(UUID.randomUUID(), new ProductName("Flour"));
         Ingredient ingredient = Ingredient.newIngredient(product, 200.0f, Unit.G);
-        Recipe newRecipe = Recipe.newRecipe(
+        Recipe scaledRecipe = Recipe.newRecipe(
                 recipeId,
                 "Test Recipe (4 servings)",
-                category,
-                Collections.singletonList(ingredient),
+                Category.MAIN_COURSE,
+                List.of(ingredient),
                 "Mix ingredients",
                 newServings,
-                Arrays.asList("tag1", "tag2")
-        );
+                List.of("tag1", "tag2"));
+        RecipeResponse mappedResponse = new RecipeResponse(
+                scaledRecipe.getRecipeId(),
+                scaledRecipe.getRecipeName(),
+                scaledRecipe.getCategory(),
+                List.of(new IngredientResponse(
+                        product.getProductId(),
+                        product.getProductName(),
+                        ingredient.getAmount(),
+                        ingredient.getUnit()
+                )),
+                scaledRecipe.getInstructions(),
+                scaledRecipe.getNumberOfServings(),
+                scaledRecipe.getTags());
         when(recipeScalingService.adjustRecipeByServings(any(AdjustRecipe.class)))
-                .thenReturn(newRecipe);
+                .thenReturn(scaledRecipe);
+        when(recipeResponseMapper.toResponse(scaledRecipe)).thenReturn(mappedResponse);
+        ResponseEntity<RecipeResponse> response = controller.scaleRecipe(request);
 
-        mockMvc.perform(post("/api/recipes/scaling")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.recipeId").value(recipeId.toString()))
-                .andExpect(jsonPath("$.recipeName").value("Test Recipe (4 servings)"))
-                .andExpect(jsonPath("$.category").value(category.toString()))
-                .andExpect(jsonPath("$.instructions").value("Mix ingredients"))
-                .andExpect(jsonPath("$.servings").value(newServings))
-                .andExpect(jsonPath("$.tags[0]").value("tag1"))
-                .andExpect(jsonPath("$.tags[1]").value("tag2"));
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(mappedResponse, response.getBody());
+    }
+
+    @Test
+    void scaleRecipe_shouldReturnBadRequest_whenServingsIsNegative() {
+        RecipeScalingRequest request = RecipeScalingRequest.builder()
+                .recipeId(UUID.randomUUID())
+                .servings(-1)
+                .build();
+
+        assertThrows(RecipeValidationException.class, () -> controller.scaleRecipe(request));
+    }
+
+    @Test
+    void scaleRecipe_shouldThrowException_whenRecipeIdIsNull() {
+        RecipeScalingRequest request = RecipeScalingRequest.builder()
+                .recipeId(null)
+                .servings(2)
+                .build();
+
+        assertThrows(RecipeNotFoundException.class, () -> controller.scaleRecipe(request));
+    }
+
+    @Test
+    void scaleRecipe_shouldPropagateException_whenServiceFails() {
+        RecipeScalingRequest request = RecipeScalingRequest.builder()
+                .recipeId(UUID.randomUUID())
+                .servings(2)
+                .build();
+
+        when(recipeScalingService.adjustRecipeByServings(any())).thenThrow(new RecipeValidationException("Invalid scaling"));
+
+        assertThrows(RecipeValidationException.class, () -> controller.scaleRecipe(request));
     }
 }

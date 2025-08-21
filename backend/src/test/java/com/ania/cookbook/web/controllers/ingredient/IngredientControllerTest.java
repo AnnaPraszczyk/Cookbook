@@ -1,5 +1,4 @@
 package com.ania.cookbook.web.controllers.ingredient;
-
 import com.ania.cookbook.application.services.implementations.ingredient.IngredientService;
 import com.ania.cookbook.application.services.implementations.product.ProductName;
 import com.ania.cookbook.domain.model.Ingredient;

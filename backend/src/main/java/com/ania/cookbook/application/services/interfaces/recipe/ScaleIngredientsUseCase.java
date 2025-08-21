@@ -12,8 +12,8 @@ public interface ScaleIngredientsUseCase {
             if(recipeId == null){
                 throw new RecipeNotFoundException("Recipe with given Id does not exist.");
             }
-            if(servings<=0) {
-                throw new RecipeValidationException("Number of servings must be greater than zero.");
+            if(servings<0) {
+                throw new RecipeValidationException("Number of servings cannot be negative.");
             }
         }
     }

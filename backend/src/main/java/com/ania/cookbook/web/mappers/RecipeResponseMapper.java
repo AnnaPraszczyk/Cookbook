@@ -3,6 +3,7 @@ import com.ania.cookbook.domain.model.Recipe;
 import com.ania.cookbook.web.ingredient.IngredientResponse;
 import com.ania.cookbook.web.recipe.RecipeResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import java.util.List;
 
@@ -25,4 +26,15 @@ public class RecipeResponseMapper {
                 recipe.getTags()
         );
     }
+
+    public List<RecipeResponse> toResponseList(List<Recipe> recipes) {
+        return recipes.stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public Page<RecipeResponse> toResponsePage(Page<Recipe> recipePage) {
+        return recipePage.map(this::toResponse);
+    }
+
 }

@@ -16,7 +16,7 @@ public class ListRequest {
     @NotBlank
     private String listName;
     private Boolean confirm;
-    @Min(1)
+    @Min(0)
     private Integer portions;
     private String listDescription;
 }
