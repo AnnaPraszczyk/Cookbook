@@ -1,5 +1,4 @@
 package com.ania.cookbook.infrastructure.persistence.recipe;
-
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.domain.model.Recipe;
@@ -20,10 +19,8 @@ import static org.mockito.Mockito.*;
 class SaveRecipeAdapterTest {
     @Mock
     private SpringDataRecipeRepository jpaRepo;
-
     @Mock
     private RecipeMapper mapper;
-
     @InjectMocks
     private SaveRecipeAdapter adapter;
 

@@ -19,8 +19,8 @@ public class RecipeScalingService implements ScaleIngredientsUseCase {
         Recipe selectedRecipe = readRecipeRepository.findRecipeById(recipe.recipeId())
                 .orElseThrow(() -> new RecipeNotFoundException("Recipe with given Id does not exist."));
 
-        List<Ingredient> adjustedIngredients = recipe.servings() > 0 ?
-        selectedRecipe.getIngredients().stream()
+        List<Ingredient> adjustedIngredients = recipe.servings() > 0
+        ? selectedRecipe.getIngredients().stream()
                 .map(ingredient -> Ingredient.newIngredient(
                         ingredient.getProduct(),
                         Math.round(ingredient.getAmount() * recipe.servings() / selectedRecipe.getNumberOfServings()),
@@ -29,7 +29,7 @@ public class RecipeScalingService implements ScaleIngredientsUseCase {
                 : selectedRecipe.getIngredients();
 
         return Recipe.newRecipe(UUID.randomUUID(),
-                selectedRecipe.getRecipeName() + " (" + recipe.servings() + " servings)",
+                selectedRecipe.getRecipeName(),
                 selectedRecipe.getCategory(),
                 adjustedIngredients,
                 selectedRecipe.getInstructions(),

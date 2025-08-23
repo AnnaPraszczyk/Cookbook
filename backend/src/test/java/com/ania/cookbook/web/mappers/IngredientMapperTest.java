@@ -19,9 +19,9 @@ class IngredientMapperTest {
     void setUp() {
         mapper = new IngredientMapper();
     }
+
     @Test
-    void shouldMapIngredientToResponseCorrectly() {
-        // given
+    void mapIngredientToResponseCorrectly() {
         UUID productId = UUID.randomUUID();
         ProductName productName = ProductName.from("Sugar");
         Product product = Product.newProduct(productId, productName);
@@ -33,5 +33,4 @@ class IngredientMapperTest {
         assertEquals(200, response.amount());
         assertEquals(Unit.G, response.unit());
     }
-
 }

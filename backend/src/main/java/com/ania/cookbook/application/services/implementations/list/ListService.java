@@ -2,6 +2,7 @@ package com.ania.cookbook.application.services.implementations.list;
 import com.ania.cookbook.application.services.interfaces.list.ListUseCase;
 import com.ania.cookbook.domain.exceptions.ListNotFoundException;
 import com.ania.cookbook.domain.exceptions.ListValidationException;
+import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
 import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.Ingredient;
 import com.ania.cookbook.domain.model.ListEntry;
@@ -29,7 +30,6 @@ public class ListService implements ListUseCase {
     private final DeleteEntry deleteEntry;
     private final ReadRecipe readRecipe;
 
-
     @Override
     public void createRecipeList(ListName listName, String description, Integer defaultPortions) {
         if (readList.existsByName(listName)) {
@@ -52,9 +52,9 @@ public class ListService implements ListUseCase {
             return updateRecipeEntry(existingEntry.get().getEntryId(), portions);
         }
         Recipe recipe = readRecipe.findRecipeById(recipeId)
-                .orElseThrow(() -> new RecipeValidationException("Recipe not found"));
+                .orElseThrow(() -> new RecipeNotFoundException("Recipe not found"));
         SavedList savedList = readList.findByName(listName)
-                .orElseThrow(() -> new ListValidationException("List not found"));
+                .orElseThrow(() -> new ListNotFoundException("List not found"));
         ListEntry entry = ListEntry.builder()
                 .entryId(UUID.randomUUID())
                 .recipe(recipe)

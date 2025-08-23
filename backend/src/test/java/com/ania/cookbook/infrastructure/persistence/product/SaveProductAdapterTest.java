@@ -1,6 +1,7 @@
 package com.ania.cookbook.infrastructure.persistence.product;
 
 import com.ania.cookbook.application.services.implementations.product.ProductName;
+import com.ania.cookbook.domain.exceptions.ProductValidationException;
 import com.ania.cookbook.domain.model.Product;
 import com.ania.cookbook.infrastructure.mapper.ProductMapper;
 import com.ania.cookbook.infrastructure.persistence.entity.ProductEntity;
@@ -18,10 +19,8 @@ import static org.mockito.Mockito.when;
 class SaveProductAdapterTest {
     @Mock
     SpringDataProductRepository jpaRepository;
-
     @Mock
     ProductMapper productMapper;
-
     @InjectMocks
     SaveProductAdapter adapter;
 
@@ -45,10 +44,17 @@ class SaveProductAdapterTest {
     }
 
     @Test
-    void shouldThrowExceptionIfMapperFails() {
-        Product broken = Product.newProduct(UUID.randomUUID(), null);
-        when(productMapper.toEntity(broken)).thenThrow(new NullPointerException());
+    void shouldThrowValidationExceptionWhenProductNameIsNull() {
+        UUID id = UUID.randomUUID();
+        assertThrows(ProductValidationException.class, () -> Product.newProduct(id, null));
+    }
 
-        assertThrows(NullPointerException.class, () -> adapter.saveProduct(broken));
+    @Test
+    void shouldThrowExceptionIfMapperFails() {
+        UUID id = UUID.randomUUID();
+        Product validProduct = Product.newProduct(id, new ProductName("Broken"));
+        when(productMapper.toEntity(validProduct)).thenThrow(new IllegalStateException("Mapping failed"));
+
+        assertThrows(IllegalStateException.class, () -> adapter.saveProduct(validProduct));
     }
 }

@@ -1,5 +1,6 @@
 package com.ania.cookbook.infrastructure.mapper;
 import com.ania.cookbook.application.services.implementations.list.ListName;
+import com.ania.cookbook.domain.exceptions.ListValidationException;
 import com.ania.cookbook.domain.model.SavedList;
 import com.ania.cookbook.infrastructure.persistence.entity.ListEntryEntity;
 import com.ania.cookbook.infrastructure.persistence.entity.SavedListEntity;
@@ -40,15 +41,42 @@ class SavedListMapperWithoutEntriesTest {
     }
 
     @Test
-    void shouldHandleNullFieldsGracefully() {
+    void shouldThrowWhenListNameIsNull() {
         SavedListEntity entity = SavedListEntity.builder()
                 .listName(null)
-                .createdAt(null)
-                .listDescription(null)
+                .createdAt(Instant.now())
+                .listDescription("desc")
+                .expectedPortions(1)
+                .entries(null)
+                .build();
+
+        assertThrows(ListValidationException.class, () -> mapper.toDomainWithoutEntries(entity));
+    }
+
+    @Test
+    void shouldThrowWhenExpectedPortionsIsZero() {
+        SavedListEntity entity = SavedListEntity.builder()
+                .listName("TestList")
+                .createdAt(Instant.now())
+                .listDescription("desc")
                 .expectedPortions(0)
                 .entries(null)
                 .build();
 
-        assertThrows(IllegalArgumentException.class, () -> mapper.toDomainWithoutEntries(entity));
+        assertThrows(ListValidationException.class, () -> mapper.toDomainWithoutEntries(entity));
+    }
+
+    @Test
+    void shouldUseCurrentTimeWhenCreatedAtIsNull() {
+        SavedListEntity entity = SavedListEntity.builder()
+                .listName("TestList")
+                .createdAt(null)
+                .listDescription("desc")
+                .expectedPortions(1)
+                .entries(null)
+                .build();
+
+        SavedList domain = mapper.toDomainWithoutEntries(entity);
+        assertNotNull(domain.getCreatedAt());
     }
 }

@@ -1,5 +1,6 @@
 package com.ania.cookbook.infrastructure.mapper;
 import com.ania.cookbook.application.services.implementations.product.ProductName;
+import com.ania.cookbook.domain.exceptions.ProductValidationException;
 import com.ania.cookbook.domain.model.Product;
 import com.ania.cookbook.infrastructure.persistence.entity.ProductEntity;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,12 +42,25 @@ class ProductMapperTest {
     }
 
     @Test
-    void toEntityWithNullProductName() {
+    void newProductThrowWhenProductNameIsNull() {
         UUID id = UUID.randomUUID();
-        Product broken = Product.newProduct(id, null);
+        assertThrows(ProductValidationException.class, () -> Product.newProduct(id, null));
+    }
 
-        assertThrows(NullPointerException.class, () ->
-                mapper.toEntity(broken)
+    @Test
+    void toDomainThrowWhenProductNameIsEmpty() {
+        UUID id = UUID.randomUUID();
+        assertThrows(ProductValidationException.class, () ->
+                ProductEntity.newProductEntity(id, "")
         );
+    }
+
+    @Test
+    void toDomainTrimProductName() {
+        UUID id = UUID.randomUUID();
+        ProductEntity entity = ProductEntity.newProductEntity(id, "  Coffee  ");
+        Product domain = mapper.toDomain(entity);
+
+        assertEquals("Coffee", domain.getProductName().name());
     }
 }

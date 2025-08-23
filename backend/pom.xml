@@ -151,8 +151,30 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M7</version>
                 <configuration>
-                    <argLine>-javaagent:"${user.home}/.m2/repository/org/mockito/mockito-core/5.14.2/mockito-core-5.14.2.jar"</argLine>
+                    <argLine> <!--${jacoco.agent}-->-javaagent:"${user.home}/.m2/repository/org/mockito/mockito-core/5.14.2/mockito-core-5.14.2.jar"</argLine>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.10</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <propertyName>jacoco.agent</propertyName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

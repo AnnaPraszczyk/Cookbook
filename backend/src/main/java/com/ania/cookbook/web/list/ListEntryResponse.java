@@ -1,11 +1,9 @@
 package com.ania.cookbook.web.list;
-
-import com.ania.cookbook.web.recipe.ReadRecipeResponse;
+import com.ania.cookbook.web.recipe.RecipeResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.UUID;
 
 @Data
@@ -15,5 +13,5 @@ import java.util.UUID;
 public class ListEntryResponse {
     private UUID entryId;
     private int portions;
-    private ReadRecipeResponse recipe;
+    private RecipeResponse recipe;
 }

@@ -1,11 +1,12 @@
 package com.ania.cookbook.infrastructure.persistence.entity;
-
 import com.ania.cookbook.domain.model.Unit;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import java.util.UUID;
 
+@ToString
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

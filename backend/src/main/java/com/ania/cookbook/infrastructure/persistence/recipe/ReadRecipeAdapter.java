@@ -1,5 +1,4 @@
 package com.ania.cookbook.infrastructure.persistence.recipe;
-
 import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.domain.model.Recipe;
 import com.ania.cookbook.domain.repositories.recipe.ReadRecipe;

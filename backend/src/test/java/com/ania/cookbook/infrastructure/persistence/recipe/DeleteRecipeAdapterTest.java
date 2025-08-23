@@ -17,7 +17,7 @@ class DeleteRecipeAdapterTest {
     DeleteRecipeAdapter adapter;
 
     @Test
-    void shouldDeleteRecipeById() {
+    void deleteRecipeById() {
         UUID recipeId = UUID.randomUUID();
         adapter.deleteRecipeById(recipeId);
 

@@ -1,10 +1,9 @@
 package com.ania.cookbook.infrastructure.mapper;
-
 import com.ania.cookbook.domain.exceptions.ListValidationException;
 import com.ania.cookbook.domain.model.ListEntry;
 import com.ania.cookbook.domain.model.Recipe;
 import com.ania.cookbook.web.list.ListEntryResponse;
-import com.ania.cookbook.web.recipe.ReadRecipeResponse;
+import com.ania.cookbook.web.recipe.RecipeResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import java.util.List;
@@ -12,14 +11,13 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class ListEntryResponseMapper {
-    private final RecipeMapper recipeMapper;
 
     public ListEntryResponse toResponse(ListEntry entry) {
         if (entry == null) {
             throw new ListValidationException("ListEntryEntity cannot be null");
         }
         Recipe recipe = entry.getRecipe();
-        ReadRecipeResponse recipeResponse = recipe != null ? ReadRecipeResponse.from(recipe) : null;
+        RecipeResponse recipeResponse = recipe != null ? RecipeResponse.from(recipe) : null;
 
         return ListEntryResponse.builder()
                 .entryId(entry.getEntryId())

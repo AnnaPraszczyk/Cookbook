@@ -26,10 +26,8 @@ import static org.mockito.Mockito.when;
 class ReadRecipeAdapterTest {
     @Mock
     private SpringDataRecipeRepository jpaRepository;
-
     @Mock
     private RecipeMapper recipeMapper;
-
     @InjectMocks
     private ReadRecipeAdapter adapter;
 
@@ -117,7 +115,7 @@ class ReadRecipeAdapterTest {
     }
 
     @Test
-    void shouldCheckExistenceByName() {
+    void checkExistenceByName() {
         when(jpaRepository.existsByRecipeNameIgnoreCase("Cake")).thenReturn(true);
         assertTrue(adapter.existsRecipeByName("Cake"));
     }

@@ -44,8 +44,6 @@ public class SavedListAdapter implements SaveList, ReadList, DeleteList {
 
     @Override
     public void delete(SavedList list) {
-        SavedListEntity entity = mapper.toEntity(list);
-        repository.delete(entity);
+        repository.deleteByListName(list.getListName().name());
     }
-
 }

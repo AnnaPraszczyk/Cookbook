@@ -25,7 +25,7 @@ class RecipeResponseMapperTest {
         mapper = new RecipeResponseMapper(ingredientMapper);}
 
     @Test
-    void shouldMapRecipeToResponseCorrectly() {
+    void mapRecipeToResponseCorrectly() {
         UUID productId = UUID.randomUUID();
         ProductName productName = ProductName.from("Sugar");
         Product product = Product.newProduct(productId, productName);
@@ -55,7 +55,7 @@ class RecipeResponseMapperTest {
     }
 
     @Test
-    void shouldMapRecipeWithEmptyIngredients() {
+    void mapRecipeWithEmptyIngredients() {
         UUID recipeId = UUID.randomUUID();
         Recipe recipe = Recipe.newRecipe(
                 recipeId,

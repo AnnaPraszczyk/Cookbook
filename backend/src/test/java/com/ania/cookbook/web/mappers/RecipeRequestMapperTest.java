@@ -21,7 +21,7 @@ class RecipeRequestMapperTest {
     }
 
     @Test
-    void shouldMapRecipeRequestToCreateRecipeCorrectly() {
+    void mapRecipeRequestToCreateRecipeCorrectly() {
         RecipeRequest request = new RecipeRequest(
                 "Lasagna",
                 Category.MAIN_COURSE,
@@ -41,7 +41,7 @@ class RecipeRequestMapperTest {
     }
 
     @Test
-    void shouldHandleNullIngredientsAndTagsGracefully() {
+    void handleNullIngredientsAndTagsGracefully() {
         RecipeRequest request = new RecipeRequest(
                 "Soup",
                 Category.MAIN_COURSE,

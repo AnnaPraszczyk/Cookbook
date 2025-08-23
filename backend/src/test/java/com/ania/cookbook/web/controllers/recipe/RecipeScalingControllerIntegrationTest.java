@@ -67,8 +67,8 @@ public class RecipeScalingControllerIntegrationTest {
     }
 
     @Test
-    void returnBadRequest_whenServingsIsZero() throws Exception {
-        RecipeScalingRequest scalingRequest = new RecipeScalingRequest(createdRecipeId, 0);
+    void returnBadRequest_whenServingsIsNegative() throws Exception {
+        RecipeScalingRequest scalingRequest = new RecipeScalingRequest(createdRecipeId, -2);
         String json = objectMapper.writeValueAsString(scalingRequest);
 
         mockMvc.perform(post("/api/recipes/scaling")
@@ -76,6 +76,7 @@ public class RecipeScalingControllerIntegrationTest {
                         .content(json))
                 .andExpect(status().isBadRequest());
     }
+
     @Test
     void returnBadRequest_whenRecipeIdIsNull() throws Exception {
         RecipeScalingRequest scalingRequest = new RecipeScalingRequest(null, 2);

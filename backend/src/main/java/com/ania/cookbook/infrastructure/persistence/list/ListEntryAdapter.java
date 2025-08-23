@@ -5,6 +5,8 @@ import com.ania.cookbook.domain.repositories.list.DeleteEntry;
 import com.ania.cookbook.domain.repositories.list.ReadEntry;
 import com.ania.cookbook.domain.repositories.list.SaveEntry;
 import com.ania.cookbook.infrastructure.mapper.ListEntryMapper;
+import com.ania.cookbook.infrastructure.persistence.entity.ListEntryEntity;
+import com.ania.cookbook.infrastructure.persistence.entity.SavedListEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import java.util.List;
@@ -19,9 +21,9 @@ public class ListEntryAdapter implements SaveEntry, ReadEntry, DeleteEntry {
 
     @Override
     public ListEntry save(ListEntry entry) {
-        //ListEntryEntity entity = mapper.toEntity(entry, );
-        //ListEntryEntity saved = repository.save(entity);
-        return entry; //mapper.toDomain(saved);
+        ListEntryEntity entity = mapper.toEntityWithLookup(entry);
+        ListEntryEntity saved = repository.save(entity);
+        return mapper.toDomain(saved);
     }
 
     @Override

@@ -20,10 +20,8 @@ import static org.mockito.Mockito.*;
 class UpdateRecipeAdapterTest {
     @Mock
     private SpringDataRecipeRepository jpaRepository;
-
     @Mock
     private RecipeMapper recipeMapper;
-
     @InjectMocks
     private UpdateRecipeAdapter adapter;
 

@@ -167,7 +167,7 @@ class ListServiceTest {
     }
 
     @Test
-    void shouldReturnAllCreatedLists() {
+    void returnAllCreatedLists() {
         ListName list1 = new ListName("Breakfast");
         ListName list2 = new ListName("Dinner");
         listService.createRecipeList(list1, "Description", 1);
@@ -330,7 +330,7 @@ class ListServiceTest {
     }
 
     @Test
-    void shouldDeleteRecipeList() {
+    void deleteRecipeList() {
         ListName listName = new ListName("List");
         listService.createRecipeList(listName, "List to delete", 1);
         listService.deleteRecipeList(listName);
@@ -341,7 +341,7 @@ class ListServiceTest {
     }
 
     @Test
-    void shouldReturnTrueWhenRecipeExistsInAnyList() {
+    void returnTrueWhenRecipeExistsInAnyList() {
         ListName listName = new ListName("Dinner");
         listService.createRecipeList(listName, "Dinner list", 2);
         UUID recipeId = UUID.randomUUID();
@@ -354,6 +354,7 @@ class ListServiceTest {
                 2,
                 List.of("fast", "easy")
         );
+        recipeRepository.saveRecipe(recipe);
         listService.addRecipeToList(recipe.getRecipeId(), listName, 2);
         boolean exists = listService.existsRecipeOnListByRecipeId(recipeId);
 
@@ -361,7 +362,7 @@ class ListServiceTest {
     }
 
     @Test
-    void shouldReturnFalseWhenRecipeDoesNotExistInAnyList() {
+    void returnFalseWhenRecipeDoesNotExistInAnyList() {
         UUID recipeId = UUID.randomUUID();
         boolean exists = listService.existsRecipeOnListByRecipeId(recipeId);
 

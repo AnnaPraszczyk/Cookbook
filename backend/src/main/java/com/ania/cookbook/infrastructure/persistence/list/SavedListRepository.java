@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface SavedListRepository extends JpaRepository<SavedListEntity, String> {
     Optional<SavedListEntity> findByListName(String listName);
     boolean existsByListName(String listName);
+    void deleteByListName(String listName);
 }

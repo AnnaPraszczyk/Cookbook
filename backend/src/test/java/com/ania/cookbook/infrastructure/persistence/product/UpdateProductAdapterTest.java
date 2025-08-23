@@ -1,6 +1,6 @@
 package com.ania.cookbook.infrastructure.persistence.product;
-
 import com.ania.cookbook.application.services.implementations.product.ProductName;
+import com.ania.cookbook.domain.exceptions.ProductValidationException;
 import com.ania.cookbook.domain.model.Product;
 import com.ania.cookbook.infrastructure.mapper.ProductMapper;
 import com.ania.cookbook.infrastructure.persistence.entity.ProductEntity;
@@ -26,7 +26,7 @@ class UpdateProductAdapterTest {
     UpdateProductAdapter adapter;
 
     @Test
-    void shouldUpdateProductAndReturnMappedVersion() {
+    void updateProductAndReturnMappedVersion() {
         UUID id = UUID.randomUUID();
         Product original = Product.newProduct(id, new ProductName("Flour"));
         ProductEntity entity = ProductEntity.newProductEntity(id, "Flour");
@@ -47,10 +47,18 @@ class UpdateProductAdapterTest {
     }
 
     @Test
-    void shouldThrowIfMapperFails() {
-        Product broken = Product.newProduct(UUID.randomUUID(), null);
-        when(productMapper.toEntity(broken)).thenThrow(new NullPointerException());
+    void throwValidationExceptionWhenProductNameIsNull() {
+        UUID id = UUID.randomUUID();
+        assertThrows(ProductValidationException.class, () -> Product.newProduct(id, null));
+    }
 
-        assertThrows(NullPointerException.class, () -> adapter.updateProduct(broken));
+    @Test
+    void throwIfMapperFails() {
+        UUID id = UUID.randomUUID();
+        Product validProduct = Product.newProduct(id, new ProductName("Broken"));
+
+        when(productMapper.toEntity(validProduct)).thenThrow(new IllegalStateException("Mapping failed"));
+
+        assertThrows(IllegalStateException.class, () -> adapter.updateProduct(validProduct));
     }
 }
