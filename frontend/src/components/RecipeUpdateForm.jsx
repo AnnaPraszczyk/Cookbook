@@ -9,9 +9,9 @@ const categoryOptions = [
 ];
 
 const RecipeUpdateForm = () => {
-    const { id } = useParams();
+    const {recipeId } = useParams();
     const location = useLocation();
-    const [name, setName] = useState("");
+    const [recipeName, setRecipeName] = useState("");
     const [category, setCategory] = useState(categoryOptions[0]);
     const [ingredients, setIngredients] = useState([]);
     const [instructions, setInstructions] = useState("");
@@ -31,13 +31,13 @@ const RecipeUpdateForm = () => {
     }, []);
 
     useEffect(() => {
-        if (!id) return;
+        if (!recipeId) return;
 
         const fetchRecipe = async () => {
             try {
-                const { data } = await axios.get(`/api/recipes/${id}`);
+                const { data } = await axios.get(`/api/recipes/${recipeId}`);
 
-                setName(data.name || "");
+                setRecipeName(data.recipeName || "");
                 setCategory(data.category || categoryOptions[0]);
                 setIngredients(
                     (data.ingredients || []).map(i => ({
@@ -56,7 +56,7 @@ const RecipeUpdateForm = () => {
         fetchRecipe().catch(err => {
             console.error("Unhandled fetchRecipe error:", err);
         });
-    }, [id]);
+    }, [recipeId]);
 
     const handleAddIngredient = (ingredient) => {
         setIngredients((prev) => [...prev, ingredient]);
@@ -74,7 +74,7 @@ const RecipeUpdateForm = () => {
         const tagsArray = tags.split(",").map((item) => item.trim()).filter((item) => item);
 
         const requestData = {
-            name,
+            name: recipeName,
             category,
             ingredients: ingredients.map(i => ({
                 productName: i.productName,
@@ -87,7 +87,7 @@ const RecipeUpdateForm = () => {
         };
 
         try {
-            await axios.put(`/api/recipes/${id}`, requestData);
+            await axios.put(`/api/recipes/${recipeId}`, requestData);
             setMessage({ text: "✅ Recipe updated!", type: "success" });
         } catch (error) {
             setMessage({text: "❌ Error updating recipe", type: error.message});
@@ -100,8 +100,8 @@ const RecipeUpdateForm = () => {
                 <input
                     type="text"
                     placeholder="Recipe Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    value={recipeName}
+                    onChange={(e) => setRecipeName(e.target.value)}
                     required
                     className="p-2 text-lg border-2 border-gray-400 bg-[#292F33] text-gray-400 rounded w-112 focus:outline-none focus:ring-2 focus:ring-white"
                 />

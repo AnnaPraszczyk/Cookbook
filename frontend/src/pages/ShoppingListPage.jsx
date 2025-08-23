@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {getAllLists} from "../api/recipeListApi";
-
 import CreateListPanel from "../components/CreateListPanel";
 import RecentListsPanel from "../components/RecentListsPanel";
 

@@ -28,7 +28,7 @@ public class RecipeScalingService implements ScaleIngredientsUseCase {
                 .toList()
                 : selectedRecipe.getIngredients();
 
-        return Recipe.newRecipe(UUID.randomUUID(),
+        return Recipe.newRecipe(recipe.recipeId(),
                 selectedRecipe.getRecipeName(),
                 selectedRecipe.getCategory(),
                 adjustedIngredients,

@@ -162,15 +162,15 @@ const Recipes = () => {
                     <tbody>
                     {recipes.map(r => (
                         <tr key={r.id} className="border-t cursor-pointer bg-[#292F33] text-white border-2 border-gray-400 hover:bg-[#444] hover:text-white">
-                            <td className="px-4 py-2 bg-[#292F33] text-white border-2 border-gray-400">{r.name}</td>
+                            <td className="px-4 py-2 bg-[#292F33] text-white border-2 border-gray-400">{r.recipeName}</td>
                             <td className="px-4 py-2 bg-[#292F33] text-white border-2 border-gray-400">{r.category}</td>
                             <td className="px-4 py-2 bg-[#292F33] text-white border-2 border-gray-400">
                                     <div className="flex gap-2">
-                                        <Link to={`/recipes/${r.id}?${searchTerm ? `search=${searchTerm}` : `category=${selectedCategory}`}`}
+                                        <Link to={`/recipes/${r.recipeId}?${searchTerm ? `search=${searchTerm}` : `category=${selectedCategory}`}`}
                                               className="px-2 py-1 text-white rounded hover:bg-gray-700 text-sm">View</Link>
-                                        <Link to={`/recipes/update/${r.id}?${searchTerm ? `search=${searchTerm}` : `category=${selectedCategory}`}`}
+                                        <Link to={`/recipes/update/${r.recipeId}?${searchTerm ? `search=${searchTerm}` : `category=${selectedCategory}`}`}
                                               className="px-2 py-1 text-white rounded hover:bg-gray-700 text-sm">Update</Link>
-                                        <Link to={`/recipes/delete/${r.id}?${searchTerm ? `search=${searchTerm}` : `category=${selectedCategory}`}`}
+                                        <Link to={`/recipes/delete/${r.recipeId}?${searchTerm ? `search=${searchTerm}` : `category=${selectedCategory}`}`}
                                               className="px-2 py-1 text-white rounded hover:bg-gray-700 text-sm">Delete</Link>
                                     </div>
                             </td>

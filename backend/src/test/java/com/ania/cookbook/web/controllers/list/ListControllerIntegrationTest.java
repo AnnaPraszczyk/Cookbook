@@ -168,15 +168,25 @@ public class ListControllerIntegrationTest {
     @Test
     void addingNonExistentRecipeShouldReturnNotFound() {
         String listName = generateUniqueListName();
-        restTemplate.postForEntity(baseUrl, ListRequest.builder().listName(listName).build(), Void.class);
+        ListRequest createListRequest = ListRequest.builder()
+                .listName(listName)
+                .listDescription("Lunch list")
+                .portions(2)
+                .build();
+        restTemplate.postForEntity(baseUrl, createListRequest, Void.class);
         UUID fakeRecipeId = UUID.randomUUID();
+        ListRequest addRecipeRequest = ListRequest.builder()
+                .recipeId(fakeRecipeId)
+                .listName(listName)
+                .listDescription("new")
+                .portions(4)
+                .build();
         ResponseEntity<String> response = restTemplate.postForEntity(baseUrl + "/" + listName + "/recipes",
-                ListRequest.builder().recipeId(fakeRecipeId).listName(listName).listDescription("new")
-                        .portions(4).build(), String.class);
+                addRecipeRequest, String.class);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertTrue(response.getBody().contains("Recipe not found"));
+        assertTrue(response.getBody().contains("Recipe with given Id does not exist."));
     }
 
     @Test
@@ -302,6 +312,7 @@ public class ListControllerIntegrationTest {
         ListRequest addRecipeRequest = ListRequest.builder()
                 .recipeId(recipeId)
                 .listName(listName)
+                .portions(2)
                 .build();
         restTemplate.postForEntity(baseUrl + "/" + listName + "/recipes", addRecipeRequest, Void.class);
         ResponseEntity<Boolean> clearResponse = restTemplate.exchange(

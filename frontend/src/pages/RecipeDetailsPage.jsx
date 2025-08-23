@@ -4,7 +4,7 @@ import {addRecipeToList} from "../api/recipeListApi.js";
 import axios from "axios";
 
 const RecipeDetailsPage = () => {
-    const { id } = useParams();
+    const {recipeId } = useParams();
     const [recipe, setRecipe] = useState(null);
     const [loading, setLoading] = useState(true);
     const [newServings, setNewServings] = useState("");
@@ -12,13 +12,18 @@ const RecipeDetailsPage = () => {
     const { listName, portions, defaultPortions } = location.state || {};
     const navigate = useNavigate();
 
-
+    useEffect(() => {
+        console.log("📦 location.state:", location.state);
+        console.log("🧮 defaultPortions:", defaultPortions);
+        console.log("🍽️ portions:", portions);
+        console.log("📋 listName:", listName);
+    }, []);
     const handleScale = async () => {
         const servingsValue = parseInt(newServings, 10);
         if (!servingsValue || servingsValue <= 0) return;
         try {
             const { data } = await axios.post("/api/recipes/scaling", {
-                    recipeId: recipe.id,
+                    recipeId: recipe.recipeId,
                     servings: servingsValue,
             });
             setRecipe(prev => ({
@@ -38,9 +43,11 @@ const RecipeDetailsPage = () => {
     };
 
     useEffect(() => {
-        if (recipe && !newServings)  {
+        if (recipe && (!newServings || newServings === "1"))  {
             const initialPortions =
-                portions || defaultPortions || recipe.numberOfServings || recipe.servings || "";
+                defaultPortions && defaultPortions > 1
+                    ? defaultPortions
+                    : recipe.numberOfServings ?? 1;
 
             setNewServings(initialPortions.toString());
         }
@@ -49,12 +56,14 @@ const RecipeDetailsPage = () => {
     const handleAddToList = async () => {
         try {
             const parsed = parseInt(newServings, 10);
+            console.log("🍽️ recipe.numberOfServings:", recipe.numberOfServings);
             const portionsToAdd =
                 Number.isFinite(parsed) && parsed > 0
                     ? parsed
                     : defaultPortions || portions || recipe.numberOfServings || 1;
             console.log("🔍 newServings before adding:", newServings);
-            await addRecipeToList({ listName, recipeId: recipe.id, portions: portionsToAdd });
+            console.log("✅ Final newServings:", newServings);
+            await addRecipeToList({ listName, recipeId: recipe.recipeId, portions: portionsToAdd });
             alert(`Recipe added to "${listName}" with ${portionsToAdd} portions!`);
             navigate(`/lists/${listName}/view`);
         } catch (err) {
@@ -66,7 +75,7 @@ const RecipeDetailsPage = () => {
     useEffect(() => {
         const fetchRecipe = async () => {
             try {
-                const { data }  = await axios.get(`/api/recipes/${id}`);
+                const { data }  = await axios.get(`/api/recipes/${recipeId}`);
                 setRecipe(data);
             } catch (e) {
                 console.error("Error loading recipe:", e);
@@ -77,7 +86,7 @@ const RecipeDetailsPage = () => {
         fetchRecipe().catch(err => {
             console.error("Unhandled fetchRecipe error:", err);
         });
-    }, [id]);
+    }, [recipeId]);
 
     useEffect(() => {
         console.log("🧪 fetched recipe:", recipe);
@@ -87,7 +96,7 @@ const RecipeDetailsPage = () => {
 
     return (
         <div className="w-full-max-5xl mx-auto p-6 text-gray-300 rounded shadow mt-6">
-            <h1 className="text-3xl font-bold mb-4">{recipe.name}</h1>
+            <h1 className="text-3xl font-bold mb-4">{recipe.recipeName}</h1>
             <p className="mb-2"><strong>Category:</strong> {recipe.category}</p>
             <p className="mb-2"><strong>Servings:</strong> {recipe.numberOfServings || recipe.servings || "-"}</p>
             {recipe.tags?.length > 0 && (

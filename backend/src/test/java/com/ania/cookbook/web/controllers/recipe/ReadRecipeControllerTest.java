@@ -183,7 +183,7 @@ class ReadRecipeControllerTest {
                 .thenReturn(Collections.singletonList(mappedResponse));
 
         mockMvc.perform(get("/api/recipes/byName")
-                        .param("name", "Pancakes"))
+                        .param("recipeName", "Pancakes"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].recipeName").value("Pancakes"))
                 .andExpect(jsonPath("$[0].category").value("Dessert"))
@@ -196,7 +196,7 @@ class ReadRecipeControllerTest {
         when(responseMapper.toResponseList(Collections.emptyList())).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/api/recipes/byName")
-                        .param("name", "Nonexistent"))
+                        .param("recipeName", "Nonexistent"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
     }
@@ -205,7 +205,7 @@ class ReadRecipeControllerTest {
     void existsRecipeByName() throws Exception {
         when(finder.existsRecipeByName("Pancakes")).thenReturn(true);
         mockMvc.perform(get("/api/recipes/byName/exists")
-                        .param("name", "Pancakes"))
+                        .param("recipeName", "Pancakes"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
     }

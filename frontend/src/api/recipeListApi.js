@@ -6,7 +6,8 @@ export const createRecipeList = async ({ listName, listDescription }) => {
 };
 
 export const addRecipeToList = async ({ listName, recipeId, portions }) => {
-    await axios.post(`${API}/${listName}/recipes`, { recipeId, portions });
+    console.log("📤 Sending to backend:", { listName, recipeId, portions });
+    await axios.post(`${API}/${listName}/recipes`, { recipeId, listName, portions , confirm: true,listDescription:"" });
 };
 
 export const getRecipesList = async (listName) => {

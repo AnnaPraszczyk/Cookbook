@@ -1,5 +1,7 @@
 package com.ania.cookbook.application.services.implementations.list;
+import com.ania.cookbook.application.services.implementations.recipe.RecipeScalingService;
 import com.ania.cookbook.application.services.interfaces.list.ListUseCase;
+import com.ania.cookbook.application.services.interfaces.recipe.ScaleIngredientsUseCase.AdjustRecipe;
 import com.ania.cookbook.domain.exceptions.ListNotFoundException;
 import com.ania.cookbook.domain.exceptions.ListValidationException;
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
@@ -29,6 +31,7 @@ public class ListService implements ListUseCase {
     private final ReadEntry readEntry;
     private final DeleteEntry deleteEntry;
     private final ReadRecipe readRecipe;
+    private final RecipeScalingService recipeScalingService;
 
     @Override
     public void createRecipeList(ListName listName, String description, Integer defaultPortions) {
@@ -51,15 +54,15 @@ public class ListService implements ListUseCase {
         if (existingEntry.isPresent()) {
             return updateRecipeEntry(existingEntry.get().getEntryId(), portions);
         }
-        Recipe recipe = readRecipe.findRecipeById(recipeId)
-                .orElseThrow(() -> new RecipeNotFoundException("Recipe not found"));
+        Recipe scaledRecipe = recipeScalingService.adjustRecipeByServings(
+                new AdjustRecipe(recipeId, portions));
         SavedList savedList = readList.findByName(listName)
                 .orElseThrow(() -> new ListNotFoundException("List not found"));
         ListEntry entry = ListEntry.builder()
                 .entryId(UUID.randomUUID())
-                .recipe(recipe)
+                .recipe(scaledRecipe)
                 .savedRecipeList(savedList)
-                .portions(portions != null ? portions : 1)
+                .portions(portions)
                 .build();
         return saveEntry.save(entry);
     }
@@ -121,13 +124,12 @@ public class ListService implements ListUseCase {
         deleteEntry.deleteById(entryId);
     }
 
-
     @Override
     public boolean clearRecipeList(ListName listName, boolean confirm) {
         if (!confirm) return false;
         List<ListEntry> entries = readEntry.findByListName(listName);
         if (entries.isEmpty()) {
-            throw new ListNotFoundException("List is empty or not found.");
+            return true;
         }
         deleteEntry.deleteAllByListName(listName);
         return true;
@@ -137,6 +139,8 @@ public class ListService implements ListUseCase {
     public void deleteRecipeList(ListName listName) {
         SavedList savedList = readList.findByName(listName)
                 .orElseThrow(() -> new ListNotFoundException("List not found."));
+        System.out.println("🗑️ Deleting list: " + listName);
+        System.out.println("🧾 List contents: " + savedList);
         deleteList.delete(savedList);
     }
 

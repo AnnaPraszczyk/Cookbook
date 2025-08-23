@@ -51,15 +51,15 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
     };
 
     const handleAdd = async (recipe) => {
-        const portions = recipe.defaultPortions || defaultPortions || 1;
+        const portions = defaultPortions || 1;
         try {
-            await addRecipeToList({ listName, recipeId: recipe.id, portions });
-            setSuccess(`Recipe "${recipe.name}" added to list!`);
+            await addRecipeToList({ listName, recipeId: recipe.recipeId, portions });
+            setSuccess(`Recipe "${recipe.recipeName}" added to list!`);
             setTimeout(() => {
                 navigate(`/lists/${listName}/view`, {
                     state:{
                         message: {
-                            text: `Recipe "${recipe.name}" added to list!`,
+                            text: `Recipe "${recipe.recipeName}" added to list!`,
                             type: "success"
                         },
                         refresh: true
@@ -156,14 +156,14 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
                         <tbody>
                         {results.map((r) => (
                             <tr
-                                key={r.id}
+                                key={r.recipeId}
                                 className="border-t cursor-pointer bg-[#292F33] border-2 border-gray-400 hover:bg-[#444]">
-                                <td className="px-4 py-2 border-2 border-gray-400 text-center">{r.name}</td>
+                                <td className="px-4 py-2 border-2 border-gray-400 text-center">{r.recipeName}</td>
                                 <td className="px-4 py-2 border-2 border-gray-400 text-center">{r.category}</td>
                                 <td className="px-4 py-2 border-2 border-gray-400 text-center">
                                     <div className="flex gap-2 justify-center items-center flex-wrap">
                                         <Link
-                                            to={`/recipes/${r.id}`}
+                                            to={`/recipes/${r.recipeId}`}
                                                 state={{
                                                     listName,
                                                     defaultPortions: r.defaultPortions || defaultPortions || 1,

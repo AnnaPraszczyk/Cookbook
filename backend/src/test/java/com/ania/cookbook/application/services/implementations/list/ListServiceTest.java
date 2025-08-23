@@ -1,5 +1,6 @@
 package com.ania.cookbook.application.services.implementations.list;
 import com.ania.cookbook.application.services.implementations.product.ProductName;
+import com.ania.cookbook.application.services.implementations.recipe.RecipeScalingService;
 import com.ania.cookbook.domain.exceptions.ListNotFoundException;
 import com.ania.cookbook.domain.exceptions.ListValidationException;
 import com.ania.cookbook.domain.model.*;
@@ -25,12 +26,12 @@ class ListServiceTest {
         recipeRepository = new InMemoryRecipeRepository();
         InMemoryListRepository listRepository = new InMemoryListRepository();
         InMemoryEntryRepository entryRepository = new InMemoryEntryRepository();
+        RecipeScalingService scalingService = new RecipeScalingService(recipeRepository);
 
         listService = new ListService(
                 listRepository, listRepository, listRepository,
                 entryRepository, entryRepository, entryRepository,
-                recipeRepository
-        );
+                recipeRepository, scalingService);
     }
 
     @Test
@@ -113,10 +114,21 @@ class ListServiceTest {
                 .tags(List.of("Vegetarian"))
                 .build();
         recipeRepository.saveRecipe(recipe);
-
         ListEntry entry = listService.addRecipeToList(recipeId, listName, 3);
+
         assertEquals(recipeId, entry.getRecipe().getRecipeId());
         assertEquals(3, entry.getPortions());
+        List<Ingredient> scaledIngredients = entry.getRecipe().getIngredients();
+        assertEquals(2, scaledIngredients.size());
+        Ingredient scaled1 = scaledIngredients.get(0);
+        Ingredient scaled2 = scaledIngredients.get(1);
+
+        assertEquals(150, scaled1.getAmount());
+        assertEquals(Unit.G, scaled1.getUnit());
+        assertEquals(product1Id, scaled1.getProduct().getProductId());
+        assertEquals(75, scaled2.getAmount());
+        assertEquals(Unit.G, scaled2.getUnit());
+        assertEquals(product2Id, scaled2.getProduct().getProductId());
     }
 
     @Test

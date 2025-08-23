@@ -27,9 +27,9 @@ const App = () => {
                     <Route path="/recipes/search" element={<Recipes />} />
                     <Route path="/recipes" element={<Recipes />} />
                     <Route path="/recipes/create" element={<CreateRecipePage />} />
-                    <Route path="/recipes/:id" element={<RecipeDetailsPage />} />
-                    <Route path="/recipes/update/:id" element={<UpdateRecipePage />} />
-                    <Route path="/recipes/delete/:id" element={<DeleteRecipePage />} />
+                    <Route path="/recipes/:recipeId" element={<RecipeDetailsPage />} />
+                    <Route path="/recipes/update/:recipeId" element={<UpdateRecipePage />} />
+                    <Route path="/recipes/delete/:recipeId" element={<DeleteRecipePage />} />
                     <Route path="/shoppingList" element={<ShoppingListPage />} />
                     <Route path="/shoppingList/:listName" element={<ShoppingListPage />} />
                     <Route path="/lists/:listName/select-recipes" element={<RecipeSelectorPage />} />

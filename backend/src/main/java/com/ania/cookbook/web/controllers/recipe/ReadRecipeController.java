@@ -40,28 +40,28 @@ public class ReadRecipeController {
         return ResponseEntity.ok(responseMapper.toResponseList(latest));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<RecipeResponse> getRecipeById(@PathVariable @NotNull UUID id) {
-        Recipe recipe = finder.findRecipeById(id).orElseThrow(()
+    @GetMapping("/{recipeId}")
+    public ResponseEntity<RecipeResponse> getRecipeById(@PathVariable @NotNull UUID recipeId) {
+        Recipe recipe = finder.findRecipeById(recipeId).orElseThrow(()
                 -> new RecipeNotFoundException("Unable to find the recipe because it does not exist."));
         RecipeResponse response = responseMapper.toResponse(recipe);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{id}/exists")
-    public ResponseEntity<Boolean> existsRecipeById(@PathVariable @NotNull UUID id) {
-        return ResponseEntity.ok(finder.existsRecipeById(id));
+    @GetMapping("/{recipeId}/exists")
+    public ResponseEntity<Boolean> existsRecipeById(@PathVariable @NotNull UUID recipeId) {
+        return ResponseEntity.ok(finder.existsRecipeById(recipeId));
     }
 
     @GetMapping("/byName")
-    public ResponseEntity<List<RecipeResponse>> getRecipesByName(@RequestParam("name") @NotBlank String recipeName) {
+    public ResponseEntity<List<RecipeResponse>> getRecipesByName(@RequestParam("recipeName") @NotBlank String recipeName) {
         List<Recipe> recipes = finder.findRecipeByName(recipeName);
         List<RecipeResponse> responses = responseMapper.toResponseList(recipes);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/byName/exists")
-    public ResponseEntity<Boolean> existsRecipeByName(@RequestParam("name") @NotBlank String recipeName) {
+    public ResponseEntity<Boolean> existsRecipeByName(@RequestParam("recipeName") @NotBlank String recipeName) {
         return ResponseEntity.ok(finder.existsRecipeByName(recipeName));
     }
 
@@ -73,12 +73,12 @@ public class ReadRecipeController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Page<RecipeResponse>> search(@RequestParam(required = false) String name,
+    public ResponseEntity<Page<RecipeResponse>> search(@RequestParam(required = false) String recipeName,
                                                        @RequestParam(required = false) String category,
                                                        @PageableDefault(sort = "recipeName") Pageable pageable) {
         try {
-            if (!isBlank(name)) {
-                Page<Recipe> page = finder.findRecipeByName(name.trim(), pageable);
+            if (!isBlank(recipeName)) {
+                Page<Recipe> page = finder.findRecipeByName(recipeName.trim(), pageable);
                 return ResponseEntity.ok(responseMapper.toResponsePage(page));
 
             }

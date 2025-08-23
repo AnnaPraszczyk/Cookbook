@@ -2,6 +2,7 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 const categories = [
     { value: "APPETIZER", label: "Appetizer" },
@@ -21,13 +22,14 @@ const categories = [
 const Home = () => {
     const [latestRecipes, setLatestRecipes] = useState([]);
     useEffect(() => {
-        fetch("http://localhost:8080/api/recipes/latest")
-            .then(res => {
-                if (!res.ok) throw new Error("Failed to fetch latest recipes");
-                return res.json();
-            })
-            .then(data => setLatestRecipes(data))
-            .catch(err => console.error("❌ Error during loading latest recipes:", err));
+        (async () => {
+            try {
+                const response = await axios.get("http://localhost:8080/api/recipes/latest");
+                setLatestRecipes(response.data);
+            } catch (error) {
+                console.error("❌ Error during loading latest recipes:", error);
+            }
+        })();
     }, []);
 
     return (
@@ -59,11 +61,13 @@ const Home = () => {
                             <li className="italic text-gray-400">Loading...</li>
                         ) : (
                             latestRecipes.map(recipe => (
-                                <li key={recipe.id}>
+                                <li key={recipe.recipeId}>
                                     <Link
-                                        to={`/recipes/${recipe.id}`}
+                                        to={`/recipes/${recipe.recipeId}`}
                                         className="hover:text-[#c0a060] hover:underline">
-                                        {recipe.name.length > 32 ? recipe.name.slice(0, 32) + "..." : recipe.name}
+                                        {typeof recipe.recipeName === "string" && recipe.recipeName.length > 32
+                                            ? recipe.recipeName.slice(0, 32) + "..."
+                                            : recipe.recipeName || "Unnamed Recipe"}
                                     </Link>
                                 </li>
                             ))

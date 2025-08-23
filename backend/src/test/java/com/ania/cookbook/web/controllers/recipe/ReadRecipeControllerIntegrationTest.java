@@ -89,7 +89,7 @@ public class ReadRecipeControllerIntegrationTest {
     @Test
     void returnRecipesByName() throws Exception {
         mockMvc.perform(get("/api/recipes/byName")
-                        .param("name", "Test Recipe"))
+                        .param("recipeName", "Test Recipe"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].recipeName").value("Test Recipe"));
     }
@@ -97,7 +97,7 @@ public class ReadRecipeControllerIntegrationTest {
     @Test
     void returnTrue_whenRecipeExistsByName() throws Exception {
         mockMvc.perform(get("/api/recipes/byName/exists")
-                        .param("name", "Test Recipe"))
+                        .param("recipeName", "Test Recipe"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
     }
@@ -105,7 +105,7 @@ public class ReadRecipeControllerIntegrationTest {
     @Test
     void returnFalse_whenRecipeDoesNotExistByName() throws Exception {
         mockMvc.perform(get("/api/recipes/byName/exists")
-                        .param("name", "Ghost"))
+                        .param("recipeName", "Ghost"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("false"));
     }
@@ -130,7 +130,7 @@ public class ReadRecipeControllerIntegrationTest {
     @Test
     void searchByName() throws Exception {
         mockMvc.perform(get("/api/recipes/search")
-                        .param("name", "Test Recipe"))
+                        .param("recipeName", "Test Recipe"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].recipeName").value("Test Recipe"));
     }

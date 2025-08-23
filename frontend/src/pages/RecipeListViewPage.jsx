@@ -46,12 +46,12 @@ export default function RecipeListViewPage() {
     }, [location.state]);
 
     const handleDelete = async (entry) => {
-        const confirmed = window.confirm(`Are you sure you want to remove "${entry.recipe?.name}" from the list?`);
+        const confirmed = window.confirm(`Are you sure you want to remove "${entry.recipe?.recipeName}" from the list?`);
         if (!confirmed) return;
         try {
             await deleteRecipeFromList({ listName, entryId: entry.entryId });
             setRecipes(prev => prev.filter(r => r.entryId !== entry.entryId));
-            setMessage({text:`"${entry.recipe?.name}" has been removed from the list.`, type: "success"});
+            setMessage({text:`"${entry.recipe?.recipeName}" has been removed from the list.`, type: "success"});
             setShowMessage(true);
             setTimeout(() => setShowMessage(false), 3000);
         } catch (e) {
@@ -63,10 +63,11 @@ export default function RecipeListViewPage() {
     };
 
     const handleView = (entry) => {
-        navigate(`/recipes/${entry.recipe.id}`, {
+        navigate(`/recipes/${entry.recipe.recipeId}`, {
             state: {
                 listName,
                 defaultPortions: entry.portions,
+                portions: entry.portions,
                 fromList: true
             }
         });
@@ -76,9 +77,9 @@ export default function RecipeListViewPage() {
      * @param {{ entryId: string, portions: number, recipe?: { id: string } }} entry
      */
     const handleUpdate = (entry) => {
-        const recipeId = entry.recipe?.id;
+        const recipeId = entry.recipe?.recipeId;
         if (!recipeId) return;
-        navigate(`/recipes/update/${entry.recipe.id}`, {
+        navigate(`/recipes/update/${entry.recipe.recipeId}`, {
             state: {
                 listName,
                 entryId: entry.entryId
@@ -113,7 +114,7 @@ export default function RecipeListViewPage() {
                             <div>
                                 {r.recipe && (
                                     <>
-                                <h3 className="text-xl font-semibold">{r.recipe.name}</h3>
+                                <h3 className="text-xl font-semibold">{r.recipe.recipeName}</h3>
                                 <p className="text-gray-400 text-sm">{r.recipe.category} • {formatPortions(r.portions)}
                                 </p>
                                     </>

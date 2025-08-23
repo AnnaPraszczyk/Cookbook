@@ -8,7 +8,7 @@ const categoryOptions = [
 ];
 
 const RecipeDeleteForm = () => {
-    const { id } = useParams();
+    const { recipeId } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
     const [recipe, setRecipe] = useState(null);
@@ -17,7 +17,7 @@ const RecipeDeleteForm = () => {
     useEffect(() => {
         const fetchRecipe = async () => {
             try {
-                const response = await axios.get(`/api/recipes/${id}`);
+                const response = await axios.get(`/api/recipes/${recipeId}`);
                 setRecipe(response.data);
             } catch (error) {
                 setMessage({ text: "Failed to load recipe.", type: "error" });
@@ -26,15 +26,15 @@ const RecipeDeleteForm = () => {
         fetchRecipe().catch((err) => {
             console.error("Unhandled fetchRecipe error:", err);
         });
-    }, [id]);
+    }, [recipeId]);
 
     const handleDelete = async (e) => {
         e.preventDefault();
         const confirmed = window.confirm("Are you sure you want to delete this recipe?");
         if (!confirmed) return;
         try {
-            await axios.delete(`/api/recipes/${id}`, {
-                data: { recipeId: id, recipeName: recipe.name },
+            await axios.delete(`/api/recipes/${recipeId}`, {
+                data: { recipeId, recipeName: recipe.recipeName },
                 headers: { "Content-Type": "application/json" },
             });
             setMessage({ text: "✅ Recipe deleted successfully!", type: "success" });
@@ -71,7 +71,7 @@ const RecipeDeleteForm = () => {
             <div>
                 <input
                     type="text"
-                    value={recipe.name}
+                    value={recipe.recipeName}
                     disabled
                     className="p-2 text-lg border-2 border-gray-400 bg-[#292F33] text-gray-400 rounded w-full max-w-112"
                 />
