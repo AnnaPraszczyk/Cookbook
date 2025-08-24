@@ -45,15 +45,16 @@ export const getAllLists = async () => {
     }
 };
 
-export const searchRecipes = async ({ name, category }) => {
+export const searchRecipes = async ({ recipeName, category, page = 0 }) => {
     const params = new URLSearchParams();
-    if (name && !category) {
-        params.append("name", name);
-    } else if (category && !name) {
+    if (recipeName && !category) {
+        params.append("recipeName", recipeName);
+    } else if (category && !recipeName) {
         params.append("category", category);
     } else {
         throw new Error("Provide either name or category");
     }
+    params.append("page", page);
     const res = await axios.get(`/api/recipes/search?${params.toString()}`);
     return res.data;
 };

@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { searchRecipes, addRecipeToList } from "../api/recipeListApi";
 import {Link, useNavigate} from "react-router-dom";
+import axios from "axios";
 
 export default function SearchAndAddRecipe({ listName, defaultPortions }) {
     const [searchTerm, setSearchTerm] = useState("");
@@ -13,14 +14,14 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const navigate = useNavigate();
-
+    const [listPortions, setListPortions] = useState(defaultPortions || 1);
 
     const searchByName = async () => {
         if (!searchTerm.trim()) return;
         setLoading(true);
         setSearchInitiated(true);
         try {
-            const data = await searchRecipes({ name: searchTerm, page });
+            const data = await searchRecipes({ recipeName: searchTerm, page });
             setResults(data.content || []);
             setTotalPages(Number.isInteger(data.totalPages) ? data.totalPages : 0);
             setError(null);
@@ -50,11 +51,24 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
         }
     };
 
+    useEffect(() => {
+        const fetchListDetails = async () => {
+            try {
+                const { data } = await axios.get(`/api/lists/${listName}`);
+                if (data.expectedPortions && data.expectedPortions > 0) {
+                    setListPortions(data.expectedPortions);}
+            } catch (err) {
+                console.error("Failed to fetch list details:", err);
+            }
+        };
+        fetchListDetails().catch(e => console.error(e));
+    }, [listName]);
+
     const handleAdd = async (recipe) => {
-        const portions = defaultPortions || 1;
+        const portions = listPortions || 1;
         try {
             await addRecipeToList({ listName, recipeId: recipe.recipeId, portions });
-            setSuccess(`Recipe "${recipe.recipeName}" added to list!`);
+            setSuccess(`Recipe "${recipe.recipeName}" added to list with ${portions} portions!`);
             setTimeout(() => {
                 navigate(`/lists/${listName}/view`, {
                     state:{
