@@ -88,4 +88,15 @@ public class ReadRecipeService implements FindRecipeUseCase{
     public List<Recipe> getLatestRecipes(int limit) {
         return readRecipeRepository.findTopNByOrderByCreatedDesc(limit);
     }
+
+    @Override
+    public Page<Recipe> findRecipeByNameAndCategory(String recipeName, Category category, Pageable pageable) {
+        if (isBlank(recipeName)) {
+            throw new RecipeValidationException("Recipe name cannot be null or empty.");
+        }
+        if (category == null) {
+            throw new RecipeValidationException("Recipe category cannot be null.");
+        }
+        return readRecipeRepository.findRecipeByNameAndCategory(recipeName.trim(), category, pageable);
+    }
 }

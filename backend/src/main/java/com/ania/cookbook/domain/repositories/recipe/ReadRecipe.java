@@ -17,5 +17,6 @@ public interface ReadRecipe{
     List<Recipe> findRecipeByCategory(Category category);
     Page<Recipe> findRecipeByCategory(Category category, Pageable pageable);
     List<Recipe> findTopNByOrderByCreatedDesc(int limit);
+    Page<Recipe> findRecipeByNameAndCategory(String recipeName, Category category, Pageable pageable);
 
 }

@@ -45,18 +45,15 @@ export const getAllLists = async () => {
     }
 };
 
-export const searchRecipes = async ({ recipeName, category, page = 0 }) => {
-    const params = new URLSearchParams();
-    if (recipeName && !category) {
-        params.append("recipeName", recipeName);
-    } else if (category && !recipeName) {
-        params.append("category", category);
-    } else {
-        throw new Error("Provide either name or category");
+export const searchRecipes = async ({ recipeName, category, page = 0, size = 10 }) => {
+    const params = { page, size };
+    if (recipeName && recipeName.trim()) params.recipeName = recipeName.trim();
+    if (category && category.trim()) params.category = category.trim();
+    if (!params.recipeName && !params.category) {
+        throw new Error("Please provide a recipe name or select a category.");
     }
-    params.append("page", page);
-    const res = await axios.get(`/api/recipes/search?${params.toString()}`);
-    return res.data;
+    const { data } = await axios.get("/api/recipes/search", { params });
+    return data;
 };
 
 export async function deleteRecipeFromList({ listName, entryId }) {

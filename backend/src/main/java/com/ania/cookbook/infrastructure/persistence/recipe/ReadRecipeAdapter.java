@@ -71,4 +71,11 @@ public class ReadRecipeAdapter implements ReadRecipe {
                 .map(recipeMapper::toDomain)
                 .toList();
     }
+
+    @Override
+    public Page<Recipe> findRecipeByNameAndCategory(String recipeName, Category category, Pageable pageable) {
+        return jpaRepository
+                .findByRecipeNameContainingIgnoreCaseAndCategory(recipeName, category, pageable)
+                .map(recipeMapper::toDomain);
+    }
 }

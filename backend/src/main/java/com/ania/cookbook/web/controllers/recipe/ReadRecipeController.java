@@ -72,30 +72,54 @@ public class ReadRecipeController {
         return ResponseEntity.ok(responseMapper.toResponseList(recipes));
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<Page<RecipeResponse>> search(@RequestParam(required = false) String recipeName,
-                                                       @RequestParam(required = false) String category,
-                                                       @PageableDefault(sort = "recipeName") Pageable pageable) {
-        try {
-            if (!isBlank(recipeName)) {
-                Page<Recipe> page = finder.findRecipeByName(recipeName.trim(), pageable);
-                return ResponseEntity.ok(responseMapper.toResponsePage(page));
+//    @GetMapping("/search")
+//    public ResponseEntity<Page<RecipeResponse>> search(@RequestParam(required = false) String recipeName,
+//                                                       @RequestParam(required = false) String category,
+//                                                       @PageableDefault(sort = "recipeName") Pageable pageable) {
+//        try {
+//            if (!isBlank(recipeName)) {
+//                Page<Recipe> page = finder.findRecipeByName(recipeName.trim(), pageable);
+//                return ResponseEntity.ok(responseMapper.toResponsePage(page));
+//
+//            }
+//            if (!isBlank(category)) {
+//                Category cat = categoryResolver.resolve(category.trim());
+//                Page<Recipe> page = finder.findRecipeByCategory(cat, pageable);
+//                return ResponseEntity.ok(responseMapper.toResponsePage(page));
+//            }
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Provide either name or category");
+//        } catch (RecipeValidationException ex) {
+//            log.warn("Invalid category value: {}", category);
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid category: " + category, ex);
+//        } catch (ResponseStatusException ex) {
+//            throw ex;
+//        } catch (Exception e) {
+//            log.error("Internal error during recipe search", e);
+//            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", e);
+//        }
+//    }
 
-            }
-            if (!isBlank(category)) {
-                Category cat = categoryResolver.resolve(category.trim());
-                Page<Recipe> page = finder.findRecipeByCategory(cat, pageable);
-                return ResponseEntity.ok(responseMapper.toResponsePage(page));
-            }
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Provide either name or category");
-        } catch (RecipeValidationException ex) {
-            log.warn("Invalid category value: {}", category);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid category: " + category, ex);
-        } catch (ResponseStatusException ex) {
-            throw ex;
-        } catch (Exception e) {
-            log.error("Internal error during recipe search", e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", e);
-        }
+    @GetMapping("/search")
+    public ResponseEntity<Page<RecipeResponse>> search(
+            @RequestParam(required = false) String recipeName,
+            @RequestParam(required = false) String category,
+            @PageableDefault(sort = "recipeName") Pageable pageable
+    ) {
+        boolean hasName = !isBlank(recipeName);
+        boolean hasCategory = !isBlank(category);
+
+        if (hasName && hasCategory) {
+            Category cat = categoryResolver.resolve(category.trim());
+            return ResponseEntity.ok(responseMapper.toResponsePage(
+                            finder.findRecipeByNameAndCategory(recipeName.trim(), cat, pageable)));}
+        if (hasName) {
+            return ResponseEntity.ok(responseMapper.toResponsePage(
+                            finder.findRecipeByName(recipeName.trim(), pageable)));}
+        if (hasCategory) {
+            Category cat = categoryResolver.resolve(category.trim());
+            return ResponseEntity.ok(
+                    responseMapper.toResponsePage(
+                            finder.findRecipeByCategory(cat, pageable)));}
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Provide at least name or category");
     }
 }

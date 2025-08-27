@@ -21,17 +21,45 @@ const Recipes = () => {
     const showFullPanel = !activeCategory && !activeName;
     const [searchParams] = useSearchParams();
     const searchTerm = searchParams.get("search") || "";
-    const selectedCategory = searchParams.get("category") || "";
+    const recipeNameParam = searchParams.get("recipeName") || "";
+    const categoryParam = searchParams.get("category") || "";
 
-    const fetchRecipes = async (query, type, currentPage= 0) => {
+    const handleSearch = () => {
+        const params = new URLSearchParams();
+        if (nameQuery.trim()) params.append("recipeName", nameQuery.trim());
+        if (categoryQuery.trim()) params.append("category", categoryQuery.trim());
+        params.append("page", "0");
+        navigate(`/recipes?${params.toString()}`);
+    };
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const recipeName = params.get("recipeName");
+        const category = params.get("category");
+        const pageParam = parseInt(params.get("page") || "0");
+        setPage(pageParam);
+        if (recipeName || category) {
+            setSearchInitiated(true);
+            if (recipeName && category) {
+                fetchRecipes({ recipeName, category }, pageParam);
+            } else if (recipeName) {
+                fetchRecipes({ recipeName }, pageParam);
+            } else if (category) {
+                fetchRecipes({ category }, pageParam);
+            }
+        } else {
+            setSearchInitiated(false);
+            setRecipes([]);
+        }
+    }, [location.search]);
+
+    const fetchRecipes = async (filters, currentPage= 0) => {
         setLoading(true);
         try {
             const { data }  = await axios.get("/api/recipes/search", {params: {
-                        page: currentPage,
-                        size: 10,
-                        [type]: query.trim(),
-                    },
-                });
+                    page: currentPage,
+                    size: 10,
+                    ...filters },});
             setRecipes(data.content || []);
             setTotalPages(data.totalPages || 0);
         } catch (e) {
@@ -40,27 +68,7 @@ const Recipes = () => {
         } finally {
             setLoading(false);
         }
-        console.log("➡️ Fetching recipes with:", type, query);
     };
-    useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        const search = params.get("search");
-        const category = params.get("category");
-        const pageParam = parseInt(params.get("page") || "0");
-        setPage(pageParam);
-        console.log("🔍 Search param:", search);
-        if (category || search) {
-            setSearchInitiated(true);
-            if(category){
-                fetchRecipes(category, "category", pageParam).catch(e => console.error(e));
-            } else if (search) {
-                fetchRecipes(search, "name", pageParam).catch(e => console.error(e));
-            }
-        } else {
-            setSearchInitiated(false);
-            setRecipes([]);
-        }
-    }, [location.search]);
 
     return (
         <div className="p-6 space-y-6 max-w-4xl mx-auto">
@@ -81,66 +89,49 @@ const Recipes = () => {
                 </Link>
             </div>
             <form
-                className="flex flex-wrap gap-2 items-center">
-
-                <div className="flex flex-col gap-4 items-start">
-                    <label className="block text-[#c0a060] mb-2 text-lg">Search by Name</label>
-                    <div className="flex gap-4">
-
+                className="flex flex-wrap gap-4 items-end">
+                <div className="flex flex-col">
+                    <label className="text-[#c0a060] mb-2 text-lg">Recipe Name</label>
                     <input
                     type="text"
                     value={nameQuery}
                     onChange={e => setNameQuery(e.target.value)}
                     placeholder={"Search by name"}
-                    className="p-2 text-lg border-2 border-gray-400 bg-[#292F33] rounded text-gray-400 focus:outline-none focus:ring-2 w-112 focus:ring-white"
-                />
+                    className="p-2 text-lg border-2 border-gray-400 bg-[#292F33] rounded text-gray-400 focus:outline-none focus:ring-2 w-112 focus:ring-white"/>
+                </div>
+                <div className="flex flex-col">
+                    <label className="text-[#c0a060] mb-2 text-lg">Category (optional)</label>
+                    <select
+                        value={categoryQuery}
+                        onChange={e => setCategoryQuery(e.target.value)}
+                        className="p-2 text-lg bg-[#292F33]  text-gray-500 border-2 border-gray-400 rounded w-64">
+                        <option value="">All categories</option>
+                        <option value="APPETIZER">Appetizer</option>
+                        <option value="SOUP">Soup</option>
+                        <option value="MAIN_COURSE">Main Course</option>
+                        <option value="SAUCE">Sauce</option>
+                        <option value="SALAD">Salad</option>
+                        <option value="PASTA">Pasta</option>
+                        <option value="SNACK">Snack</option>
+                        <option value="BEVERAGE">Beverage</option>
+                        <option value="DESSERT">Dessert</option>
+                        <option value="CAKE">Cake</option>
+                        <option value="PIE">Pie</option>
+                        <option value="BAKERY">Bakery</option>
+                    </select>
+                </div>
                 <button
                     type="button"
                     onClick={() => {
-                        const term = nameQuery.trim();
-                        if (term) {
-                            const params = new URLSearchParams();
-                            params.append("search", term);
-                            params.append("page", "0");
-                            navigate(`/recipes?${params.toString()}`);
-                        }
+                        const params = new URLSearchParams();
+                        if (nameQuery.trim()) params.append("recipeName", nameQuery.trim());
+                        if (categoryQuery && categoryQuery!=="") params.append("category", categoryQuery);
+                        params.append("page", "0");
+                        navigate(`/recipes?${params.toString()}`);
                     }}
-                    className="mt-4 text-lg px-4 py-2 bg-[#c0a060] mb-4 text-white rounded hover:bg-gray-600 transition-colors duration-200">
+                    className="mt-12 text-lg px-4 py-2 bg-[#c0a060] mb-4 text-white rounded hover:bg-gray-600 transition-colors duration-200 self-end">
                     Search
                 </button>
-                        </div>
-                        </div>
-                        <div className="flex flex-col gap-4 items-start">
-                            <label className="block text-[#c0a060] mb-2 mt-4 text-lg">Search by Category</label>
-                            <div className="flex gap-4">
-                                <select
-                                    value={categoryQuery}
-                                    onChange={e => setCategoryQuery(e.target.value)}
-                                    className="p-2 text-lg bg-[#292F33]  text-gray-500 border-2 border-gray-400 rounded w-112"
-                                >
-                                    <option value="">Select category</option>
-                                    <option value="APPETIZER">Appetizer</option>
-                                    <option value="SOUP">Soup</option>
-                                    <option value="MAIN_COURSE">Main Course</option>
-                                    <option value="SAUCE">Sauce</option>
-                                    <option value="SALAD">Salad</option>
-                                    <option value="PASTA">Pasta</option>
-                                    <option value="SNACK">Snack</option>
-                                    <option value="BEVERAGE">Beverage</option>
-                                    <option value="DESSERT">Dessert</option>
-                                    <option value="CAKE">Cake</option>
-                                    <option value="PIE">Pie</option>
-                                    <option value="BAKERY">Bakery</option>
-                                </select>
-                                <button
-                                    type="button"
-                                    onClick={() => {  navigate(`/recipes/search?category=${categoryQuery}&page=0`);}}
-                                    className="mt-4 text-lg px-4 py-2 bg-[#c0a060] mb-4 text-white rounded hover:bg-gray-600 transition-colors duration-200">
-                                    Search
-                                </button>
-                            </div>
-                        </div>
-
             </form>
                 </>
             )}
@@ -166,11 +157,11 @@ const Recipes = () => {
                             <td className="px-4 py-2 bg-[#292F33] text-white border-2 border-gray-400">{r.category}</td>
                             <td className="px-4 py-2 bg-[#292F33] text-white border-2 border-gray-400">
                                     <div className="flex gap-2">
-                                        <Link to={`/recipes/${r.recipeId}?${searchTerm ? `search=${searchTerm}` : `category=${selectedCategory}`}`}
+                                        <Link to={`/recipes/${r.recipeId}?${recipeNameParam ? `recipeName=${recipeNameParam}` : `category=${categoryParam}`}`}
                                               className="px-2 py-1 text-white rounded hover:bg-gray-700 text-sm">View</Link>
-                                        <Link to={`/recipes/update/${r.recipeId}?${searchTerm ? `search=${searchTerm}` : `category=${selectedCategory}`}`}
+                                        <Link to={`/recipes/update/${r.recipeId}?${recipeNameParam ? `recipeName=${recipeNameParam}` : `category=${categoryParam}`}`}
                                               className="px-2 py-1 text-white rounded hover:bg-gray-700 text-sm">Update</Link>
-                                        <Link to={`/recipes/delete/${r.recipeId}?${searchTerm ? `search=${searchTerm}` : `category=${selectedCategory}`}`}
+                                        <Link to={`/recipes/delete/${r.recipeId}?${recipeNameParam ? `recipeName=${recipeNameParam}` : `category=${categoryParam}`}`}
                                               className="px-2 py-1 text-white rounded hover:bg-gray-700 text-sm">Delete</Link>
                                     </div>
                             </td>
@@ -204,8 +195,8 @@ const Recipes = () => {
                     onClick={() => {
                         const params = new URLSearchParams();
                         params.append("page", String(page - 1));
-                        if (searchTerm) params.append("search", searchTerm);
-                        else if (selectedCategory) params.append("category", selectedCategory);
+                        if (recipeNameParam) params.append("recipeName", recipeNameParam);
+                        if (categoryParam) params.append("category", categoryParam);
                         navigate(`/recipes?${params.toString()}`);
                     }}
                     disabled={page === 0}
@@ -219,9 +210,8 @@ const Recipes = () => {
                     onClick={() => {
                         const params = new URLSearchParams();
                         params.append("page", String(page + 1));
-                        if (searchTerm) params.append("search", searchTerm);
-                        else if (selectedCategory) params.append("category", selectedCategory);
-
+                        if (recipeNameParam) params.append("recipeName", recipeNameParam);
+                        if (categoryParam) params.append("category", categoryParam);
                         navigate(`/recipes?${params.toString()}`);
                     }}
                     disabled={page + 1 >= totalPages}

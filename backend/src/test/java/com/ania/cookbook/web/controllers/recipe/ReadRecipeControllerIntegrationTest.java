@@ -128,24 +128,57 @@ public class ReadRecipeControllerIntegrationTest {
     }
 
     @Test
-    void searchByName() throws Exception {
+    void returnRecipeByName() throws Exception {
+
         mockMvc.perform(get("/api/recipes/search")
-                        .param("recipeName", "Test Recipe"))
+                        .param("recipeName", "Test Recipe")
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].recipeName").value("Test Recipe"));
+                .andExpect(jsonPath("$.content[0].recipeName").value("Test Recipe"))
+                .andExpect(jsonPath("$.content[0].category").value("Main Course"))
+                .andExpect(jsonPath("$.content[0].instructions").value("Boil water"));
     }
 
     @Test
-    void searchByCategory() throws Exception {
+    void returnRecipeByCategory() throws Exception {
+
         mockMvc.perform(get("/api/recipes/search")
-                        .param("category", "Main Course"))
+                        .param("category", "Main Course")
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].recipeName").value("Test Recipe"))
                 .andExpect(jsonPath("$.content[0].category").value("Main Course"));
     }
 
     @Test
-    void returnBadRequest_whenSearchWithoutParams() throws Exception {
-        mockMvc.perform(get("/api/recipes/search"))
-                .andExpect(status().isBadRequest());
+    void returnRecipeByNameAndCategory() throws Exception {
+
+        mockMvc.perform(get("/api/recipes/search")
+                        .param("recipeName", "Test")
+                        .param("category", "Main Course")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].recipeName").value("Test Recipe"))
+                .andExpect(jsonPath("$.content[0].category").value("Main Course"));
+    }
+
+    @Test
+    void returnBadRequestWhenNoParamsProvided() throws Exception {
+        mockMvc.perform(get("/api/recipes/search")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Provide at least name or category"));
+    }
+
+    @Test
+    void respectPagination() throws Exception {
+        mockMvc.perform(get("/api/recipes/search")
+                        .param("recipeName", "Test")
+                        .param("page", "0")
+                        .param("size", "1")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size").value(1))
+                .andExpect(jsonPath("$.number").value(0));
     }
 }

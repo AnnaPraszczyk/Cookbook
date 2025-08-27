@@ -16,42 +16,10 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
     const navigate = useNavigate();
     const [listPortions, setListPortions] = useState(defaultPortions || 1);
 
-    const searchByName = async () => {
-        if (!searchTerm.trim()) return;
-        setLoading(true);
-        setSearchInitiated(true);
-        try {
-            const data = await searchRecipes({ recipeName: searchTerm, page });
-            setResults(data.content || []);
-            setTotalPages(Number.isInteger(data.totalPages) ? data.totalPages : 0);
-            setError(null);
-            setSuccess("");
-        } catch (err) {
-            console.error(err);
-            setError("Failed to search by name.");
-        }finally {
-            setLoading(false);
-        }
-    };
-
-    const searchByCategory = async () => {
-        setLoading(true);
-        setSearchInitiated(true);
-        try {
-            const data = await searchRecipes({category, page});
-            setResults(data.content || []);
-            setTotalPages(Number.isInteger(data.totalPages) ? data.totalPages : 0);
-            setError(null);
-            setSuccess("");
-        } catch (err) {
-            console.error(err);
-            setError("Failed to search by category.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
+        if (defaultPortions && defaultPortions > 0) {
+            setListPortions(defaultPortions);
+        }
         const fetchListDetails = async () => {
             try {
                 const { data } = await axios.get(`/api/lists/${listName}`);
@@ -62,7 +30,32 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
             }
         };
         fetchListDetails().catch(e => console.error(e));
-    }, [listName]);
+    }, [listName, defaultPortions]);
+
+    const fetchRecipesUnified = async (currentPage = 0) => {
+        if (!searchTerm.trim() && !category) {
+            setError("Please provide a name or select a category.");
+            return;
+        }
+        setLoading(true);
+        setSearchInitiated(true);
+        try {
+            const params = { page: currentPage };
+            if (searchTerm.trim()) params.recipeName = searchTerm.trim();
+            if (category) params.category = category;
+
+            const data = await searchRecipes(params);
+            setResults(data.content || []);
+            setTotalPages(Number.isInteger(data.totalPages) ? data.totalPages : 0);
+            setError(null);
+            setSuccess("");
+        } catch (err) {
+            console.error(err);
+            setError("Failed to search recipes.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleAdd = async (recipe) => {
         const portions = listPortions || 1;
@@ -88,50 +81,38 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
 
     const goToNextPage = () => {
         if (page + 1 >= totalPages) return;
-        setPage(prev => {
-            const next = prev + 1;
-            category ? searchByCategory() : searchByName();
-            return next;
-        });
+        const next = page + 1;
+        setPage(next);
+        fetchRecipesUnified(next);
     };
 
     const goToPreviousPage = () => {
         if (page === 0) return;
-        setPage(prev => {
-            const prevPage = prev - 1;
-            category ? searchByCategory() : searchByName();
-            return prevPage;
-        });
+        const prevPage = page - 1;
+        setPage(prevPage);
+        fetchRecipesUnified(prevPage);
     };
 
     return (
         <div className="p-6 text-white rounded-lg space-y-6">
             <h2 className="text-xl font-bold">Search & Add Recipe</h2>
-
-            <div className="space-y-2">
-                <div className="flex gap-4 flex-wrap">
+            <form className="flex gap-4 items-end">
+                <div className="flex flex-col">
+                    <label className="text-[#c0a060] mb-2 text-lg">Recipe Name</label>
                     <input
                         type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder="Recipe name"
-                        className="p-2 w-80 bg-[#292F33] border border-gray-400 rounded"
-                    />
-                    <button
-                        onClick={searchByName}
-                        className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-[#b8944d]">
-                        Search
-                    </button>
+                        className="p-2 w-112 bg-[#292F33] border border-gray-400 rounded"/>
                 </div>
-            </div>
-
-            <div className="space-y-2">
-                <div className="flex gap-4 flex-wrap">
+                <div className="flex flex-col">
+                    <label className="text-[#c0a060] mb-2 text-lg">Category (optional)</label>
                     <select
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
-                        className="p-2 w-80 bg-[#292F33] border border-gray-400 rounded text-gray-300">
-                        <option value="">Select category</option>
+                        className="p-2 bg-[#292F33] border border-gray-400 rounded text-gray-300 w-64">
+                        <option value="">All categories</option>
                         <option value="APPETIZER">Appetizer</option>
                         <option value="SOUP">Soup</option>
                         <option value="MAIN_COURSE">Main Course</option>
@@ -145,18 +126,17 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
                         <option value="PIE">Pie</option>
                         <option value="BAKERY">Bakery</option>
                     </select>
+                </div>
                 <button
-                    onClick={searchByCategory}
-                    className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-[#b8944d]">
+                    type="button"
+                    onClick={() => { setPage(0); fetchRecipesUnified(0); }}
+                    className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-[#b8944d] self-end">
                     Search
                 </button>
-                </div>
-            </div>
-
+            </form>
             {searchInitiated && !loading && results.length === 0 && (
                 <p className="text-gray-400 italic">No recipes found.</p>
             )}
-
             {searchInitiated && !loading && results.length > 0 && (
                 <>
                     <table className="table-fixed w-full shadow rounded overflow-hidden bg-[#292F33] text-white border-2 border-gray-400">
@@ -178,18 +158,12 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
                                     <div className="flex gap-2 justify-center items-center flex-wrap">
                                         <Link
                                             to={`/recipes/${r.recipeId}`}
-                                                state={{
-                                                    listName,
-                                                    defaultPortions: r.defaultPortions || defaultPortions || 1,
-                                                    fromSearch: { searchTerm, category, page },
-                                            }}
-                                            className="px-2 py-1 text-white rounded hover:bg-gray-700 text-sm"
-                                        >
+                                            className="px-2 py-1 text-white rounded hover:bg-gray-700 text-sm">
                                             View
                                         </Link>
                                         <button
                                             onClick={() => handleAdd(r)}
-                                            className="px-2 py-1 bg-[#c0a060] text-white rounded hover:bg-[#b8944d] text-sm">
+                                            className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-[#b8944d] mb-4 text-sm self-end">
                                             Add
                                         </button>
                                     </div>
@@ -206,11 +180,11 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
                             Previous
                         </button>
                         <span className="text-white text-lg">
-                {totalPages > 0 ? `Page ${page + 1} / ${totalPages}` : "No pages"}
-            </span>
+                            {`Page ${page + 1} / ${totalPages}`}
+                        </span>
                         <button
                             onClick={goToNextPage}
-                            disabled={totalPages === 0 || page + 1 >= totalPages}
+                            disabled={page + 1 >= totalPages}
                             className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
                             Next
                         </button>

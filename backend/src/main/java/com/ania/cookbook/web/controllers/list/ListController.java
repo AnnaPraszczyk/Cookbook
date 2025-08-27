@@ -32,6 +32,7 @@ public class ListController {
     @PostMapping
     public ResponseEntity<Void> createRecipeList(@Valid @RequestBody ListRequest request) {
         listService.createRecipeList(new ListName(request.getListName()), request.getListDescription(), request.getPortions());
+        System.out.println("Portions z requestu: " + request.getPortions());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

@@ -14,11 +14,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,6 +25,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -103,6 +102,7 @@ class ReadRecipeControllerTest {
         List<Recipe> latestRecipes = IntStream.range(0, 12)
                 .mapToObj(i -> Recipe.builder()
                         .recipeId(UUID.randomUUID())
+
                         .recipeName("Recipe " + i)
                         .category(Category.DESSERT)
                         .ingredients(List.of(
@@ -276,6 +276,78 @@ class ReadRecipeControllerTest {
 
         mockMvc.perform(get("/api/recipes/search"))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("\"Provide either name or category\""));
+                .andExpect(content().string("\"Provide at least name or category\""));
+    }
+
+    @Test
+    void returnRecipesByNameAndCategory() throws Exception {
+        Recipe recipe = createSampleRecipe();
+        RecipeResponse response = mapToResponse(recipe);
+        Pageable pageable = PageRequest.of(0, 20, Sort.by("recipeName"));
+        when(categoryResolver.resolve("Dessert")).thenReturn(Category.DESSERT);
+        when(finder.findRecipeByNameAndCategory(eq("Pancakes"), eq(Category.DESSERT), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(recipe), pageable, 1));
+        when(responseMapper.toResponsePage(any())).thenReturn(new PageImpl<>(List.of(response), pageable,1));
+
+
+        mockMvc.perform(get("/api/recipes/search")
+                        .param("recipeName", "Pancakes")
+                        .param("category", "Dessert")
+                        .param("page", "0")
+                        .param("size", "20")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].recipeName").value("Pancakes"))
+                .andExpect(jsonPath("$.content[0].category").value("Dessert"));
+        verify(finder).findRecipeByNameAndCategory(eq("Pancakes"), eq(Category.DESSERT), any(Pageable.class));
+    }
+
+    @Test
+    void returnRecipesByNameOnly() throws Exception {
+        Recipe recipe = createSampleRecipe();
+        RecipeResponse response = mapToResponse(recipe);
+        Pageable pageable = PageRequest.of(0, 20, Sort.by("recipeName"));
+        when(finder.findRecipeByName("Pancakes", pageable))
+                .thenReturn(new PageImpl<>(List.of(recipe), pageable, 1));
+        when(responseMapper.toResponsePage(any()))
+                .thenReturn(new PageImpl<>(List.of(response), pageable, 1));
+
+        mockMvc.perform(get("/api/recipes/search")
+                        .param("recipeName", "Pancakes")
+                        .param("page", "0")
+                        .param("size", "20")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].recipeName").value("Pancakes"));
+        verify(finder).findRecipeByName("Pancakes", pageable);
+    }
+
+    @Test
+    void returnRecipesByCategoryOnly() throws Exception {
+        Recipe recipe = createSampleRecipe();
+        RecipeResponse response = mapToResponse(recipe);
+        Pageable pageable = PageRequest.of(0, 20, Sort.by("recipeName"));
+        when(categoryResolver.resolve("DESSERT")).thenReturn(Category.DESSERT);
+        when(finder.findRecipeByCategory(Category.DESSERT, pageable))
+                .thenReturn(new PageImpl<>(List.of(recipe), pageable, 1));
+        when(responseMapper.toResponsePage(any()))
+                .thenReturn(new PageImpl<>(List.of(response), pageable, 1));
+
+        mockMvc.perform(get("/api/recipes/search")
+                        .param("category", "DESSERT")
+                        .param("page", "0")
+                        .param("size", "20")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].category").value("Dessert"));
+        verify(finder).findRecipeByCategory(Category.DESSERT, pageable);
+    }
+
+    @Test
+    void returnBadRequestWhenNoParamsProvided() throws Exception {
+        mockMvc.perform(get("/api/recipes/search")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("\"Provide at least name or category\""));
     }
 }

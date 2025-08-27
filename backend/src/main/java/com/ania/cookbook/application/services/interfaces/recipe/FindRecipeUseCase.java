@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface FindRecipeUseCase {
-
     Optional<Recipe> findRecipeById(UUID id);
     boolean existsRecipeById(UUID id);
     List<Recipe> findRecipeByName(String name);
@@ -18,6 +17,5 @@ public interface FindRecipeUseCase {
     List<Recipe> findRecipeByCategory(Category category);
     Page<Recipe> findRecipeByCategory(Category category, Pageable pageable);
     List<Recipe> getLatestRecipes(int limit);
-
-
+    Page<Recipe> findRecipeByNameAndCategory(String recipeName, Category category, Pageable pageable);
 }

@@ -2,6 +2,7 @@ package com.ania.cookbook.application.services.implementations.recipe;
 import com.ania.cookbook.application.services.implementations.product.ProductService;
 import com.ania.cookbook.application.services.interfaces.product.ProductUseCase;
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
+import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.domain.model.Recipe;
 import com.ania.cookbook.domain.model.Unit;
@@ -12,6 +13,8 @@ import com.ania.cookbook.infrastructure.repositories.InMemoryRecipeRepository;
 import com.ania.cookbook.web.ingredient.IngredientRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -119,4 +122,48 @@ class ReadRecipeServiceTest {
         assertFalse(foundRecipes.isEmpty());
         assertEquals(savedRecipe.getCategory(), foundRecipes.getFirst().getCategory());
     }
+
+    @Test
+    void findRecipeByNameAndCategory() {
+        CreateRecipe request = new CreateRecipe(
+                "Chocolate Cake", Category.CAKE,
+                List.of(new IngredientRequest("Flour", 200, Unit.G)),
+                "Mix ingredients and fry.", 4, List.of("Easy"));
+        recipeService.createRecipe(request);
+        Page<Recipe> result = readRecipeService.findRecipeByNameAndCategory("Cake", Category.CAKE, PageRequest.of(0, 10));
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals("Chocolate Cake", result.getContent().getFirst().getRecipeName());
+        assertEquals(Category.CAKE, result.getContent().getFirst().getCategory());
+    }
+
+    @Test
+    void returnEmptyPageWhenNoMatch() {
+        CreateRecipe request = new CreateRecipe(
+                "Tomato Soup", Category.SOUP,
+                List.of(new IngredientRequest("Tomatoes", 200, Unit.G)),
+                "Boil it.", 4, List.of("Easy"));
+        recipeService.createRecipe(request);
+        Page<Recipe> result = readRecipeService.findRecipeByNameAndCategory("Cake", Category.CAKE, PageRequest.of(0, 10));
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void throwExceptionWhenNameIsBlank() {
+
+        assertThrows(RecipeValidationException.class, () ->
+                readRecipeService.findRecipeByNameAndCategory("  ", Category.SALAD, PageRequest.of(0, 10))
+        );
+    }
+
+    @Test
+    void throwExceptionWhenCategoryIsNull() {
+
+        assertThrows(RecipeValidationException.class, () ->
+                readRecipeService.findRecipeByNameAndCategory("Salad", null, PageRequest.of(0, 10))
+        );
+    }
+
+
 }

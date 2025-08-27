@@ -20,7 +20,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ReadRecipeAdapterTest {
@@ -118,5 +118,33 @@ class ReadRecipeAdapterTest {
     void checkExistenceByName() {
         when(jpaRepository.existsByRecipeNameIgnoreCase("Cake")).thenReturn(true);
         assertTrue(adapter.existsRecipeByName("Cake"));
+    }
+
+    @Test
+    void shouldReturnMappedPageWhenRecipeFoundByNameAndCategory() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<RecipeEntity> entityPage = new PageImpl<>(List.of(entity), pageable, 1);
+        when(jpaRepository.findByRecipeNameContainingIgnoreCaseAndCategory("Cake", Category.DESSERT, pageable))
+                .thenReturn(entityPage);
+        when(recipeMapper.toDomain(entity)).thenReturn(domain);
+        Page<Recipe> result = adapter.findRecipeByNameAndCategory("Cake", Category.DESSERT, pageable);
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals(domain, result.getContent().getFirst());
+        verify(jpaRepository).findByRecipeNameContainingIgnoreCaseAndCategory("Cake", Category.DESSERT, pageable);
+        verify(recipeMapper).toDomain(entity);
+    }
+
+    @Test
+    void shouldReturnEmptyPageWhenNoRecipeMatchesNameAndCategory() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<RecipeEntity> emptyPage = Page.empty(pageable);
+        when(jpaRepository.findByRecipeNameContainingIgnoreCaseAndCategory("Nonexistent", Category.SALAD, pageable))
+                .thenReturn(emptyPage);
+        Page<Recipe> result = adapter.findRecipeByNameAndCategory("Nonexistent", Category.SALAD, pageable);
+
+        assertTrue(result.isEmpty());
+        verify(jpaRepository).findByRecipeNameContainingIgnoreCaseAndCategory("Nonexistent", Category.SALAD, pageable);
+        verifyNoInteractions(recipeMapper);
     }
 }

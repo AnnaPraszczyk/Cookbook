@@ -1,5 +1,6 @@
 package com.ania.cookbook.infrastructure.repositories;
 import com.ania.cookbook.domain.exceptions.RecipeNotFoundException;
+import com.ania.cookbook.domain.exceptions.RecipeValidationException;
 import com.ania.cookbook.domain.model.Category;
 import com.ania.cookbook.domain.model.Recipe;
 import com.ania.cookbook.domain.repositories.recipe.DeleteRecipe;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import java.util.*;
+
+import static org.apache.logging.log4j.util.Strings.isBlank;
 
 @RequiredArgsConstructor
 @Repository
@@ -99,6 +102,25 @@ public class InMemoryRecipeRepository implements SaveRecipe, ReadRecipe, UpdateR
                 : Collections.emptyList();
 
         return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public Page<Recipe> findRecipeByNameAndCategory(String recipeName, Category category, Pageable pageable) {
+        if (isBlank(recipeName)) {
+            throw new RecipeValidationException("Recipe name cannot be null or empty.");
+        }
+        if (category == null) {
+            throw new RecipeValidationException("Recipe category cannot be null.");
+        }
+        List<Recipe> filtered = recipes.values().stream()
+                .filter(r -> r.getRecipeName().toLowerCase().contains(recipeName.toLowerCase()))
+                .filter(r -> r.getCategory() == category)
+                .toList();
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), filtered.size());
+        List<Recipe> pageContent = start <= end ? filtered.subList(start, end) : List.of();
+        return new PageImpl<>(pageContent, pageable, filtered.size());
     }
 }
 

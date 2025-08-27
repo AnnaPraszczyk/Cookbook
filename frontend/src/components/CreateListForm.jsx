@@ -41,6 +41,7 @@ export default function CreateListForm() {
             console.error("List creation error:", err);
             setError("Failed to create list.");
         }
+        console.log(JSON.stringify(form));
     };
 
     return (
