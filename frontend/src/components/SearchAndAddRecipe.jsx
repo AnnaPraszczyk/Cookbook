@@ -133,6 +133,7 @@ export default function SearchAndAddRecipe({ listName, defaultPortions }) {
                     className="px-4 py-2 bg-[#c0a060] text-white rounded hover:bg-[#b8944d] self-end">
                     Search
                 </button>
+                <button type="submit" style={{ display: "none" }} aria-hidden="true" />
             </form>
             {searchInitiated && !loading && results.length === 0 && (
                 <p className="text-gray-400 italic">No recipes found.</p>

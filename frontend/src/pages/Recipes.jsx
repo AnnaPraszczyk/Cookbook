@@ -152,7 +152,7 @@ const Recipes = () => {
                     </thead>
                     <tbody>
                     {recipes.map(r => (
-                        <tr key={r.id} className="border-t cursor-pointer bg-[#292F33] text-white border-2 border-gray-400 hover:bg-[#444] hover:text-white">
+                        <tr key={r.recipeId} className="border-t cursor-pointer bg-[#292F33] text-white border-2 border-gray-400 hover:bg-[#444] hover:text-white">
                             <td className="px-4 py-2 bg-[#292F33] text-white border-2 border-gray-400">{r.recipeName}</td>
                             <td className="px-4 py-2 bg-[#292F33] text-white border-2 border-gray-400">{r.category}</td>
                             <td className="px-4 py-2 bg-[#292F33] text-white border-2 border-gray-400">
