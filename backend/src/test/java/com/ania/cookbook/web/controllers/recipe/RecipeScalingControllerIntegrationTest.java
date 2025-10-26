@@ -21,7 +21,7 @@ import static org.hamcrest.Matchers.greaterThan;
 import java.util.List;
 import java.util.UUID;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@SpringBootTest
 @AutoConfigureMockMvc
 public class RecipeScalingControllerIntegrationTest {
 
