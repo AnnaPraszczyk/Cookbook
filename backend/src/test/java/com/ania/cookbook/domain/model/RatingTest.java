@@ -31,8 +31,7 @@ class RatingTest {
                         .ratingId(null)
                         .recipeId(recipeId)
                         .score(3)
-                        .build()
-        );
+                        .build());
     }
 
     @Test
@@ -44,8 +43,7 @@ class RatingTest {
                         .ratingId(ratingId)
                         .recipeId(null)
                         .score(3)
-                        .build()
-        );
+                        .build());
     }
 
     @Test
@@ -58,20 +56,13 @@ class RatingTest {
                         .ratingId(ratingId)
                         .recipeId(recipeId)
                         .score(0)
-                        .build()
-        );
+                        .build());
 
         assertThrows(RatingValidationException.class, () ->
                 Rating.builder()
                         .ratingId(ratingId)
                         .recipeId(recipeId)
                         .score(6)
-                        .build()
-        );
+                        .build());
     }
-
-
-
-
-
 }
