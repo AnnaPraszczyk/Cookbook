@@ -1,5 +1,4 @@
 package com.ania.cookbook.infrastructure.persistence.entity;
-
 import com.ania.cookbook.domain.exceptions.ProductValidationException;
 import jakarta.persistence.*;
 import lombok.Getter;
